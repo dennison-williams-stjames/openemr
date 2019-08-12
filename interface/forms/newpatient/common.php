@@ -18,9 +18,7 @@
  * @link    http://www.open-emr.org
  */
 
-require_once("$srcdir/options.inc.php");
-require_once("$srcdir/acl.inc");
-require_once("$srcdir/lists.inc");
+require_once("shared.php");
 
 use OpenEMR\Core\Header;
 use OpenEMR\Services\FacilityService;
@@ -37,6 +35,7 @@ $days = array("01","02","03","04","05","06","07","08","09","10","11","12","13","
 $thisyear = date("Y");
 $years = array($thisyear-1, $thisyear, $thisyear+1, $thisyear+2);
 
+$result = array();
 if ($viewmode) {
     $id = (isset($_REQUEST['id'])) ? $_REQUEST['id'] : '';
     $result = sqlQuery("SELECT * FROM form_encounter WHERE id = ?", array($id));
@@ -47,6 +46,66 @@ if ($viewmode) {
         echo "</body>\n</html>\n";
         exit();
     }
+
+    // TODO FIXME: if there are more than 1 visit in a day this may be an issue
+    $result2 = sqlQuery('select * from form_sji_visit where encounter = ? order by date desc limit 0,1', array($encounter));
+    foreach ($visit_columns as $column) {
+	$result[$column] = $result2[$column];
+    }
+
+    foreach ($visit_time_columns as $column) {
+        // TODO: make sure we are not loosing anything between military and 12hr time here
+        if (
+           preg_match('/ (\d\d:\d\d)/', $result2[$column], $matches) &&
+           $matches[1] != '00:00'
+        ) { 
+	   $result[$column] = $matches[1];
+        }
+    }
+
+    // Add on medical_services list
+    $query = "select medical_service from form_sji_visit_medical_services where pid=?";
+    $res = sqlStatement($query, array($id));
+    $medical_services = array();
+    while ($row = sqlFetchArray($res)) {
+       $medical_services[] = $row['medical_service'];
+    }
+    if (sizeof($medical_services)) {
+       $result['medical_services'] = $medical_services;
+    }
+
+    // Add on initial_test_for_sti list
+    $query = "select initial_test_for_sti from form_sji_visit_initial_test_for_sti where pid=?";
+    $res = sqlStatement($query, array($id));
+    $test_results = array();
+    while ($row = sqlFetchArray($res)) {
+       $test_results[] = $row['initial_test_for_sti'];
+    }
+    if (sizeof($test_results)) {
+       $result['initial_test_for_sti'] = $test_results;
+    }
+
+    // Add on test_results_for_sti list
+    $query = "select test_results_for_sti from form_sji_visit_test_results_for_sti where pid=?";
+    $res = sqlStatement($query, array($id));
+    $test_results = array();
+    while ($row = sqlFetchArray($res)) {
+       $test_results[] = $row['test_results_for_sti'];
+    }
+    if (sizeof($test_results)) {
+       $result['test_results_for_sti'] = $test_results;
+    }
+
+    // Add on counseling_services list
+    $query = "select counseling_services from form_sji_visit_counseling_services where pid=?";
+    $res = sqlStatement($query, array($id));
+    $test_results = array();
+    while ($row = sqlFetchArray($res)) {
+       $test_results[] = $row['counseling_services'];
+    }
+    if (sizeof($test_results)) {
+       $result['counseling_services'] = $test_results;
+    }
 }
 
 // Sort comparison for sensitivities by their order attribute.
@@ -55,17 +114,150 @@ function sensitivity_compare($a, $b)
     return ($a[2] < $b[2]) ? -1 : 1;
 }
 
+function set_medical_services () {
+   $services = array(
+      'Routine exam',
+      'Transgender care',
+      'Vaccinations',
+      'Wound absess',
+   );
+   $sql = 'INSERT INTO list_options(list_id, option_id, title) values("medical_services", ?, ?)';
+   foreach ($services as $service) {
+      sqlInsert($sql, array($service, $service));
+   }
+}
+
+function set_initial_test_for_sti (){
+   $services = array(
+      'Chlamydia',
+      'Gonorrhea',
+      'Hepatitis A',
+      'Hepatitis B',
+      'Hepatitis C',
+      'Herpes',
+      'Syphilis',
+   );
+   $sql = 'INSERT INTO list_options(list_id, option_id, title) values("initial_test_for_sti", ?, ?)';
+   foreach ($services as $service) {
+      sqlInsert($sql, array($service, $service));
+   }
+}
+
+function set_test_results_for_sti (){
+   $services = array(
+      'Chlamydia',
+      'Gonorrhea',
+      'Hepatitis A',
+      'Hepatitis B',
+      'Hepatitis C',
+      'Herpes',
+      'Syphilis',
+   );
+   $sql = 'INSERT INTO list_options(list_id, option_id, title) values("test_results_for_sti", ?, ?)';
+   foreach ($services as $service) {
+      sqlInsert($sql, array($service, $service));
+   }
+}
+
+function set_counseling_services (){
+   $services = array(
+      'Peer counseling',
+      'Mental health psychiatrist',
+      'Case management',
+      'Linkage to care',
+   );
+   $sql = 'INSERT INTO list_options(list_id, option_id, title) values("counseling_services", ?, ?)';
+   foreach ($services as $service) {
+      sqlInsert($sql, array($service, $service));
+   }
+}
+
+function setInternalList($list_id) {
+   switch($list_id) {
+      case 'medical_services':
+         set_medical_services();
+         break;
+      case 'initial_test_for_sti':
+         set_initial_test_for_sti();
+         break;
+      case 'test_results_for_sti':
+         set_test_results_for_sti();
+         break;
+      case 'counseling_services':
+         set_counseling_services();
+         break;
+      default:
+         break;
+   }
+}
+
+/* A helper function for getting list options */
+function getListOptions($list_id, $fieldnames = array('option_id', 'title', 'seq')) {
+    global $result;
+
+    $output = "";
+    $selected = array();
+    if (isset($result[$list_id])) {
+           $selected = $result[$list_id];
+    }
+    $sql = "SELECT ".implode(',', $fieldnames).
+       " FROM list_options where list_id = ? AND activity = 1 order by seq";
+    $query = sqlStatement($sql, array($list_id));
+
+    $list_options = sqlFetchArray($query);
+
+    if (! $list_options ) {
+       setInternalList($list_id);
+       $query = sqlStatement($sql, array($list_id));
+       $list_options = sqlFetchArray($query);
+    }
+    // Check to see if the custom list is populated and populate it if it is not
+    while ($list_options) {
+        $output .= '<option value="'. $list_options['option_id'] .'" ';
+
+        if (isset($selected)) {
+
+           if (is_array($selected) && in_array($list_options['option_id'], $selected)) {
+              $output .= "selected ";
+              $key = array_search($list_options['option_id'], $selected);
+              if ($key >= 0) {
+                 array_splice($selected, $key, 1);
+              }
+           } else if ($selected === $list_options['option_id']) {
+              $output .= "selected ";
+              unset($selected);
+           }
+        } 
+
+        $output .= '>'. $list_options['title'] .'</option>';
+        $list_options = sqlFetchArray($query);
+    } 
+
+    if (isset($selected)) {
+       if (is_array($selected)) {
+          foreach ($selected as $selection) {
+             $output .= '<option value="'. $selection .'" selected>'. $selection .'</option>';
+          }
+       } else if (strlen($selected)) {
+          $output .= '<option value="'. $selected .'" selected>'. $selected .'</option>';
+       }
+    }
+
+    return $output;
+}
+
 // get issues
 $ires = sqlStatement("SELECT id, type, title, begdate FROM lists WHERE " .
   "pid = ? AND enddate IS NULL " .
   "ORDER BY type, begdate", array($pid));
+
 ?>
 <!DOCTYPE html>
 <html>
 <head>
 
-<title><?php echo xlt('Patient Encounter'); ?></title>
-    <?php Header::setupHeader(['jquery-ui', 'datetime-picker']); ?>
+<title><?php echo xlt('Participant Encounter'); ?></title>
+    <?php Header::setupHeader(['jquery-ui', 'datetime-picker', 'bootstrap', 'select2']); ?>
 
 <!-- validation library -->
 <?php
@@ -126,6 +318,7 @@ require_once($GLOBALS['srcdir'] . "/validation/validation_script.js.php"); ?>
            url: $(this).attr('href')
        });
    });
+
    $('.datepicker').datetimepicker({
         <?php $datetimepicker_timepicker = false; ?>
         <?php $datetimepicker_showseconds = false; ?>
@@ -133,13 +326,26 @@ require_once($GLOBALS['srcdir'] . "/validation/validation_script.js.php"); ?>
         <?php require($GLOBALS['srcdir'] . '/js/xl/jquery-datetimepicker-2-5-4.js.php'); ?>
         <?php // can add any additional javascript settings to datetimepicker here; need to prepend first setting with a comma ?>
    });
+
+   $('.timepicker').datetimepicker({
+        datepicker: false,
+        format: 'H:i'
+   });
+
+   $("div#form").accordion({
+      icons: { "header": "ui-icon-plus", "activeHeader": "ui-icon-minus" },
+      header: "h3.header",
+      heightStyle: "content",
+   });
+
+
  });
 
 function bill_loc(){
-var pid=<?php echo attr($pid);?>;
-var dte=document.getElementById('form_date').value;
-var facility=document.forms[0].facility_id.value;
-ajax_bill_loc(pid,dte,facility);
+	var pid=<?php echo attr($pid);?>;
+	var dte=document.getElementById('form_date').value;
+	var facility=document.forms[0].facility_id.value;
+	ajax_bill_loc(pid,dte,facility);
 }
 
 // Handler for Cancel clicked when creating a new encounter.
@@ -171,6 +377,14 @@ ajax_bill_loc(pid,dte,facility);
  }
 
 </script>
+
+<style>
+.ui-icon {
+   z-index: 2;
+   top: 26px;
+}
+</style>
+
 </head>
 
 <?php if ($viewmode) { ?>
@@ -182,46 +396,80 @@ ajax_bill_loc(pid,dte,facility);
 <!-- Required for the popup date selectors -->
 <div id="overDiv" style="position:absolute; visibility:hidden; z-index:1000;"></div>
 
-<form id="new-encounter-form" method='post' action="<?php echo $rootdir ?>/forms/newpatient/save.php" name='new_encounter'>
+<div class="container">
+<form id="new-encounter-form" method='post' action="<?php echo $rootdir ?>/forms/newpatient/save.php<?php
+   if (isset($_GET['id'])) {
+      echo "?mode=update&id=". attr($_GET["id"]);
+   } else {
+      echo "?mode=new";
+   }
+?>" name='new_encounter'>
 
-<div style='float:left'>
+<div class="row">
+<div class="col-sm-3">
 <?php if ($viewmode) { ?>
 <input type=hidden name='mode' value='update'>
 <input type=hidden name='id' value='<?php echo (isset($_GET["id"])) ? attr($_GET["id"]) : '' ?>'>
-<span class=title><?php echo xlt('Patient Encounter Form'); ?></span>
+<span class=title><?php echo xlt('Participant Visit Form'); ?></span>
 <?php } else { ?>
 <input type='hidden' name='mode' value='new'>
-<span class='title'><?php echo xlt('New Encounter Form'); ?></span>
+<span class='title'><?php echo xlt('New Participant Visit Form'); ?></span>
 <?php } ?>
-</div>
+</div> <!-- col-sm-3 -->
 
-<div>
-    <div style = 'float:left; margin-left:8px;margin-top:-3px'>
+<div class="col-sm-2">
       <a href="javascript:saveClicked(undefined);" class="css_button link_submit"><span><?php echo xlt('Save'); ?></span></a>
 <?php if ($viewmode || empty($_GET["autoloaded"])) { // not creating new encounter ?>
-    </div>
-    <div style = 'float:left; margin-top:-3px'>
       <a href="" class="css_button link_submit" onClick="return cancelClickedOld()">
       <span><?php echo xlt('Cancel'); ?></span></a>
     <?php } else { // not $viewmode ?>
       <a href="" class="css_button link_submit" onClick="return cancelClickedNew()">
       <span><?php echo xlt('Cancel'); ?></span></a>
     <?php } // end not $viewmode ?>
-    </div>
- </div>
 
-<br> <br>
+</div> <!-- col-sm-2 -->
 
-<table width='96%'>
+<div class="col-sm-7"></div> <!-- col-sm-9 -->
+</div> <!-- row -->
 
- <tr>
-  <td width='33%' nowrap class='bold'><?php echo xlt('Consultation Brief Description'); ?>:</td>
-  <td width='34%' rowspan='2' align='center' valign='center' class='text'>
-   <table>
+<div class="row form-group">
 
-    <tr>
-     <td class='bold' nowrap><?php echo xlt('Visit Category:'); ?></td>
-     <td class='text'>
+<div class="col-sm-3" id=comments>
+
+<div class="row form-group">
+<label for=reason class="col-sm-12 control-label bg-primary"><?php echo xlt('Reason for Visit')?></label>
+</div>
+<div class="row">
+<div class="col-sm-12">
+<textarea name='reason' class="sm-textarea form-control" rows=6 id=reason
+    ><?php echo $viewmode ? text($result['reason']) : text($GLOBALS['default_chief_complaint']); ?></textarea>
+</div> <!-- col-sm-12 -->
+</div> <!-- row -->
+</div> <!-- comments -->
+
+<div class="col-sm-6" id=form>
+
+<h3 class="row header">
+<div class="col-sm-12 bg-primary">
+<span class="ui-icon-plus"></span><?php 
+echo xlt('General');
+?></div> <!-- col-sm-12-->
+</h3> <!-- row -->
+
+<div id=general>
+<div class="row form-group">
+
+<div class="col-sm-6"><label for="form_date" class="control-label"><?php echo xlt('Date of Service:'); ?></label></div>
+<div class="col-sm-6">
+      <input type='text' class='datepicker input-sm form-control' name='form_date' id='form_date'
+       value='<?php echo $viewmode ? attr(oeFormatShortDate(substr($result['date'], 0, 10))) : oeFormatShortDate(date('Y-m-d')); ?>'
+       title='<?php echo xla('Date of service'); ?>' />
+</div> <!-- col -->
+</div> <!-- row -->
+
+<div class="row form-group">
+<div class="col-sm-6"><label for="pc_catid" class="control-label"><?php echo xlt('Visit Category:'); ?></label></div>
+<div class="col-sm-6">
       <select class="form-control" name='pc_catid' id='pc_catid'>
           <option value='_blank'>-- <?php echo xlt('Select One'); ?> --</option>
             <?php
@@ -277,166 +525,500 @@ ajax_bill_loc(pid,dte,facility);
             }
             ?>
       </select>
-     </td>
-    </tr>
+</div> <!-- col -->
+</div> <!-- row -->
 
-    <tr>
-     <td class='bold' nowrap><?php echo xlt('Facility:'); ?></td>
-     <td class='text'>
-      <select class="form-control" name='facility_id' onChange="bill_loc()">
-<?php
-
-if ($viewmode) {
-    $def_facility = $result['facility_id'];
-} else {
-    $dres = sqlStatement("select facility_id from users where username = ?", array($_SESSION['authUser']));
-    $drow = sqlFetchArray($dres);
-    $def_facility = $drow['facility_id'];
-}
-
-$facilities = $facilityService->getAllServiceLocations();
-if ($facilities) {
-    foreach ($facilities as $iter) {
-        if ($iter['billing_location'] == 1) {
-            $posCode = $iter['pos_code'];
-        }
+<div class="row form-group">
+<div class="col-sm-6"><label for='facility_id' class="control-label"><?php echo xlt('Facility'); ?>:</label></div>
+<div class="col-sm-6">
+<select name='facility_id' id='facility_id' class='form-control' onChange="bill_loc()">
+    <?php
+    if ($viewmode) {
+	$def_facility = $result['facility_id'];
+    } else {
+        // TODO: is there a better way than hard coding this for SJI?
+	$def_facility = 3;
+    }
+    $posCode = '';
+    $facilities = $facilityService->getAllServiceLocations();
+    if ($facilities) {
+	foreach ($facilities as $iter) { ?>
+    <option value="<?php echo attr($iter['id']); ?>"
+	<?php
+	if ($def_facility == $iter['id']) {
+	    if (!$viewmode) {
+		$posCode = $iter['pos_code'];
+	    }
+	    echo "selected";
+	}?>><?php echo text($iter['name']); ?>
+    </option>
+    <?php
+	}
+    }
     ?>
-       <option value="<?php echo attr($iter['id']); ?>" <?php if ($def_facility == $iter['id']) {
-            echo "selected";
-}?>><?php echo text($iter['name']); ?></option>
-<?php
-    }
-}
-?>
-      </select>
-     </td>
-    </tr>
-    <tr>
-        <td class='bold' nowrap><?php echo xlt('Billing Facility'); ?>:</td>
-        <td class='text'>
-            <div id="ajaxdiv">
-            <?php
-            billing_facility('billing_facility', $result['billing_facility']);
-            ?>
-            </div>
-        </td>
-     </tr>
-        <?php if ($GLOBALS['set_pos_code_encounter']) { ?>
-        <tr>
-            <td><span class='bold' nowrap><?php echo xlt('POS Code'); ?>: </span></td>
-            <td colspan="6">
-                <select class="form-control" name="pos_code">
-                <?php
+</select>
+</div> <!-- col -->
+</div> <!-- row -->
+</div> <!-- row#general -->
 
-                $pc = new POSRef();
+<h3 class="row header">
+<div class="col-sm-12 bg-primary"><?php 
+echo xlt('Medical Care');
+?></div> <!-- col-sm-12-->
+</h3> <!-- row -->
 
-                foreach ($pc->get_pos_ref() as $pos) {
-                    echo "<option value=\"" . attr($pos["code"]) . "\" ";
-                    if ($pos["code"] == $result['pos_code'] || $pos["code"] == $posCode) {
-                        echo "selected";
-                    }
+<div id="medical-care" >
 
-                    echo ">" . text($pos['code'])  . ": ". xlt($pos['title']);
-                    echo "</option>\n";
-                }
+<div class="row form-group">
+<div class="col-sm-6">
+<label for="symptoms" class="control-label"><?php
+echo xlt('Do you have a current illness or symptoms?');
+?></label>
+</div>
+<div class="col-sm-6">
+<input name="symptoms" id="symptoms" class="form-control" 
 
-                ?>
-                </select>
-            </td>
-       </tr>
-        <?php } ?>
-    <tr>
-<?php
- $sensitivities = acl_get_sensitivities();
-if ($sensitivities && count($sensitivities)) {
-    usort($sensitivities, "sensitivity_compare");
-?>
-   <td class='bold' nowrap><?php echo xlt('Sensitivity:'); ?></td>
-    <td class='text'>
-     <select class="form-control" name='form_sensitivity'>
-<?php
-foreach ($sensitivities as $value) {
-   // Omit sensitivities to which this user does not have access.
-    if (acl_check('sensitivities', $value[1])) {
-        echo "       <option value='" . attr($value[1]) . "'";
-        if ($viewmode && $result['sensitivity'] == $value[1]) {
-            echo " selected";
-        }
-
-        echo ">" . xlt($value[3]) . "</option>\n";
-    }
-}
-
-echo "       <option value=''";
-if ($viewmode && !$result['sensitivity']) {
-    echo " selected";
-}
-
-echo ">" . xlt('None'). "</option>\n";
-?>
-     </select>
-    </td>
-<?php
+<?php if (isset($result['symptoms'])) {
+   echo 'value="'. $result['symptoms'] .'"';
 } else {
-?>
-    <td colspan='2'><!-- sensitivities not used --></td>
-<?php
+   echo 'data-placeholder="'. xlt('Describe the symptoms') .'"';
 }
+?>></div> <!-- col-sm-6 -->
+</div> <!-- row -->
+
+<div class="row form-group">
+<div class="col-sm-6">
+<label for="medical_service" class="control-label"><?php
+echo xlt('What type of medical service are you looking for?');
+?></label>
+</div>
+<div class="col-sm-6">
+<select multiple=multiple name="medical_services[]" id="medical_services" class="form-control">
+<?php 
+// TODO: add this list
+echo getListOptions('medical_services'); 
 ?>
-    </tr>
+</select>
+</div> <!-- col-sm-6 -->
+</div> <!-- row -->
 
-    <tr<?php if (!$GLOBALS['gbl_visit_referral_source']) {
-        echo " style='visibility:hidden;'";
-} ?>>
-     <td class='bold' nowrap><?php echo xlt('Referral Source'); ?>:</td>
-     <td class='text'>
-<?php
-  echo generate_select_list('form_referral_source', 'refsource', $viewmode ? $result['referral_source'] : '', '');
+
+</div> <!-- medical-care -->
+
+
+<h3 class="row header">
+<div class="col-sm-12 bg-primary"><?php 
+echo xlt('Harm Reduction Services');
+?></div> <!-- col-sm-12-->
+</h3> <!-- row -->
+
+<div id="harm_reduction_services">
+
+<div class="row form-group">
+<div class="col-sm-6">
+<label for="initial_test_for_hiv" class="control-label"><?php
+echo xlt('Initial test for HIV?');
+?></label>
+</div>
+<div class="col-sm-6">
+<input type="hidden" name="initial_test_for_hiv" value=off></input>
+<input type="checkbox" id="initial_test_for_hiv" name="initial_test_for_hiv" <?php 
+if (
+	isset($result['initial_test_for_hiv']) &&
+	$result['initial_test_for_hiv']
+) { echo "checked"; } 
+?>></input>
+</div> <!-- col-sm-6 -->
+</div> <!-- row -->
+
+<div class="row form-group">
+<div class="col-sm-6">
+<label for="initial_test_for_sti" class="control-label"><?php
+echo xlt('Initial test for STI?');
+?></label>
+</div>
+<div class="col-sm-6">
+<select multiple=multiple class="col-sm-6 select2 form-control" id="initial_test_for_sti" name="initial_test_for_sti[]">
+<?php echo getListOptions('initial_test_for_sti'); ?>
+</select>
+</div> <!-- col-sm-6 -->
+</div> <!-- row -->
+
+<div class="row form-group">
+<label for="test_results_for_hiv" class="col-sm-6 control-label"><?php
+echo xlt('Are you expecting HIV test results?');
+?></label>
+<div class="col-sm-6">
+<input type="hidden" name="test_resaults_for_hiv" value=off></input>
+<input type="checkbox" id="test_results_for_hiv" name="test_results_for_hiv" <?php 
+if (
+	isset($result['test_results_for_hiv']) && 
+	$result['test_results_for_hiv']
+) { echo "checked"; } 
+?>></input>
+</div> <!-- col-sm-6 -->
+</div> <!-- row -->
+
+<div class="row form-group">
+<label for="last_tested_for_hiv" class="col-sm-6 control-label"><?php
+echo xlt('When were you last tested for HIV?');
+?></label>
+<div class="col-sm-6">
+<input type="text" class="form-control col-sm-6 datepicker" id="last_tested_for_hiv" name="last_tested_for_hiv" <?php
+if (
+	isset($result['last_tested_for_hiv']) &&
+	$result['last_tested_for_hiv']
+) { echo 'value="'. $result['last_tested_for_hiv'] .'"'; }
+?>></input>
+</div> <!-- col-sm-6 -->
+</div> <!-- row -->
+
+<div class="row form-group">
+<label for="test_results_for_sti" class="col-sm-6 control-label"><?php
+echo xlt('Are you expecting STI test results?');
+?></label>
+<div class="col-sm-6">
+<select class="select2 form-control" id="test_results_for_sti" name="test_results_for_sti[]" multiple=multiple>
+<?php echo getListOptions('test_results_for_sti'); ?>
+</select>
+</div> <!-- col-sm-6 -->
+</div> <!-- row -->
+
+<div class="row form-group">
+<label for="last_tested_for_sti" class="col-sm-6 control-label"><?php
+echo xlt('When were you last tested for STIs?');
+?></label>
+<div class="col-sm-6">
+<input type="text" class="col-sm-6 datepicker form-control" id="last_tested_for_sti" name="last_tested_for_sti" <?php
+if (
+	isset($result['last_tested_for_sti']) &&
+	$result['last_tested_for_sti']) { echo 'value="'. $result['last_tested_for_sti'] .'"'; }
+?>></input>
+</div> <!-- col-sm-6 -->
+</div> <!-- row -->
+
+</div> <!-- harm_reduction_services -->
+
+
+
+<h3 class="row header">
+<div class="col-sm-12 bg-primary"><?php 
+echo xlt('Counseling');
+?></div> <!-- col-sm-12-->
+</h3> <!-- row -->
+
+<div id="counseling">
+
+<div class="row form-group">
+<label for="counseling_services" class="col-sm-6 control-label"><?php
+echo xlt('What types of counseling services are you looking for?');
+?></label>
+<div class="col-sm-6">
+<select multiple=multiple class="form-control col-sm-6 select2" id="counseling_services" name="counseling_services[]">
+<?php echo getListOptions('counseling_services'); ?>
+</select>
+</div> <!-- col-sm-6 -->
+</div> <!-- row -->
+
+<div class="row form-group">
+<label for="counselor_name" class="col-sm-6 control-label"><?php
+echo xlt('Name of mental health psychiatrist you have an appointment with?');
+?></label>
+<div class="col-sm-6">
+<input type=text class="col-sm-6 form-control" id="counselor_name" name="counselor_name" <?php 
+if (
+	isset($result['counselor_name']) &&
+	$result['counselor_name']
+) { echo 'value="'. $result['counselor_name'] .'"'; } 
+?>></input>
+</div> <!-- col-sm-6 -->
+</div> <!-- row -->
+
+</div> <!-- counseling -->
+
+
+<h3 class="row header">
+<div class="col-sm-12 bg-primary"><?php 
+echo xlt('Holistic');
+?></div> <!-- col-sm-12-->
+</h3> <!-- row -->
+
+<div id="holistic" >
+
+<div class="row form-group">
+<label for="massage" class="col-sm-6 control-label"><?php
+echo xlt('Massage');
+?></label>
+<div class="col-sm-6">
+<input type="hidden" name="massage" value=off></input>
+<input type=checkbox id="massage" name="massage" <?php 
+if (
+	isset($result['massage']) &&
+	$result['massage']) { echo "checked"; } ?>></input>
+</div> <!-- col-sm-6 -->
+</div> <!-- row -->
+
+<div class="row form-group">
+<label for="massage_apt_time" class="col-sm-6 control-label"><?php
+echo xlt('Massage appointment time');
+?></label>
+<div class="col-sm-6">
+<input type=text class="form-control col-sm-6 timepicker" id="massage" name="massage_apt_time" <?php
+if (isset($result['massage_apt_time'])) { echo 'value="'. $result['massage_apt_time'] .'"'; }
+?>></input>
+</div> <!-- col-sm-6 -->
+</div> <!-- row -->
+
+<div class="row form-group">
+<label for="ear_accupuncture" class="col-sm-6 control-label"><?php
+echo xlt('Ear accupuncture');
+?></label>
+<div class="col-sm-6">
+<input type=hidden name="ear_accupuncture" value=off></input>
+<input type=checkbox id="ear_accupuncture" name="ear_accupuncture" <?php 
+if (
+	isset($result['ear_accupuncture']) && 
+	$result['ear_accupuncture']) { echo "checked"; } ?>></input>
+</div> <!-- col-sm-6 -->
+</div> <!-- row -->
+
+<div class="row form-group">
+<label for="full_body_accupuncture" class="col-sm-6 control-label"><?php
+echo xlt('Full body accupuncture');
+?></label>
+<div class="col-sm-6">
+<input type=hidden name="full_body_accupuncture" value=off></input>
+<input type=checkbox id="full_body_accupuncture" name="full_body_accupuncture" <?php 
+if (
+	isset($result['full_body_accupuncture']) &&
+	$result['full_body_accupuncture']
+) { echo "checked"; } 
+?>></input>
+</div> <!-- col-sm-6 -->
+</div> <!-- row -->
+
+<div class="row form-group">
+<label for="full_body_accupuncture_apt_time" class="col-sm-6 control-label"><?php
+echo xlt('Full body accupuncture appointment time');
+?></label>
+<div class="col-sm-6">
+<input type=text class="form-control col-sm-6 timepicker" id="full_body_accupuncture_apt_time" name="full_body_accupuncture_apt_time" <?php
+if (isset($result['full_body_accupuncture_apt_time'])) { echo 'value="'. $result['full_body_accupuncture_apt_time'] .'"'; }
+?>></input>
+</div> <!-- col-sm-6 -->
+</div> <!-- row -->
+
+<div class="row form-group">
+<label for="reiki" class="col-sm-6 control-label"><?php
+echo xlt('Reiki');
+?></label>
+<div class="col-sm-6">
+<input type=hidden name="reiki" value=off></input>
+<input type=checkbox id="reiki" name="reiki" <?php 
+if (
+	isset($result['reiki']) &&
+	$result['reiki']) { echo "checked"; } ?>></input>
+</div> <!-- col-sm-6 -->
+</div> <!-- row -->
+
+<div class="row form-group">
+<label for="reiki_apt_time" class="col-sm-6 control-label"><?php
+echo xlt('Reiki appointment time');
+?></label>
+<div class="col-sm-6">
+<input type=text class="form-control col-sm-6 timepicker" id="reiki_apt_time" name="reiki_apt_time" <?php
+if (isset($result['reiki_apt_time'])) { echo 'value="'. $result['reiki_apt_time'] .'"'; } 
+?>></input>
+</div> <!-- col-sm-6 -->
+</div> <!-- row -->
+
+</div> <!-- holistic -->
+
+
+<h3 class="row header">
+<div class="col-sm-12 bg-primary"><?php 
+echo xlt('Other');
 ?>
-     </td>
-    </tr>
+</div> <!-- col-sm-12-->
+</h3> <!-- row -->
 
-    <?php if ($GLOBALS['enable_group_therapy']) { ?>
-        <!-- select group name - showing just if therapy group type is selected -->
-    <tr id="therapy_group_name" style="display: none">
-        <td class='bold' nowrap><?php echo xlt('Group name'); ?>:</td>
-        <td>
-            <input type='text' class="input-sm" size='10' name='form_group' id="form_group" style='width:100%;cursor:pointer;cursor:hand' placeholder='<?php echo xla('Click to select');?>' value='<?php echo $viewmode && in_array($result['pc_catid'], $therapyGroupCategories) ? attr(getGroup($result['external_id'])['group_name']) : ''; ?>' onclick='sel_group()' title='<?php echo xla('Click to select group'); ?>' readonly />
-            <input type='hidden' name='form_gid' value='<?php echo $viewmode && in_array($result['pc_catid'], $therapyGroupCategories) ? attr($result['external_id']) : '' ?>' />
-        </td>
-    </tr>
+<div id="other" class="collapse">
 
-    <?php }?>
-    <tr>
-     <td class='bold' nowrap><?php echo xlt('Date of Service:'); ?></td>
-     <td class='text' nowrap>
-      <input type='text' size='10' class='datepicker input-sm' name='form_date' id='form_date' <?php echo $disabled ?>
-       value='<?php echo $viewmode ? attr(oeFormatShortDate(substr($result['date'], 0, 10))) : oeFormatShortDate(date('Y-m-d')); ?>'
-       title='<?php echo xla('Date of service'); ?>' />
-     </td>
-    </tr>
+<div class="row form-group">
+<label for="phone_visit" class="col-sm-6 control-label"><?php
+echo xlt('Phone visit');
+?></label>
+<div class="col-sm-6">
+<input type=hidden name="phone_visit" value=off></input>
+<input type=checkbox id="phone_visit" name="phone_visit" <?php 
+if (
+	isset($result['phone_visit']) &&
+	$result['phone_visit']
+) { echo "checked"; } 
+?>></input>
+</div> <!-- col-sm-6 -->
+</div> <!-- row -->
 
-    <tr<?php if ($GLOBALS['ippf_specific']) {
-        echo " style='visibility:hidden;'";
-} ?>>
-     <td class='bold' nowrap><?php echo xlt('Onset/hosp. date:'); ?></td>
-     <td class='text' nowrap><!-- default is blank so that while generating claim the date is blank. -->
-      <input type='text' size='10' class='datepicker input-sm' name='form_onset_date' id='form_onset_date'
-       value='<?php echo $viewmode && $result['onset_date']!='0000-00-00 00:00:00' ? attr(oeFormatShortDate(substr($result['onset_date'], 0, 10))) : ''; ?>'
-       title='<?php echo xla('Date of onset or hospitalization'); ?>' />
-     </td>
-    </tr>
-    <tr>
-     <td class='text' colspan='2' style='padding-top:1em'>
-     </td>
-    </tr>
-   </table>
+<div class="row form-group">
+<label for="phone_visit_specify" class="col-sm-6 control-label"><?php
+echo xlt('Phone visit specify');
+?></label>
+<div class="col-sm-6">
+<input type=text class="form-control col-sm-6" id="phone_visit_specify" name="phone_visit_specify" <?php
+if (isset($result['phone_visit_specify'])) { echo 'value="'. $result['phone_visit_specify'] .'"'; }
+?>></input>
+</div> <!-- col-sm-6 -->
+</div> <!-- row -->
 
-  </td>
+<div class="row form-group">
+<label for="talent_testing" class="col-sm-6 control-label"><?php
+echo xlt('Talent testing');
+?></label>
+<div class="col-sm-6">
+<input type=hidden name="talent_testing" value=off></input>
+<input type=checkbox id="talent_testing" name="talent_testing" <?php 
+if (
+	isset($result['talent_testing']) && 
+	$result['talent_testing']) { echo "checked"; } ?>></input>
+</div> <!-- col-sm-6 -->
+</div> <!-- row -->
 
+<div class="row form-group">
+<label for="food" class="col-sm-6 control-label"><?php
+echo xlt('Food');
+?></label>
+<div class="col-sm-6">
+<input type=hidden name="food" value=off></input>
+<input type=checkbox id="food" name="food" <?php 
+if (
+	isset($result['food']) &&
+	$result['food']) { echo "checked"; } ?>></input>
+</div> <!-- col-sm-6 -->
+</div> <!-- row -->
 
-  <td class='bold' width='33%' nowrap>
+<div class="row form-group">
+<label for="clothing" class="col-sm-6 control-label"><?php
+echo xlt('Clothing');
+?></label>
+<div class="col-sm-6">
+<input type=hidden name="clothing" value=off></input>
+<input type=checkbox id="clothing" name="clothing" <?php 
+if (
+	isset($result['clothing']) &&
+	$result['clothing']) { echo "checked"; } ?>></input>
+</div> <!-- col-sm-6 -->
+</div> <!-- row -->
 
+<div class="row form-group">
+<label for="condoms" class="col-sm-6 control-label"><?php
+echo xlt('Condoms lube');
+?></label>
+<div class="col-sm-6">
+<input type=hidden name="condoms" value=off></input>
+<input type=checkbox id="condoms" name="condoms" <?php 
+if (
+	isset($result['condoms']) &&
+	$result['condoms']) { echo "checked"; } ?>></input>
+</div> <!-- col-sm-6 -->
+</div> <!-- row -->
+
+<div class="row form-group">
+<label for="nex_syringes" class="col-sm-6 control-label"><?php
+echo xlt('NEX syringes');
+?></label>
+<div class="col-sm-6">
+<input type=hidden name="nex_syringes" value=off></input>
+<input type=checkbox id="nex_syringes" name="nex_syringes" <?php 
+if (
+	isset($result['nex_syringes']) &&
+	$result['nex_syringes']) { echo "checked"; } ?>></input>
+</div> <!-- col-sm-6 -->
+</div> <!-- row -->
+
+<div class="row form-group">
+<label for="hygiene_supplies" class="col-sm-6 control-label"><?php
+echo xlt('Hygiene supplies');
+?></label>
+<div class="col-sm-6">
+<input type=hidden name="hygiene_supplies" value=off></input>
+<input type=checkbox id="hygiene_supplies" name="hygiene_supplies" <?php 
+if (
+	isset($result['hygiene_supplies']) &&
+	$result['hygiene_supplies']) { echo "checked"; } ?>></input>
+</div> <!-- col-sm-6 -->
+</div> <!-- row -->
+
+<div class="row form-group">
+<label for="referrals_to_other_services" class="col-sm-6 control-label"><?php
+echo xlt('Referrals to other services');
+?></label>
+<div class="col-sm-6">
+<input type=hidden name="referrals_to_other_services" value=off></input>
+<input type=checkbox id="referrals_to_other_services" name="referrals_to_other_services" <?php 
+if (
+	isset($result['referrals_to_other_services']) &&
+	$result['referrals_to_other_services']) { echo "checked"; } ?>></input>
+</div> <!-- col-sm-6 -->
+</div> <!-- row -->
+
+<div class="row form-group">
+<label for="referrals_to_other_services_specify" class="col-sm-6 control-label"><?php
+echo xlt('Specify the referrals you are looking for');
+?></label>
+<div class="col-sm-6">
+<input type=text class="form-control" id="referrals_to_other_services_specify" name="referrals_to_other_services_specify" <?php
+if (isset($result['referrals_to_other_services_specify'])) { echo 'value="'. $result["referrals_to_other_services_specify"] .'"'; }
+?>></input>
+</div> <!-- col-sm-6 -->
+</div> <!-- row -->
+
+<div class="row form-group">
+<label for="other_harm_reduction_supplies" class="col-sm-6 control-label"><?php
+echo xlt('Other harm reduction supplies');
+?></label>
+<div class="col-sm-6">
+<input type=hidden name="other_harm_reduction_supplies" value=off></input>
+<input type=checkbox id="other_harm_reduction_supplies" name="other_harm_reduction_supplies" <?php 
+if (
+	isset($result['other_harm_reduction_supplies']) &&
+	$result['other_harm_reduction_supplies']
+) { 
+echo "checked"; } 
+?>></input>
+</div> <!-- col-sm-6 -->
+</div> <!-- row -->
+
+<div class="row form-group">
+<label for="other_harm_reduction_supplies_specify" class="col-sm-6 control-label"><?php
+echo xlt('Specify the other harm reduction supplies you are looking for');
+?></label>
+<div class="col-sm-6">
+<input type=text class="form-control" id="other_harm_reduction_supplies_specify" name="other_harm_reduction_supplies_specify" <?php
+if (isset($result["other_harm_reduction_supplies_specify"])) { echo 'value="'. $result["other_harm_reduction_supplies_specify"] .'"'; }
+?>></input>
+</div> <!-- col-sm-6 -->
+</div> <!-- row -->
+
+<div class="row form-group">
+<label for="support_group" class="col-sm-6 control-label"><?php
+echo xlt('Support group');
+?></label>
+<div class="col-sm-6">
+<input type=hidden name="support_group" value=off></input>
+<input type=checkbox id="support_group" name="support_group" <?php 
+if (
+	isset($result['support_group']) &&
+	$result['support_group']
+) { echo "checked"; } ?>></input>
+</div> <!-- col-sm-6 -->
+</div> <!-- row -->
+
+</div> <!-- other -->
+</div> <!-- form -->
+
+<div class="col-sm-3" id=issues>
+<div class="row">
+<div class="col-sm-12">
 <?php
   // To see issues stuff user needs write access to all issue types.
   $issuesauth = true;
@@ -449,68 +1031,61 @@ foreach ($ISSUE_TYPES as $type => $dummy) {
 
 if ($issuesauth) {
 ?>
-  <div style='float:left'>
 <?php echo xlt('Issues (Injuries/Medical/Allergy)'); ?>
-  </div>
-  <div style='float:left;margin-left:8px;margin-top:-3px'>
     <?php if (acl_check('patients', 'med', '', 'write')) { ?>
        <a href="../../patient_file/summary/add_edit_issue.php" class="css_button_small link_submit enc_issue"
         onclick="top.restoreSession()"><span><?php echo xlt('Add'); ?></span></a>
         <?php } ?>
-  </div>
 <?php } ?>
+</div> <!-- col-sm-12 -->
+</div> <!-- row -->
 
-  </td>
- </tr>
+<div class="row form-group">
+<div class="col-sm-12">
+    <select multiple name='issues[]' class='form-control'
+	    title='<?php echo xla('Hold down [Ctrl] for multiple selections or to unselect'); ?>' size='6'>
+	<?php
+	while ($irow = sqlFetchArray($ires)) {
+	    $list_id = $irow['id'];
+	    $tcode = $irow['type'];
+	    if ($ISSUE_TYPES[$tcode]) {
+		$tcode = $ISSUE_TYPES[$tcode][2];
+	    }
+	    echo "    <option value='" . attr($list_id) . "'";
+	    if ($viewmode) {
+		$perow = sqlQuery("SELECT count(*) AS count FROM issue_encounter WHERE " .
+		"pid = ? AND encounter = ? AND list_id = ?", array($pid, $encounter, $list_id));
+		if ($perow['count']) {
+		    echo " selected";
+		}
+	    } else {
+		// For new encounters the invoker may pass an issue ID.
+		if (!empty($_REQUEST['issue']) && $_REQUEST['issue'] == $list_id) {
+		    echo " selected";
+		}
+	    }
+	    echo ">" . text($tcode) . ": " . text($irow['begdate']) . " " .
+	    text(substr($irow['title'], 0, 40)) . "</option>\n";
+	}
+	?>
+    </select>
+</div> <!-- col-sm-12 -->
+</div> <!-- row -->
 
- <tr>
-  <td class='text' valign='top'>
-   <textarea name='reason' cols='40' rows='12' wrap='virtual' style='width:96%'
-    ><?php echo $viewmode ? text($result['reason']) : text($GLOBALS['default_chief_complaint']); ?></textarea>
-  </td>
-  <td class='text' valign='top'>
-
-<?php if ($issuesauth) { ?>
-   <select class="form-control" multiple name='issues[]' size='8' style='width:100%'
-    title='<?php echo xla('Hold down [Ctrl] for multiple selections or to unselect'); ?>'>
-<?php
-while ($irow = sqlFetchArray($ires)) {
-    $list_id = $irow['id'];
-    $tcode = $irow['type'];
-    if ($ISSUE_TYPES[$tcode]) {
-        $tcode = $ISSUE_TYPES[$tcode][2];
-    }
-
-    echo "    <option value='" . attr($list_id) . "'";
-    if ($viewmode) {
-        $perow = sqlQuery("SELECT count(*) AS count FROM issue_encounter WHERE " .
-        "pid = ? AND encounter = ? AND list_id = ?", array($pid,$encounter,$list_id));
-        if ($perow['count']) {
-            echo " selected";
-        }
-    } else {
-        // For new encounters the invoker may pass an issue ID.
-        if (!empty($_REQUEST['issue']) && $_REQUEST['issue'] == $list_id) {
-            echo " selected";
-        }
-    }
-
-    echo ">" . text($tcode) . ": " . text($irow['begdate']) . " " .
-    text(substr($irow['title'], 0, 40)) . "</option>\n";
-}
-?>
-   </select>
-   <p><i><?php echo xlt('To link this encounter/consult to an existing issue, click the '
+<div class="row">
+<div class="col-sm-12">
+    <p><i><?php echo xlt('To link this encounter/consult to an existing issue, click the '
     . 'desired issue above to highlight it and then click [Save]. '
     . 'Hold down [Ctrl] button to select multiple issues.'); ?></i></p>
-<?php } ?>
+</div> <!-- col-sm-12 -->
+</div> <!-- row -->
 
-  </td>
- </tr>
-
-</table>
+</div> <!-- col-sm-3 issues -->
+</div> <!-- row -->
 
 </form>
+
+</div> <!-- container -->
 
 </body>
 

@@ -156,6 +156,12 @@ $vitals_is_registered = $tmp['count'];
 $result  = getPatientData($pid, "*, DATE_FORMAT(DOB,'%Y-%m-%d') as DOB_YMD");
 $result2 = getEmployerData($pid);
 $result3 = getInsuranceData($pid, "primary", "copay, provider, DATE_FORMAT(`date`,'%Y-%m-%d') as effdate");
+
+// Also get St. James Infirmary Core Variables
+require_once(dirname(__FILE__).'/../../../interface/forms/sji_intake_core_variables/report.php');
+$result4 = sji_intake_core_variables_fetch($pid);
+$result = array_merge($result, $result4);
+
 $insco_name = "";
 if ($result3['provider']) {   // Use provider in case there is an ins record w/ unassigned insco
     $insco_name = getInsuranceProvider($result3['provider']);

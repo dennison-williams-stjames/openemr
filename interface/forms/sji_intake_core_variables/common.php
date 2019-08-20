@@ -89,7 +89,6 @@ function get_cv_form_obj($pid, $id = 0) {
          $obj['ethnicity'] = $row['ethnicity'];
       }
    }
-   error_log('get_cv_form_obj: obj '. print_r($obj, 1));
    return $obj;
 }
 

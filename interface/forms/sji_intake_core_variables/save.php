@@ -25,7 +25,6 @@ foreach ($intake_core_variable_columns as $column) {
 }
 
 if ($_GET["mode"] == "new") {
-    error_log('save.php new');
     $newid = formSubmit($table_name, $submission, '', $userauthorized);
     addForm($encounter, "St. James Infirmary Intake - Core Variables", $newid, "sji_intake_core_variables", $pid, $userauthorized);
     sji_extendedIntakeCoreVariables($newid, $_POST);

@@ -60,7 +60,6 @@ if ($_GET["mode"] == "new") {
     addForm($encounter, "Medical/Psychiatric", $newid, $form_name, $pid, $userauthorized);
     sji_extendedMedicalPsychiatric($newid, $_POST);
 } elseif ($_GET["mode"] == "update") {
-    #error_log('before formUpdate(), $submission: '. print_r($submission, 1));
     $success = formUpdate($table_name, $submission, $_GET["id"], $userauthorized);
     sji_extendedMedicalPsychiatric($_GET['id'], $_POST);
 }

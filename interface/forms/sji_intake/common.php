@@ -85,7 +85,6 @@ function sji_intake_formFetch($formid) {
 	$res = sqlStatement($query, array($formid));
 	$supportive_people = array();
 	while ($row = sqlFetchArray($res)) {
-	   error_log('sji_intake_formFetch() row[supportive_people]: '. print_r($row['supportive_people'], 1));
 	   $supportive_people[] = $row['supportive_people'];
 	}
 	if (sizeof($supportive_people)) {
@@ -212,7 +211,6 @@ function sji_intake_formFetch($formid) {
 function sji_extendedIntake($formid, $submission) {
     global $pid;
 
-    error_log('');
     sqlStatement("delete from form_sji_intake_supportive_people where pid=?", array($formid));
     if (isset($submission['supportive_people'])) {
         // TODO: audit this

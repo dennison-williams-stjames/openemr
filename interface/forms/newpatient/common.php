@@ -37,9 +37,17 @@ $years = array($thisyear-1, $thisyear, $thisyear+1, $thisyear+2);
 
 $result = array();
 if ($viewmode) {
+
+    // TODO: if we do not match the id in the submission we have a problem here
     $id = (isset($_REQUEST['id'])) ? $_REQUEST['id'] : '';
-    $result = sqlQuery("SELECT * FROM form_encounter WHERE id = ?", array($id));
-    $encounter = $result['encounter'];
+
+    // get the encounter id from the forms table
+    $forms = sqlQuery("SELECT * FROM forms WHERE form_id = ?", array($id));
+    $encounter = $forms['encounter'];
+
+    // using the encounter id get the associated data from the forms_encounter table
+    $result = sqlQuery("SELECT * FROM form_encounter WHERE encounter = ?", array($encounter));
+
     if ($result['sensitivity'] && !acl_check('sensitivities', $result['sensitivity'])) {
         echo "<body>\n<html>\n";
         echo "<p>" . xlt('You are not authorized to see this encounter.') . "</p>\n";
@@ -65,7 +73,7 @@ if ($viewmode) {
 
     // Add on medical_services list
     $query = "select medical_service from form_sji_visit_medical_services where pid=?";
-    $res = sqlStatement($query, array($id));
+    $res = sqlStatement($query, array($result2['id']));
     $medical_services = array();
     while ($row = sqlFetchArray($res)) {
        $medical_services[] = $row['medical_service'];
@@ -76,7 +84,7 @@ if ($viewmode) {
 
     // Add on initial_test_for_sti list
     $query = "select initial_test_for_sti from form_sji_visit_initial_test_for_sti where pid=?";
-    $res = sqlStatement($query, array($id));
+    $res = sqlStatement($query, array($result2['id']));
     $test_results = array();
     while ($row = sqlFetchArray($res)) {
        $test_results[] = $row['initial_test_for_sti'];
@@ -87,7 +95,7 @@ if ($viewmode) {
 
     // Add on test_results_for_sti list
     $query = "select test_results_for_sti from form_sji_visit_test_results_for_sti where pid=?";
-    $res = sqlStatement($query, array($id));
+    $res = sqlStatement($query, array($result2['id']));
     $test_results = array();
     while ($row = sqlFetchArray($res)) {
        $test_results[] = $row['test_results_for_sti'];
@@ -98,7 +106,7 @@ if ($viewmode) {
 
     // Add on counseling_services list
     $query = "select counseling_services from form_sji_visit_counseling_services where pid=?";
-    $res = sqlStatement($query, array($id));
+    $res = sqlStatement($query, array($result2['id']));
     $test_results = array();
     while ($row = sqlFetchArray($res)) {
        $test_results[] = $row['counseling_services'];

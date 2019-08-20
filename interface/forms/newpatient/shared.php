@@ -198,7 +198,7 @@ function new_visit($data, $pid) {
       isset($data['date']) ? $data['date'] : ''
    );
 
-   sji_extendedVisit($id, $data);
+   sji_extendedVisit($newid, $data);
 
    return $id;
 }
@@ -217,6 +217,7 @@ function sji_extendedVisit($id, $submission) {
    }
 
    sqlStatement("delete from form_sji_visit_medical_services where pid=?", array($id));
+   print "\t\t\tsji_extendedVisit(), \$submission['medical_services']: ". print_r($submission['medical_services'], 1) ."\n";
    if (isset($submission['medical_services'])) {
       // TODO: audit this
       foreach ($submission['medical_services'] as $service) {

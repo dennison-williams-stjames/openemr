@@ -31,8 +31,6 @@ function newpatient_report($pid, $encounter, $cols, $id)
           where e.pid=? and e.id=?
        ", array($pid,$encounter));
 
-    error_log('newpatient_report(), $encounter: '. $encounter );
-
     while ($result = sqlFetchArray($res)) {
         print "<span class=bold>" . xlt('Facility') . ": </span><span class=text>" . text($result{"facility_name"}) . "</span><br>\n";
         if (empty($result['sensitivity']) || acl_check('sensitivities', $result['sensitivity'])) {

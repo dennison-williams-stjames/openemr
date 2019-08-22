@@ -162,7 +162,6 @@ function sji_get_visit_submission_from_data($data) {
 
 function new_visit($data, $pid) {
    global $userauthorized;
-   //error_log(__FILE__ .':'. __FUNCTION__ .'() _POST: '. print_r($_POST, 1));
    $provider_id = $userauthorized ? $_SESSION['authUserID'] : 0;
    $encounter = generate_id();
    $submission = sji_get_visit_submission_from_data($data);
@@ -185,7 +184,6 @@ function new_visit($data, $pid) {
       "external_id = '" . add_escape_custom(isset($data['external_id']) ? $data['external_id'] : '') . "', " .
       "provider_id = '" . add_escape_custom($provider_id) . "'");
 
-   //print "\t\tnew_visit() submission: ". print_r($submission, 1) ."\n";
    $newid = formSubmit('form_sji_visit', $submission, $eid, $userauthorized);
 
    $id = addForm(
@@ -217,7 +215,6 @@ function sji_extendedVisit($id, $submission) {
    }
 
    sqlStatement("delete from form_sji_visit_medical_services where pid=?", array($id));
-   print "\t\t\tsji_extendedVisit(), \$submission['medical_services']: ". print_r($submission['medical_services'], 1) ."\n";
    if (isset($submission['medical_services'])) {
       // TODO: audit this
       foreach ($submission['medical_services'] as $service) {

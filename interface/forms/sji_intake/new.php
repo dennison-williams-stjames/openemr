@@ -34,7 +34,7 @@ if (!$pid) {
 if (isset($_GET['id']) && $_GET['id'] != "") {
 	$obj = array_merge(
 		formFetch("form_".$form_name, $_GET["id"]),
-		sji_intake_formFetch("form_".$form_name, $_GET["id"]));
+		sji_intake_formFetch($_GET["id"]));
 
 	/* remove the time-of-day from the date fields */
 	if (isset($obj['date_of_signature']) && $obj['date_of_signature'] != "") {

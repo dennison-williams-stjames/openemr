@@ -30,7 +30,7 @@ function sji_intake_report($pid, $encounter, $cols, $id)
     // TODO: should we add the associated join tables here too?
     $data = array_merge(
 	formFetch("form_".$form_name, $id),
-	sji_intake_formFetch("form_".$form_name, $id));
+	sji_intake_formFetch($id));
 
     if ($data) {
         print "<table><tr>";
@@ -60,7 +60,13 @@ function sji_intake_report($pid, $encounter, $cols, $id)
                    print "<td><span class=bold>" . xlt($key) . ": </span><span class=text>True</span></td>";
                 }
             } else {
-                print "<td><span class=bold>" . xlt($key) . ": </span><span class=text>" . text($value) . "</span></td>";
+                print "<td><span class=bold>". xlt($key) .": </span><span class=text>";
+                if (is_array($value)) {
+                   print join(', ', $value);
+                } else {
+                   print text($value);
+                } 
+                print "</span></td>";
             }
 
             $count++;

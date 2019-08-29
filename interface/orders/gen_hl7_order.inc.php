@@ -211,10 +211,11 @@ function gen_hl7_order($orderid, &$out)
 
     $pcres = sqlStatement(
         "SELECT " .
-        "pc.procedure_code, pc.procedure_name, pc.procedure_order_seq, pc.diagnoses " .
-        "FROM procedure_order_code AS pc " .
+        "pc.procedure_code, pc.procedure_name, pc.procedure_order_seq, pc.diagnoses, pt.specimen " .
+        "FROM procedure_order_code AS pc, procedure_type as pt " .
         "WHERE " .
         "pc.procedure_order_id = ? AND " .
+        "pc.procedure_name = pt.name AND " .
         "pc.do_not_send = 0 " .
         "ORDER BY pc.procedure_order_seq",
         array($orderid)
@@ -366,16 +367,17 @@ function gen_hl7_order($orderid, &$out)
     $setid = 0;
     while ($pcrow = sqlFetchArray($pcres)) {
         // Observation Request.
-        $out .= "OBR" .
+        $obr = "OBR" .
         $d1 . ++$setid .                              // Set ID
         $d1 . $orderid .                              // Placer Order Number
-        $d1 .
-        $d1 . hl7Text($pcrow['procedure_code']) .
+        $d1 .                                         // Filler Order Number
+        $d1 . hl7Text($pcrow['procedure_code']) .     // Universal service ID
         $d2 . hl7Text($pcrow['procedure_name']) .
         $d1 . hl7Priority($porow['order_priority']) . // S=Stat, R=Routine
         $d1 .
         $d1 . hl7Time($porow['date_collected']) .     // Observation Date/Time
-        str_repeat($d1, 8) .                          // OBR 8-15 not used
+        str_repeat($d1, 8) .                           
+        $dl . hl7Text($pcrow['specimen']) .           // Specimen source aka OBR-15
         $d1 . hl7Text($porow['docnpi']) .             // Physician ID
         $d2 . hl7Text($porow['doclname']) .         // Last Name
         $d2 . hl7Text($porow['docfname']) .         // First Name
@@ -384,6 +386,8 @@ function gen_hl7_order($orderid, &$out)
         str_repeat($d1, 8) .                          // OBR 19-26 not used
         $d1 . '0' .                                   // ?
         $d0;
+
+        $out .= $obr;
 
         // Diagnoses.  Currently hard-coded for ICD9 and we'll surely want to make
         // this more flexible (probably when some lab needs another diagnosis type).

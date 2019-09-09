@@ -51,12 +51,16 @@ function sji_intake_report($pid, $encounter, $cols, $id)
             if ($value == "on") {
                 $value = "yes";
             }
+
+            if ($value == 0) {
+               $value = "no";
+            }
     
             $key=ucwords(str_replace("_", " ", $key));
             print("<tr>\n");
             print("<tr>\n");
             if ($key == "Declined Intake") {
-                if ($value) { 
+                if ($value !== 'no') { 
                    print "<td><span class=bold>" . xlt($key) . ": </span><span class=text>True</span></td>";
                 }
             } else {

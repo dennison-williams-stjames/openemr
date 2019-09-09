@@ -69,7 +69,13 @@ function getListOptions($list_id, $fieldnames = array('option_id', 'title', 'seq
 
 <body class="body_top">
 <div class="container">
-<?php echo date("F d, Y", time()); ?>
+<?php 
+if (isset($obj['date'])) {
+   echo date("F d, Y", strtotime($obj['date']));
+} else {
+   echo date("F d, Y"); 
+}
+?>
 
 <form method=post action="<?php 
    if (isset($_GET['id'])) {

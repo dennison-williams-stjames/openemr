@@ -187,7 +187,7 @@ function new_visit($data, $pid) {
    $newid = formSubmit('form_sji_visit', $submission, $eid, $userauthorized);
 
    $id = addForm(
-      $encounter,
+      $eid,
       "New Patient Encounter",
       $newid,
       "newpatient",
@@ -195,6 +195,14 @@ function new_visit($data, $pid) {
       $userauthorized,
       isset($data['date']) ? $data['date'] : ''
    );
+
+   // fix the associated dates
+   $sql = "update form_sji_visit set date=? where id=$newid";
+   sqlQuery($sql, array($data['date']));
+   $sql = "update form_encounter set date=? where encounter=?"; // $intake['encounter']
+   sqlQuery($sql, array($data['date'], $eid));
+   $sql = "update forms set date=? where encounter=?"; // $intake['encounter']
+   sqlQuery($sql, array($data['date'], $eid)); 
 
    sji_extendedVisit($newid, $data);
 

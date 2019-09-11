@@ -63,7 +63,6 @@ require_once($GLOBALS['srcdir'].'/sl_eob.inc.php');
 <body class="body_top">
 <?php
 if (array_key_exists('form_submit', $_POST)) {
-    error_log(__FILE__ .": form submitted");
     if ($encounterid) {
 
         if (!acl_check('encounters', 'coding')) {

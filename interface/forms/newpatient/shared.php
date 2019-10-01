@@ -40,6 +40,21 @@ $visit_time_columns = array(
 );
 
 function sji_create_visit_tables () {
+   // TODO: we need to check that this doesn't already exist
+   /*
+   $alter = "
+      ALTER TABLE form_encounter ADD INDEX (encounter)
+   ";
+   sqlStatement($alter);
+
+   $alter = "
+      ALTER TABLE form_encounter ADD FOREIGN KEY (`pid`) 
+         REFERENCES `patient_data`(`pid`) 
+         ON DELETE CASCADE ON UPDATE CASCADE
+   ";
+   sqlStatement($alter);
+   */
+
    $create = "
       CREATE TABLE IF NOT EXISTS `form_sji_visit` (
          id bigint(20) NOT NULL auto_increment,
@@ -76,7 +91,12 @@ function sji_create_visit_tables () {
          `other_harm_reduction_supplies` tinyint(1) default NULL,
          `other_harm_reduction_supplies_specify` varchar(255) default NULL,
          `support_group` tinyint(1) default NULL,
-         PRIMARY KEY (id)
+         `encounter` bigint(20) DEFAULT NULL,
+         PRIMARY KEY (id),
+         KEY `form_sji_visit_pid_idx` (`pid`) USING BTREE,
+         KEY `form_sji_visit_encounter_idx` (`encounter`) USING BTREE,
+         CONSTRAINT `form_sji_visit_pid_patient_data_pid_fk` FOREIGN KEY (`pid`) REFERENCES `patient_data` (`pid`) ON DELETE CASCADE ON UPDATE CASCADE,
+         CONSTRAINT `form_sji_visit_pid_patient_data_pid_fk` FOREIGN KEY (`encounter`) REFERENCES `form_encounter` (`encounter`) ON DELETE CASCADE ON UPDATE CASCADE
       ) ENGINE=InnoDB
    ";
    sqlStatement($create);
@@ -86,7 +106,10 @@ function sji_create_visit_tables () {
          id bigint(20) NOT NULL auto_increment,
          pid bigint(20) default NULL,
          `medical_service` varchar(255) default NULL,
-         PRIMARY KEY (id)
+         PRIMARY KEY (id),
+         KEY `form_sji_visit_medical_services_pid_idx` (`pid`) USING BTREE,
+         CONSTRAINT `form_sji_visit_medical_services_pid_form_sji_visit_id_fk` 
+            FOREIGN KEY (`pid`) REFERENCES `form_sji_visit` (`id`) ON DELETE CASCADE ON UPDATE CASCADE
       ) ENGINE=InnoDB
    ";
    sqlStatement($create);
@@ -96,7 +119,10 @@ function sji_create_visit_tables () {
          id bigint(20) NOT NULL auto_increment,
          pid bigint(20) default NULL,
          `initial_test_for_sti` varchar(255) default NULL,
-         PRIMARY KEY (id)
+         PRIMARY KEY (id),
+         KEY `form_sji_visit_initial_test_for_sti_pid_idx` (`pid`) USING BTREE,
+         CONSTRAINT `form_sji_visit_initial_test_for_sti_pid_form_sji_visit_id_fk` 
+            FOREIGN KEY (`pid`) REFERENCES `form_sji_visit` (`id`) ON DELETE CASCADE ON UPDATE CASCADE
       ) ENGINE=InnoDB
    ";
    sqlStatement($create);
@@ -106,7 +132,10 @@ function sji_create_visit_tables () {
          id bigint(20) NOT NULL auto_increment,
          pid bigint(20) default NULL,
          `test_results_for_sti` varchar(255) default NULL,
-         PRIMARY KEY (id)
+         PRIMARY KEY (id),
+         KEY `form_sji_visit_test_results_for_sti_pid_idx` (`pid`) USING BTREE,
+         CONSTRAINT `form_sji_visit_test_results_for_sti_pid_form_sji_visit_id_fk` 
+            FOREIGN KEY (`pid`) REFERENCES `form_sji_visit` (`id`) ON DELETE CASCADE ON UPDATE CASCADE
       ) ENGINE=InnoDB
    ";
    sqlStatement($create);
@@ -116,7 +145,10 @@ function sji_create_visit_tables () {
          id bigint(20) NOT NULL auto_increment,
          pid bigint(20) default NULL,
          `counseling_services` varchar(255) default NULL,
-         PRIMARY KEY (id)
+         PRIMARY KEY (id),
+         KEY `form_sji_visit_counseling_services_pid_idx` (`pid`) USING BTREE,
+         CONSTRAINT `form_sji_visit_counseling_services_pid_form_sji_visit_id_fk` 
+            FOREIGN KEY (`pid`) REFERENCES `form_sji_visit` (`id`) ON DELETE CASCADE ON UPDATE CASCADE
       ) ENGINE=InnoDB
    ";
    sqlStatement($create);
@@ -124,7 +156,8 @@ function sji_create_visit_tables () {
 }
 
 function sji_get_visit_submission_from_data($data) {
-	global $visit_columns;
+	global $visit_columns, $visit_time_columns;
+        $visit_columns = array_merge($visit_columns, $visit_time_columns);
 
 	$submission = array();
 	foreach ($visit_columns as $column) {
@@ -167,6 +200,16 @@ function new_visit($data, $pid) {
    $submission = sji_get_visit_submission_from_data($data);
    $submission['encounter'] = $encounter;
 
+   $id = addForm(
+      $encounter,
+      "New Patient Encounter",
+      '', // we will correctly set this further down
+      "newpatient",
+      $pid,
+      $userauthorized,
+      isset($data['date']) ? $data['date'] : ''
+   );
+
    // Add the encounter that we are associating the visit with
    $eid = sqlInsert("INSERT INTO form_encounter SET " .
       "date = '" . add_escape_custom(isset($data['date']) ? $data['date'] : '') . "', " .
@@ -184,43 +227,34 @@ function new_visit($data, $pid) {
       "external_id = '" . add_escape_custom(isset($data['external_id']) ? $data['external_id'] : '') . "', " .
       "provider_id = '" . add_escape_custom($provider_id) . "'");
 
-   $newid = formSubmit('form_sji_visit', $submission, $eid, $userauthorized);
-
-   $id = addForm(
-      $eid,
-      "New Patient Encounter",
-      $newid,
-      "newpatient",
-      $pid,
-      $userauthorized,
-      isset($data['date']) ? $data['date'] : ''
-   );
+   $newid = sji_extendedVisit($encounter, $data);
 
    // fix the associated dates
-   $sql = "update form_sji_visit set date=? where id=$newid";
-   sqlQuery($sql, array($data['date']));
+   $sql = "update form_sji_visit set date=? where encounter=?";
+   sqlQuery($sql, array($data['date'], $encounter));
    $sql = "update form_encounter set date=? where encounter=?"; // $intake['encounter']
-   sqlQuery($sql, array($data['date'], $eid));
-   $sql = "update forms set date=? where encounter=?"; // $intake['encounter']
-   sqlQuery($sql, array($data['date'], $eid)); 
+   sqlQuery($sql, array($data['date'], $encounter));
+   $sql = "update forms set date=?,form_id=? where encounter=?"; // $intake['encounter']
+   sqlQuery($sql, array($data['date'], $eid, $encounter)); 
 
-   sji_extendedVisit($newid, $data);
+   setencounter($encounter);
 
-   return $id;
+   return $eid;
 }
 
-function sji_extendedVisit($id, $submission) {
+function sji_extendedVisit($eid, $submission) {
+   global $userauthorized;
 
    // If our custom tables do not exist create them
-   if (
-      !sqlListFields('form_sji_visit_medical_services') ||
-      !sqlListFields('form_sji_visit_initial_test_for_sti') ||
-      !sqlListFields('form_sji_visit') ||
-      !sqlListFields('form_sji_visit_test_results_for_sti') ||
-      !sqlListFields('form_sji_visit_counseling_services') 
-   ) {
-     sji_create_visit_tables(); 
+   $response = sqlStatement('SHOW TABLES LIKE "form_sji_visit%"');
+   $rows = sqlNumRows($response);
+   if ($rows !== 5) {
+      sji_create_visit_tables(); 
    }
+
+   $tuned = sji_get_visit_submission_from_data($submission);
+   $tuned['encounter'] = $eid;
+   $id = formSubmit('form_sji_visit', $tuned, $eid, $userauthorized);
 
    sqlStatement("delete from form_sji_visit_medical_services where pid=?", array($id));
    if (isset($submission['medical_services'])) {
@@ -257,6 +291,8 @@ function sji_extendedVisit($id, $submission) {
             array($service, $id));
       }
    }
+
+   return $id;
 }
 
 function update_visit($data, $pid) {
@@ -287,10 +323,5 @@ function update_visit($data, $pid) {
     "pos_code = '" . add_escape_custom(isset($data['pos_code']) ? $data['pos_code'] : '') . "' " .
     "WHERE id = '" . add_escape_custom($id) . "'");
 
-    $submission = sji_get_visit_submission_from_data($data);
-    $submission['encounter'] = $encounter;
-
-    formSubmit('form_sji_visit', $submission, $id, $userauthorized);
-
-    sji_extendedVisit($id, $data);
+    return sji_extendedVisit($encounter, $data);
 }

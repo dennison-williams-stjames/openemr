@@ -84,9 +84,9 @@ if (!$pid) {
 }
 
 if ($mode == 'new') {
-   new_visit($_POST, $pid);
+   new_visit(array_merge($_POST, $_GET), $pid);
 } else if ($mode == 'update') {
-   update_visit($_POST, $pid);
+   update_visit(array_merge($_POST, $_GET), $pid);
 } else {
    die("Unknown mode '" . text($mode) . "'");
 }
@@ -94,9 +94,9 @@ if ($mode == 'new') {
 setencounter($encounter);
 
 // Update the list of issues associated with this encounter.
-if (isset($_POST['issues']) && is_array($_POST['issues'])) {
-    sqlStatement("DELETE FROM issue_encounter WHERE " .
+sqlStatement("DELETE FROM issue_encounter WHERE " .
     "pid = ? AND encounter = ?", array($pid, $encounter));
+if (isset($_POST['issues']) && is_array($_POST['issues'])) {
     foreach ($_POST['issues'] as $issue) {
         $query = "INSERT INTO issue_encounter ( pid, list_id, encounter ) VALUES (?,?,?)";
         sqlStatement($query, array($pid,$issue,$encounter));

@@ -24,12 +24,11 @@ function newpatient_report($pid, $encounter, $cols, $id)
 {
     print "<table><tr><td>\n";
 
-    $res = sqlStatement("
-       select e.*, f.name as facility_name 
+    $sql = "select e.*, f.name as facility_name 
           from form_encounter as e 
           join facility as f on f.id = e.facility_id 
-          where e.pid=? and e.id=?
-       ", array($pid,$encounter));
+          where e.pid=? and e.id=?";
+    $res = sqlStatement($sql, array($pid,$id));
 
     while ($result = sqlFetchArray($res)) {
         print "<span class=bold>" . xlt('Facility') . ": </span><span class=text>" . text($result{"facility_name"}) . "</span><br>\n";
@@ -45,13 +44,13 @@ function newpatient_report($pid, $encounter, $cols, $id)
        'last_tested_for_hiv' => xlt('Last HIV test:'), 
        'last_tested_for_sti' => xlt('Last STI test:'), 
        'counselor_name' => xlt('Counselor name:'),
-       'massage' => xlt('Massage'), 
+       'massage' => xlt('Massage:'), 
        'massage_apt_time' => xlt('Massage appointment time:'), 
        'ear_accupuncture' => xlt('Ear accupunture:'), 
        'full_body_accupuncture' => xlt('Full body accupunture:'), 
-       'full_body_accupuncture_apt_time' => xlt('Full body accupuncture time'),
+       'full_body_accupuncture_apt_time' => xlt('Full body accupuncture time:'),
        'reiki' => xlt('Reiki:'), 
-       'reiki_apt_time' => xlt('Reiki appointment time'), 
+       'reiki_apt_time' => xlt('Reiki appointment time:'), 
        'phone_visit' => xlt('Phone visit:'), 
        'phone_visit_specify' => xlt('Phone visit specify:'),
        'talent_testing' => xlt('Talent testing:'), 
@@ -59,15 +58,15 @@ function newpatient_report($pid, $encounter, $cols, $id)
        'clothing' => xlt('Clothing:'), 
        'condoms' => xlt('Condoms:'), 
        'nex_syringes' => xlt('NEX syringes:'),
-       'hygiene_supplies' => xlt('Hygiene supplies'), 
+       'hygiene_supplies' => xlt('Hygiene supplies:'), 
        'referrals_to_other_services' => xlt('Referrals to other services:'), 
        'referrals_to_other_services_specify' => xlt('Referrals to other services (specify):'), 
-       'other_harm_reduction_supplies' => xlt('Other harm reduction supplies'),
-       'other_harm_reduction_supplies_specify' => xlt('Other harm reduction supplies specify'), 
-       'support_group' => xlt('Support group')
+       'other_harm_reduction_supplies' => xlt('Other harm reduction supplies:'),
+       'other_harm_reduction_supplies_specify' => xlt('Other harm reduction supplies specify:'), 
+       'support_group' => xlt('Support group:')
     );
 
-    $res = sqlStatement("select ".
+    $res = sqlStatement("select id as visit_id,".
           implode(',', array_keys($columns))
           ." from form_sji_visit ".
           "where form_sji_visit.pid=? and form_sji_visit.encounter=? ".
@@ -75,6 +74,7 @@ function newpatient_report($pid, $encounter, $cols, $id)
           "limit 0,1", array($pid,$encounter));
 
     $result = sqlFetchArray($res);
+    $visit_id = $result['visit_id'];
     foreach ($columns as $name => $label) {
         if (isset($result[$name]) && $result[$name]) {
            if ($result[$name] == 1) { $result[$name] = 'Yes'; }
@@ -89,7 +89,7 @@ function newpatient_report($pid, $encounter, $cols, $id)
           from form_sji_visit_medical_services
           where pid=?
        ";
-    $res = sqlStatement($sql, array($id));
+    $res = sqlStatement($sql, array($visit_id));
 
     $services = '';
     while ($result = sqlFetchArray($res)) {
@@ -106,7 +106,7 @@ function newpatient_report($pid, $encounter, $cols, $id)
           from form_sji_visit_initial_test_for_sti
           where pid=?
        ";
-    $res = sqlStatement($sql, array($id));
+    $res = sqlStatement($sql, array($visit_id));
 
     $services = '';
     while ($result = sqlFetchArray($res)) {
@@ -123,7 +123,7 @@ function newpatient_report($pid, $encounter, $cols, $id)
           from form_sji_visit_test_results_for_sti
           where pid=?
        ";
-    $res = sqlStatement($sql, array($id));
+    $res = sqlStatement($sql, array($visit_id));
 
     $services = '';
     while ($result = sqlFetchArray($res)) {
@@ -140,7 +140,7 @@ function newpatient_report($pid, $encounter, $cols, $id)
           from form_sji_visit_counseling_services
           where pid=?
        ";
-    $res = sqlStatement($sql, array($id));
+    $res = sqlStatement($sql, array($visit_id));
 
     $services = '';
     while ($result = sqlFetchArray($res)) {

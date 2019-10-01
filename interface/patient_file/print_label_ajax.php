@@ -20,7 +20,6 @@ require_once("$srcdir/authentication/password_change.php");
 $num=intval($_REQUEST['num']);
 $encounter=$_REQUEST['encounter'];
 
-error_log(__FILE__ .": num=$num");
 if (!is_int($num) || $num>100 || $num<1) {
     echo "<div class='alert alert-danger'>" . xlt("Invalid number of labels") . "</div>";
     exit;
@@ -63,8 +62,6 @@ while ( $row = sqlFetchArray($res) ) {
    $ins .= '^FD'. $row['name'] .': '. $row['policy_number'] ."^FS\n";
 }
 
-error_log(__FILE__ .': date='. $date .", pid=". $pid 
-    .", dob=". $dob .", gender: $gender, sex: $sex, sex code: $sex_code, insurance:\n$ins");
 
 // Create label string
 $message = <<<MSG
@@ -87,7 +84,6 @@ $ins
 ^XZ
 MSG;
 
-error_log(__FILE__ .": message=\n$message");
 
 // create socket
 $success = true;
@@ -95,7 +91,6 @@ $socket = socket_create(AF_INET, SOCK_STREAM, 0);
 if (!$socket) {
    $success = false;
    $errMsg = 'Could not connect to label printer';
-   error_log(__FILE__ .': socket_create() '. socket_strerror(socket_last_error()));
 } 
 
 $result = false;
@@ -106,7 +101,6 @@ if ($socket) {
 if (!$result) {
    $success = false;
    $errMsg = 'Could not connect to label printer';
-   error_log(__FILE__ .': socket_connect() '. socket_strerror(socket_last_error()));
 }
 
 if ($result) {
@@ -115,7 +109,6 @@ if ($result) {
    if ($sent === false) {
       $success = false;
       $errMsg = 'Could not connect to label printer';
-      error_log(__FILE__ .': socket_write() '. socket_strerror(socket_last_error()));
    }
 }
 

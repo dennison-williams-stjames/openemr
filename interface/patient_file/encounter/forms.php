@@ -340,6 +340,16 @@ function divtoggle(spanid, divid) {
         text.innerHTML = "<?php xl('Collapse', 'e'); ?>";
     }
 }
+
+// TODO: fix internationalization usage here
+function print_label(id) {
+  dlgopen('../print_label.php?encounterid=<?php echo $encounter; ?>', '_blank', 300, 200, '', '', {
+      buttons: [ ],
+      allowResize: false,
+      allowDrag: true,
+  });
+  return false;
+}
 </script>
 
 <style type="text/css">
@@ -749,6 +759,7 @@ if ($esign->isButtonViewable()) {
 <?php } ?>
 &nbsp;&nbsp;&nbsp;<a href="#" onClick='expandcollapse("expand");' style="font-size:80%;"><?php xl('Expand All', 'e'); ?></a>
 &nbsp;&nbsp;&nbsp;<a  style="font-size:80%;" href="#" onClick='expandcollapse("collapse");'><?php xl('Collapse All', 'e'); ?></a>
+&nbsp;&nbsp;&nbsp;<a  style="font-size:80%;" href="#" onClick='print_label();'><?php xl('Print Label', 'e'); ?></a>
 </div>
 </div>
 

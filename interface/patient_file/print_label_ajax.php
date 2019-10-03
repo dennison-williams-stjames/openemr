@@ -34,13 +34,13 @@ $errMsg='';
 $sql = 'SELECT date,pid FROM form_encounter WHERE encounter=?';
 $res = sqlStatement($sql, array($encounter));
 $row = sqlFetchArray($res);
-$date = $row['date'];
+$date = date('m/d/Y', strtotime($row['date']));
 $pid = $row['pid'];
 
 $sql = 'SELECT DOB,sex,fname,lname FROM patient_data WHERE pid=?';
 $res = sqlStatement($sql, array($pid));
 $row = sqlFetchArray($res);
-$dob = $row['DOB'];
+$dob = date('m/d/Y', strtotime($row['DOB']));
 $sex = $row['sex'];
 if (isset($row['lname'])) {
    $name = $row['lname'] .', ';
@@ -58,7 +58,9 @@ $sql = 'SELECT name,policy_number FROM insurance_data '.
        'AND pid=?';
 $res = sqlStatement($sql, array($pid));
 $ins = '';
+error_log("sql: $sql, pid: $pid");
 while ( $row = sqlFetchArray($res) ) {
+   error_log('row: '. print_r($row, 1));
    $ins .= '^FD'. $row['name'] .': '. $row['policy_number'] ."^FS\n";
 }
 

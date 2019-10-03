@@ -52,18 +52,19 @@ $res = sqlStatement($sql, array($pid));
 $row = sqlFetchArray($res);
 $gender = $row['gender'];
 $sex_code = code_sex($sex, $gender);
+error_log(__FUNCTION__ ."() gender: $gender sex_code: $sex_code");
 
 $sql = 'SELECT name,policy_number FROM insurance_data '.
        'LEFT JOIN insurance_companies on (insurance_data.provider=insurance_companies.id) '.
-       'AND pid=?';
+       'WHERE pid=? AND type="primary"';
 $res = sqlStatement($sql, array($pid));
 $ins = '';
-error_log("sql: $sql, pid: $pid");
 while ( $row = sqlFetchArray($res) ) {
-   error_log('row: '. print_r($row, 1));
-   $ins .= '^FD'. $row['name'] .': '. $row['policy_number'] ."^FS\n";
+   if (strlen($row['name']) > 0) {
+	   $ins .= '^FD'. $row['name'] .': '. $row['policy_number'] ."^FS\n";
+   }
 }
-
+error_log(__FUNCTION__ ."() ins: $ins");
 
 // Create label string
 $message = <<<MSG
@@ -139,10 +140,8 @@ if sex == 'OF': sex = 'NB AFAB'
 if sex == 'OM': sex = 'NB AMAB'
 */
 function code_sex($sex, $gender) {
-   if(isset($sex) and !isset($gender)) {
-      if ($sex == 'Male') { return 'CM'; }
-      if ($sex == 'Female') { return 'CF'; }
-   }
+   if (strcmp($sex, 'Male') == 0 && strlen($gender) == 0) { return 'CM'; }
+   if (strcmp($sex, 'Female') == 0 && strlen($gender) == 0) { return 'CF'; }
 
    if ($gender == 'Transgender Female') { return 'TF'; }
    if ($gender == 'Cisgender Female') { return 'CF'; }

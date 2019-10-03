@@ -2,14 +2,18 @@ CREATE TABLE IF NOT EXISTS `form_sji_intake_work_with` (
 	id bigint(20) NOT NULL auto_increment,
 	`work_with` varchar(200) NOT NULL,
 	pid bigint(20) default NULL,
-	PRIMARY KEY (id)
+	PRIMARY KEY (id),
+        KEY `pid` (`pid`),
+        CONSTRAINT `form_sji_intake_work_done_ibfk_1` FOREIGN KEY (`pid`) REFERENCES `form_sji_intake` (`id`) ON DELETE CASCADE ON UPDATE CASCADE
 ) ENGINE=InnoDB;
 
 CREATE TABLE IF NOT EXISTS `form_sji_intake_work_doing` (
 	id bigint(20) NOT NULL auto_increment,
 	`work_doing` varchar(200) NOT NULL,
 	pid bigint(20) default NULL,
-	PRIMARY KEY (id)
+	PRIMARY KEY (id),
+        KEY `pid` (`pid`),
+        CONSTRAINT `form_sji_intake_work_done_ibfk_1` FOREIGN KEY (`pid`) REFERENCES `form_sji_intake` (`id`) ON DELETE CASCADE ON UPDATE CASCADE
 
 ) ENGINE=InnoDB;
 
@@ -17,7 +21,9 @@ CREATE TABLE IF NOT EXISTS `form_sji_intake_work_done` (
 	id bigint(20) NOT NULL auto_increment,
 	`work_done` varchar(200) NOT NULL,
 	pid bigint(20) default NULL,
-	PRIMARY KEY (id)
+	PRIMARY KEY (id),
+        KEY `pid` (`pid`),
+        CONSTRAINT `form_sji_intake_work_done_ibfk_1` FOREIGN KEY (`pid`) REFERENCES `form_sji_intake` (`id`) ON DELETE CASCADE ON UPDATE CASCADE
 
 ) ENGINE=InnoDB;
 
@@ -25,7 +31,9 @@ CREATE TABLE IF NOT EXISTS `form_sji_intake_supportive_people` (
 	id bigint(20) NOT NULL auto_increment,
 	`supportive_people` varchar(200) NOT NULL,
 	pid bigint(20) default NULL,
-	PRIMARY KEY (id)
+	PRIMARY KEY (id),
+        KEY `pid` (`pid`),
+        CONSTRAINT `form_sji_intake_work_done_ibfk_1` FOREIGN KEY (`pid`) REFERENCES `form_sji_intake` (`id`) ON DELETE CASCADE ON UPDATE CASCADE
 
 ) ENGINE=InnoDB;
 
@@ -33,7 +41,9 @@ CREATE TABLE IF NOT EXISTS `form_sji_intake_received_healthcare_from` (
 	id bigint(20) NOT NULL auto_increment,
 	`received_healthcare_from` varchar(200) NOT NULL,
 	pid bigint(20) default NULL,
-	PRIMARY KEY (id)
+	PRIMARY KEY (id),
+        KEY `pid` (`pid`),
+        CONSTRAINT `form_sji_intake_work_done_ibfk_1` FOREIGN KEY (`pid`) REFERENCES `form_sji_intake` (`id`) ON DELETE CASCADE ON UPDATE CASCADE
 
 ) ENGINE=InnoDB;
 
@@ -41,7 +51,9 @@ CREATE TABLE IF NOT EXISTS `form_sji_intake_identified_as_sex_worker_reaction` (
 	id bigint(20) NOT NULL auto_increment,
 	`identified_as_sex_worker_reaction` varchar(200) NOT NULL,
 	pid bigint(20) default NULL,
-	PRIMARY KEY (id)
+	PRIMARY KEY (id),
+        KEY `pid` (`pid`),
+        CONSTRAINT `form_sji_intake_work_done_ibfk_1` FOREIGN KEY (`pid`) REFERENCES `form_sji_intake` (`id`) ON DELETE CASCADE ON UPDATE CASCADE
 
 ) ENGINE=InnoDB;
 
@@ -49,7 +61,9 @@ CREATE TABLE IF NOT EXISTS `form_sji_intake_not_identified_sex_worker_reason` (
 	id bigint(20) NOT NULL auto_increment,
 	`not_identified_sex_worker_reason` varchar(200) NOT NULL,
 	pid bigint(20) default NULL,
-	PRIMARY KEY (id)
+	PRIMARY KEY (id),
+        KEY `pid` (`pid`),
+        CONSTRAINT `form_sji_intake_work_done_ibfk_1` FOREIGN KEY (`pid`) REFERENCES `form_sji_intake` (`id`) ON DELETE CASCADE ON UPDATE CASCADE
 
 ) ENGINE=InnoDB;
 
@@ -57,7 +71,9 @@ CREATE TABLE IF NOT EXISTS `form_sji_intake_tested_for` (
 	id bigint(20) NOT NULL auto_increment,
 	`tested_for` varchar(200) NOT NULL,
 	pid bigint(20) default NULL,
-	PRIMARY KEY (id)
+	PRIMARY KEY (id),
+        KEY `pid` (`pid`),
+        CONSTRAINT `form_sji_intake_work_done_ibfk_1` FOREIGN KEY (`pid`) REFERENCES `form_sji_intake` (`id`) ON DELETE CASCADE ON UPDATE CASCADE
 
 ) ENGINE=InnoDB;
 
@@ -65,7 +81,9 @@ CREATE TABLE IF NOT EXISTS `form_sji_intake_diagnosed_with` (
 	id bigint(20) NOT NULL auto_increment,
 	`diagnosed_with` varchar(200) NOT NULL,
 	pid bigint(20) default NULL,
-	PRIMARY KEY (id)
+	PRIMARY KEY (id),
+        KEY `pid` (`pid`),
+        CONSTRAINT `form_sji_intake_work_done_ibfk_1` FOREIGN KEY (`pid`) REFERENCES `form_sji_intake` (`id`) ON DELETE CASCADE ON UPDATE CASCADE
 
 ) ENGINE=InnoDB;
 
@@ -73,7 +91,9 @@ CREATE TABLE IF NOT EXISTS `form_sji_intake_hormones_types` (
 	id bigint(20) NOT NULL auto_increment,
 	`hormones_types` varchar(200) NOT NULL,
 	pid bigint(20) default NULL,
-	PRIMARY KEY (id)
+	PRIMARY KEY (id),
+        KEY `pid` (`pid`),
+        CONSTRAINT `form_sji_intake_work_done_ibfk_1` FOREIGN KEY (`pid`) REFERENCES `form_sji_intake` (`id`) ON DELETE CASCADE ON UPDATE CASCADE
 
 ) ENGINE=InnoDB;
 
@@ -81,7 +101,9 @@ CREATE TABLE IF NOT EXISTS `form_sji_intake_experienced_violence_from` (
 	id bigint(20) NOT NULL auto_increment,
 	`experienced_violence_from` varchar(200) NOT NULL,
 	pid bigint(20) default NULL,
-	PRIMARY KEY (id)
+	PRIMARY KEY (id),
+        KEY `pid` (`pid`),
+        CONSTRAINT `form_sji_intake_work_done_ibfk_1` FOREIGN KEY (`pid`) REFERENCES `form_sji_intake` (`id`) ON DELETE CASCADE ON UPDATE CASCADE
 
 ) ENGINE=InnoDB;
 
@@ -89,7 +111,9 @@ CREATE TABLE IF NOT EXISTS `form_sji_intake_std_past` (
 	id bigint(20) NOT NULL auto_increment,
 	`std_past` varchar(200) NOT NULL,
 	pid bigint(20) default NULL,
-	PRIMARY KEY (id)
+	PRIMARY KEY (id),
+        KEY `pid` (`pid`),
+        CONSTRAINT `form_sji_intake_work_done_ibfk_1` FOREIGN KEY (`pid`) REFERENCES `form_sji_intake` (`id`) ON DELETE CASCADE ON UPDATE CASCADE
 
 ) ENGINE=InnoDB;
 
@@ -97,7 +121,9 @@ CREATE TABLE IF NOT EXISTS `form_sji_intake_mental_health_condition` (
 	id bigint(20) NOT NULL auto_increment,
 	`mental_health_condition` varchar(200) NOT NULL,
 	pid bigint(20) default NULL,
-	PRIMARY KEY (id)
+	PRIMARY KEY (id),
+        KEY `pid` (`pid`),
+        CONSTRAINT `form_sji_intake_work_done_ibfk_1` FOREIGN KEY (`pid`) REFERENCES `form_sji_intake` (`id`) ON DELETE CASCADE ON UPDATE CASCADE
 
 ) ENGINE=InnoDB;
 
@@ -202,7 +228,9 @@ CREATE TABLE IF NOT EXISTS `form_sji_intake` (
         `comments` varchar(255) default NULL,
 
 	`date_of_signature` datetime default NULL,
-	PRIMARY KEY (id)
+	PRIMARY KEY (id),
+        KEY `pid` (`pid`),
+        CONSTRAINT `form_sji_intake_ibfk_1` FOREIGN KEY (`pid`) REFERENCES `patient_data` (`pid`) ON DELETE CASCADE ON UPDATE CASCADE
 ) ENGINE=InnoDB;
 
 /* referrer list */

@@ -41,11 +41,11 @@ if (!$pid && isset($_SESSION['pid'])) {
 }
 
 function get_cv_form_obj($pid, $id = 0) {
-   $table_name = 'form_sji_intake_core_variables';;
+   $table_name = 'form_sji_intake_core_variables';
 
    // Look up the id if it is not sent in
    if (!isset($id) || $id === 0) {
-	   $query = 'select form_id from forms where pid = ? order by date desc limit 0,1';
+	   $query = 'select form_id from forms where pid = ? and formdir="sji_intake_core_variables" order by date desc limit 0,1';
 	   $result = sqlQuery($query, array($pid));
 	   $id = $result['form_id'];
    }

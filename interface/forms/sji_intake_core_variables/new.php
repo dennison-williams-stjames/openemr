@@ -32,7 +32,7 @@ if (!$pid) {
 
 // get the record from the database
 if ($_GET['id'] != "") {
-   $obj = get_cv_form_obj($_GET["id"]);
+   $obj = get_cv_form_obj($pid, $_GET["id"]);
 } 
 
 /* remove the time-of-day from the date fields */

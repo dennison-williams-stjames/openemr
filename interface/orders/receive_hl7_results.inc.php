@@ -639,8 +639,8 @@ function receive_hl7_results(&$hl7, &$matchreq, $lab_id = 0, $direction = 'B', $
             }
 
             $context = $a[0];
-            // Ensoftek: Could come is as 'ORU^R01^ORU_R01'. Handle all cases when 'ORU^R01' is seen.
-            if (strstr($a[8], "ORU^R01")) {
+            // Ensoftek: Could come is as 'ORU^R01^ORU_R01'. Handle all cases when 'ORU' is seen.
+            if (strstr($a[8], "ORU")) {
                 $msgtype = 'ORU';
             } else if ($a[8] == 'MDM^T02' || $a[8] == 'MDM^T04' || $a[8] == 'MDM^T08') {
                 $msgtype = 'MDM';

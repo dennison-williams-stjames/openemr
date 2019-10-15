@@ -87,14 +87,14 @@ function sji_intake_core_variables_report($pid, $encounter, $cols, $id)
         }
 
         // get a few other values
-        $others = array('DOB', 'sex', 'postal_code');
+        $others = array('DOB', 'Sex', 'postal_code');
         foreach ($others as $column) {
            if ($column == 'DOB' && isset($data[$column])) {
               print "<tr>\n";
               print "<td><span class=bold>". xlt('Date of birth:') ."</span><span class=text>" . 
                  text($data[$column]) . "</span></td>\n";
               print "</tr>\n";
-           } else if ($column == 'sex' && isset($data[$column])) {
+           } else if ($column == 'Sex' && isset($data[$column])) {
               print "<tr>\n";
               print "<td><span class=bold>". xlt('Sex assigned at birth:') ."</span><span class=text>" . 
                  text($data[$column]) . "</span></td>\n";

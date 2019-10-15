@@ -41,6 +41,8 @@ $visit_time_columns = array(
 
 function sji_create_visit_tables () {
    // TODO: we need to check that this doesn't already exist
+   // TODO: use named keys so we can figure out if they have been created with 
+   // a show create table command
    /*
    $alter = "
       ALTER TABLE form_encounter ADD INDEX (encounter)
@@ -53,6 +55,27 @@ function sji_create_visit_tables () {
          ON DELETE CASCADE ON UPDATE CASCADE
    ";
    sqlStatement($alter);
+
+   // There is already an index on employer_data.pid
+   $alter = "
+      ALTER TABLE `employer_data` ADD  FOREIGN KEY (`pid`) 
+         REFERENCES `patient_data`(`pid`) 
+         ON DELETE CASCADE ON UPDATE CASCADE
+   ";
+   sqlStatement($alter);
+
+   $alter = "
+      ALTER TABLE insurance_data ADD INDEX (pid)
+   ";
+   sqlStatement($alter);
+
+   $alter = "
+      ALTER TABLE `insurance_data` ADD  FOREIGN KEY (`pid`) 
+         REFERENCES `patient_data`(`pid`) 
+         ON DELETE CASCADE ON UPDATE CASCADE
+   ";
+   sqlStatement($alter);
+   
    */
 
    $create = "
@@ -239,7 +262,7 @@ function new_visit($data, $pid) {
 
    setencounter($encounter);
 
-   return $eid;
+   return $encounter;
 }
 
 function sji_extendedVisit($eid, $submission) {

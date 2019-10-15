@@ -47,13 +47,11 @@ function sji_intake_report($pid, $encounter, $cols, $id)
             {
                 continue;
             }
-    
+   
             if ($value == "on") {
-                $value = "yes";
-            }
-
-            if ($value == 0) {
-               $value = "no";
+                $value = "Yes";
+            } else if (empty($value)) {
+               $value = "No";
             }
     
             $key=ucwords(str_replace("_", " ", $key));

@@ -1,5 +1,5 @@
 <?php
-include_once("../../globals.php");
+include_once("$srcdir/../interface/globals.php");
 include_once("$srcdir/forms.inc");
 
 //function called to set the global session variable for encounter number

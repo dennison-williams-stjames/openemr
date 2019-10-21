@@ -537,6 +537,18 @@ while ($gfrow = sqlFetchArray($gfres)) {
     openReminderPopup();
 <?php }?>
 
+<?php
+    // TODO: check if there is an a alert
+?>
+    // show the active alert modal
+    dlgopen('', 'aleretreminder', 300, 170, '', false, {
+        allowResize: false,
+        allowDrag: true,
+        dialogId: '',
+        type: 'iframe',
+        url: $("#alert_popup").attr('href')
+    });
+
 });
 
 // JavaScript stuff to do when a new patient is set.
@@ -635,6 +647,8 @@ if (!empty($grparr['']['grp_size'])) {
 <a href='../reminder/active_reminder_popup.php' id='reminder_popup_link' style='display: none;' onclick='top.restoreSession()'></a>
 
 <a href='../birthday_alert/birthday_pop.php?pid=<?php echo attr($pid); ?>&user_id=<?php echo attr($_SESSION['authId']); ?>' id='birthday_popup' style='display: none;' onclick='top.restoreSession()'></a>
+
+<a href='../alert/alert.php?pid=<?php echo attr($pid); ?>&user_id=<?php echo attr($_SESSION['authId']); ?>' id='alert_popup' style='display: none;' onclick='top.restoreSession()'></a>
 <?php
 $thisauth = acl_check('patients', 'demo');
 if ($thisauth) {

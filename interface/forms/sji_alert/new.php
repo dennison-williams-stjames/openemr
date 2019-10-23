@@ -25,7 +25,7 @@ $provider_results = sqlQuery("select fname, lname from users where username=?", 
 $form_name = "sji_alert";
 
 // get the record from the database
-if ($_GET['id'] != "") {
+if (!empty($_GET['id'])) {
     $obj = formFetch("form_".$form_name, $_GET["id"]);
 }
 
@@ -33,13 +33,26 @@ if ($_GET['id'] != "") {
 function getListOptions($list_id, $fieldnames = array('option_id', 'title', 'seq')) {
     global $obj;
     $output = "";
+    $selected = '';
+    $options = array();
+    if (isset($obj['alert'])) {
+           $selected = $obj['alert'];
+    }
+
     $query = sqlStatement("SELECT ".implode(',', $fieldnames)." FROM list_options where list_id = ? AND activity = 1 order by seq", array($list_id));
+
     while ($list_options = sqlFetchArray($query)) {
         $output .= '<option value="'. $list_options['option_id'] .'" ';
         if ($obj['alert'] == $list_options['option_id']) {
            $output .= 'selected="selected" ';
         } 
         $output .= '>'. $list_options['title'] .'</option>';
+        $options[] = $list_options['option_id'];
+    }
+
+    if ($selected && !array_search($selected, $options)) {
+        $output .= '<option value="'. $selected 
+            .'" selected="selected">'. $selected .'</option>';
     }
 
     return $output;
@@ -78,6 +91,7 @@ function getListOptions($list_id, $fieldnames = array('option_id', 'title', 'seq
 <label for="alert" class="col-sm-2 control-label"><?php echo xlt('Participant alert:'); ?></label>
 <div class="col-sm-4">
 <select name="alert" id="alert" class="select2 form-control" data-placeholder="Select or enter an alert ...">
+<option></option>
 <?php echo getListOptions('sji_alert'); ?>
 </select>
 </div> <!-- col-sm-4 -->
@@ -111,7 +125,7 @@ $(document).ready(function(){
     $(".save").click(function() { top.restoreSession(); $('#my_form').submit(); });
     $(".dontsave").click(function() { parent.closeTab(window.name, false); });
 
-    $('#alert').select2({create: true});
+    $('#alert').select2({create: true, tags: true});
 });
 
 </script>

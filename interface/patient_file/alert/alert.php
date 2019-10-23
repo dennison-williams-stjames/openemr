@@ -24,8 +24,10 @@ use OpenEMR\Core\Header;
 // get the list of participant alerts and display them
 // show available documents
 $db = $GLOBALS['adodb']['db'];
-$sql = "SELECT date,alert FROM form_sji_alert " .
-        "WHERE pid = " .  $db->qstr($pid);
+$sql = "SELECT form_sji_alert.date as date,form_sji_alert.alert as alert FROM form_sji_alert " .
+        "LEFT JOIN forms on (form_sji_alert.id=forms.form_id) ".
+        "WHERE form_sji_alert.pid = " .  $db->qstr($pid) ." ".
+        "AND forms.deleted=0";
 $result = $db->Execute($sql);
 if ($db->ErrorMsg()) {
     echo $db->ErrorMsg();
@@ -33,7 +35,7 @@ if ($db->ErrorMsg()) {
 
 while ($result && !$result->EOF) {
 ?>
-   <p class="h3"><b><?php echo $result->fields['date']; ?></b>:
+   <p class="h4"><b><?php echo date('Y-m-d', strtotime($result->fields['date'])); ?></b>:
    <?php echo $result->fields['alert'] ?>
    </p>
 

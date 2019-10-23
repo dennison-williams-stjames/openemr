@@ -538,7 +538,17 @@ while ($gfrow = sqlFetchArray($gfres)) {
 <?php }?>
 
 <?php
-    // TODO: check if there is an a alert
+    $sql = "select fname,lname,alert from patient_data ".
+       "left join form_sji_alert on (patient_data.pid = form_sji_alert.pid) ".
+       "left join forms on (form_sji_alert.id=forms.form_id) ".
+       "where patient_data.pid = ? ".
+       "and alert is not null ".
+       "and alert != '' ".
+       "and forms.deleted=0";
+
+    error_log(__FILE__ .": sql => $sql, pid=> $pid");
+    if ($query = sqlStatement($sql, array($pid))) {
+        if ($results = sqlFetchArray($query)) {
 ?>
     // show the active alert modal
     dlgopen('', 'aleretreminder', 300, 170, '', false, {
@@ -548,6 +558,10 @@ while ($gfrow = sqlFetchArray($gfres)) {
         type: 'iframe',
         url: $("#alert_popup").attr('href')
     });
+<?php
+        }
+    }
+?>
 
 });
 

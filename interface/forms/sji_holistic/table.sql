@@ -8,6 +8,7 @@ authorized tinyint(4) default NULL,
 activity tinyint(4) default NULL,
 
 holistic_type varchar(255),
+progress_notes varchar(255),
 
 PRIMARY KEY (id)
 ) ENGINE=InnoDB;

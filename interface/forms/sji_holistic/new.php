@@ -84,6 +84,19 @@ function getListOptions($list_id, $fieldnames = array('option_id', 'title', 'seq
 <div class="col-sm-6"></div>
 </div> <!-- row form-group -->
 
+<!-- Progress notes -->
+<div class="form-group row">
+<label for="progress_notes" class="col-sm-2 control-label"><?php echo xlt('Progress notes:'); ?></label>
+<div class="col-sm-4">
+<textarea name="progress_notes" id="progress_notes" class="form-control" rows=3 ><?php
+if (!empty($obj['progress_notes'])) {
+   echo $obj['progress_notes'];
+}
+?></textarea>
+</div> <!-- col-sm-4 -->
+<div class="col-sm-6"></div>
+</div> <!-- row form-group -->
+
 </div> <!-- container -->
 
 <?php

@@ -26,7 +26,17 @@ function sji_holistic_report($pid, $encounter, $cols, $id)
         $table .= "<td><span class=bold>";
         $table .= xlt($data['holistic_type']);
         $table .= "</span></td>";
-        $table .= "</tr></table>\n";
+        $table .= "</tr>";
+
+	if (!empty($data['progress_notes'])) {
+		$table .= "<tr>";
+		$table .= "<td><span>";
+		$table .= xlt($data['progress_notes']);
+		$table .= "</span></td>";
+		$table .= "</tr>";
+        }
+
+	$table .= "</table>\n";
     }
     print $table;
 }

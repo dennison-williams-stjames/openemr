@@ -29,7 +29,7 @@ if (!$pid) {
 }
 
 // get the record from the database
-if ($_GET['id'] != "") {
+if (!empty($_GET['id'])) {
 	$obj = formFetch("form_".$form_name, $_GET["id"]);
 
         // Add on pronouns
@@ -69,7 +69,7 @@ if ($_GET['id'] != "") {
 }
 
 /* remove the time-of-day from the date fields */
-if ($obj['date_of_signature'] != "") {
+if (!empty($obj['date_of_signature'])) {
 	$dateparts = explode(" ", $obj['date_of_signature']);
 	$obj['date_of_signature'] = $dateparts[0];
 }

@@ -358,7 +358,7 @@ function getProviderInfo($providerID = "%", $providers_only = true, $facility = 
         }
     }
 
-    return $returnval;
+    return empty($returnval) ? '' : $returnval;
 }
 
 //same as above but does not reduce if only 1 row returned
@@ -389,7 +389,7 @@ function getCalendarProviderInfo($providerID = "%", $providers_only = true)
 function getProviderName($providerID)
 {
     $pi = getProviderInfo($providerID, 'any');
-    if (strlen($pi[0]["lname"]) > 0) {
+    if (!empty($pi[0]) && strlen($pi[0]["lname"]) > 0) {
         if (strlen($pi[0]["suffix"]) > 0) {
             $pi[0]["lname"] .= ", ".$pi[0]["suffix"];
         }

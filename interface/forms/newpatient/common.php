@@ -139,10 +139,7 @@ function set_initial_test_for_sti (){
    $services = array(
       'Chlamydia',
       'Gonorrhea',
-      'Hepatitis A',
-      'Hepatitis B',
       'Hepatitis C',
-      'Herpes',
       'Syphilis',
    );
    $sql = 'INSERT INTO list_options(list_id, option_id, title) values("initial_test_for_sti", ?, ?)';
@@ -155,10 +152,6 @@ function set_test_results_for_sti (){
    $services = array(
       'Chlamydia',
       'Gonorrhea',
-      'Hepatitis A',
-      'Hepatitis B',
-      'Hepatitis C',
-      'Herpes',
       'Syphilis',
    );
    $sql = 'INSERT INTO list_options(list_id, option_id, title) values("test_results_for_sti", ?, ?)';

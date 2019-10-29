@@ -25,7 +25,7 @@ $provider_results = sqlQuery("select fname, lname from users where username=?", 
 $form_name = "sji_holistic";
 
 // get the record from the database
-if ($_GET['id'] != "") {
+if (!empty($_GET['id'])) {
     $obj = formFetch("form_".$form_name, $_GET["id"]);
 }
 

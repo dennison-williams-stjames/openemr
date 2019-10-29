@@ -30,7 +30,7 @@ function sji_holistic_report($pid, $encounter, $cols, $id)
 
 	if (!empty($data['progress_notes'])) {
 		$table .= "<tr>";
-		$table .= "<td><span>";
+		$table .= "<td><span class=\"bold\">Progress Notes:</span><span>";
 		$table .= xlt($data['progress_notes']);
 		$table .= "</span></td>";
 		$table .= "</tr>";

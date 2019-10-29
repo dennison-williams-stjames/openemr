@@ -170,7 +170,7 @@ function set_test_results_for_sti (){
 function set_counseling_services (){
    $services = array(
       'Peer counseling',
-      'Mental health psychiatrist',
+      'Mental health services',
       'Case management',
       'Linkage to care',
    );
@@ -730,7 +730,7 @@ echo xlt('What types of counseling services are you looking for?');
 
 <div class="row form-group">
 <label for="counselor_name" class="col-sm-6 control-label"><?php
-echo xlt('Name of mental health psychiatrist you have an appointment with?');
+echo xlt('Name of mental health provider you have an appointment with?');
 ?></label>
 <div class="col-sm-6">
 <input type=text class="col-sm-6 form-control" id="counselor_name" name="counselor_name" <?php 

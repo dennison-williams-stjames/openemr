@@ -50,6 +50,7 @@ function sji_intake_core_variables_fetch($pid, $id = 0) {
       $key=ucwords(str_replace("_", " ", $key));
       $data[$key] = $value;
    }
+   //unset $data['Sex'];
 
    return $data;
 }
@@ -61,6 +62,18 @@ function sji_intake_core_variables_report($pid, $encounter, $cols, $id)
     $count = 0;
     $data = sji_intake_core_variables_fetch($pid, $id);
     if ($data) {
+        $others = array('DOB', 'Sex', 'Postal Code');
+        foreach ($others as $column) {
+           if ($column == 'DOB' && isset($data[$column])) {
+              $data['Date of birth'] = $data[$column];
+           } else if ($column == 'Sex' && isset($data[$column])) {
+              $data['Sex assigned at birth'] = $data[$column];
+           } else if ($column == 'postal_code' && isset($data[$column])) {
+              $data['Zip'] = $data[$column];
+           } 
+           unset($data[$column]);
+        }
+
         print "<table>";
         foreach ($data as $key => $value) {
             if ($key == "id" ||
@@ -87,27 +100,7 @@ function sji_intake_core_variables_report($pid, $encounter, $cols, $id)
         }
 
         // get a few other values
-        $others = array('DOB', 'Sex', 'postal_code');
-        foreach ($others as $column) {
-           if ($column == 'DOB' && isset($data[$column])) {
-              print "<tr>\n";
-              print "<td><span class=bold>". xlt('Date of birth:') ."</span><span class=text>" . 
-                 text($data[$column]) . "</span></td>\n";
-              print "</tr>\n";
-           } else if ($column == 'Sex' && isset($data[$column])) {
-              print "<tr>\n";
-              print "<td><span class=bold>". xlt('Sex assigned at birth:') ."</span><span class=text>" . 
-                 text($data[$column]) . "</span></td>\n";
-              print "</tr>\n";
-           } else if ($column == 'postal_code' && isset($data[$column])) {
-              print "<tr>\n";
-              print "<td><span class=bold>". xlt('Zip:') ."</span><span class=text>" . 
-                 text($data[$column]) . "</span></td>\n";
-              print "</tr>\n";
-           } 
-        
-        }
-
+       
         print "</table>";
     }
 }

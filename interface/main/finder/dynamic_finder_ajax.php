@@ -58,7 +58,8 @@ if (isset($_GET['sSearch']) && $_GET['sSearch'] !== "") {
             $where .=
             "lname LIKE '$sSearch%' OR " .
             "fname LIKE '$sSearch%' OR " .
-            "mname LIKE '$sSearch%' ";
+            "mname LIKE '$sSearch%' ) OR ".
+            "form_sji_intake_core_variables.aliases LIKE '%$sSearch%'";
         } else {
             $where .= "`" . escape_sql_column_name($colname, array('patient_data')) . "` LIKE '$sSearch%' ";
         }
@@ -80,7 +81,8 @@ for ($i = 0; $i < count($aColumns); ++$i) {
             $where .= " ( " .
             "lname LIKE '$sSearch%' OR " .
             "fname LIKE '$sSearch%' OR " .
-            "mname LIKE '$sSearch%' )";
+            "mname LIKE '$sSearch%' ) OR ".
+            "form_sji_intake_core_variables.aliases LIKE '%$sSearch%'";
         } else {
             $where .= " `" . escape_sql_column_name($colname, array('patient_data')) . "` LIKE '$sSearch%'";
         }
@@ -111,7 +113,9 @@ $iTotal = $row['count'];
 
 // Get total number of rows in the table after filtering.
 //
-$row = sqlQuery("SELECT COUNT(id) AS count FROM patient_data $where");
+$row = sqlQuery("SELECT COUNT(patient_data.id) AS count FROM patient_data ".
+   "LEFT JOIN form_sji_intake_core_variables ON (patient_data.pid=form_sji_intake_core_variables.pid) ".
+   "$where");
 $iFilteredTotal = $row['count'];
 
 // Build the output data array.
@@ -131,7 +135,10 @@ while ($row = sqlFetchArray($res)) {
     $fieldsInfo[$row['field_id']] = $row;
 }
 
-$query = "SELECT $sellist FROM patient_data $where $orderby $limit";
+$query = "SELECT patient_data.$sellist, form_sji_intake_core_variables.aliases ".
+   "FROM patient_data ".
+   "LEFT JOIN form_sji_intake_core_variables ON (patient_data.pid=form_sji_intake_core_variables.pid) ".
+   "$where $orderby $limit";
 $res = sqlStatement($query);
 while ($row = sqlFetchArray($res)) {
   // Each <tr> will have an ID identifying the patient.
@@ -149,6 +156,10 @@ while ($row = sqlFetchArray($res)) {
 
             if ($row['mname']) {
                 $name .= ' ' . $row['mname'];
+            }
+
+            if ($row['aliases']) {
+                $name .= ' [ AKA: ' . $row['aliases'] .']';
             }
 
             $arow[] = attr($name);

@@ -25,6 +25,7 @@ CREATE TABLE IF NOT EXISTS `form_sji_intake_core_variables` (
 	`injected_without_perscription` varchar(50) default NULL,
 	`shared_needle` varchar(50) default NULL,
 	`active_drug_user` varchar(50) default NULL,
+	`aliases` varchar(255) DEFAULT NULL,
 
 	PRIMARY KEY (id)
 ) ENGINE=InnoDB;

@@ -32,7 +32,9 @@ if (!$pid) {
 
 // get the record from the database
 if ($_GET['id'] != "") {
+   error_log(__FILE__ ." pid: $pid, id: ". $_GET["id"]);
    $obj = get_cv_form_obj($pid, $_GET["id"]);
+   error_log(__FILE__ ." obj: ". print_r($obj, 1));
 } 
 
 /* remove the time-of-day from the date fields */
@@ -157,6 +159,21 @@ if (isset($obj['dob']) && !preg_match('/^0000/', $obj['dob'])) {
 </div>
 </div>
 <!-- dob -->
+
+<!-- aliases -->
+<div class="form-group row">
+<label for="aliases" class="col-sm-6 control-label">Do you use any other names, nicknames, or aliases?</label>
+<div class="col-sm-6">
+<input type="text" name="aliases" id="aliases" class="form-control" 
+<?php
+if (isset($obj['aliases'])) {
+   echo 'value="'. $obj['aliases'] .'"';
+}
+?>
+>
+</div>
+</div>
+<!-- aliases -->
 
 <!-- zip -->
 <div class="form-group row">

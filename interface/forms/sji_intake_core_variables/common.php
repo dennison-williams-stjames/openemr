@@ -137,6 +137,6 @@ $intake_core_variable_columns = array(
    'gender', 'amab_4_amab', 'pronouns',
    'sexual_identity', 'sex_without_condom', 
    'injected_without_perscription', 'shared_needle',
-   'active_drug_user'
+   'active_drug_user', 'aliases'
 );
 

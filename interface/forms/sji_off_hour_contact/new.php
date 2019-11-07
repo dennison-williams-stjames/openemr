@@ -31,11 +31,8 @@ if (!$pid) {
 }
 
 // get the record from the database
-if ($_GET['id'] != "") {
-   $obj = get_oh_form_obj($pid, $_GET["id"]);
-} 
+$obj = get_oh_form_obj($pid, $_GET["id"]);
 
-// TODO: figure out how to get values from the object selected
 /* A helper function for getting list options */
 function getListOptions($list_id, $fieldnames = array('option_id', 'title', 'seq')) {
     global $obj;
@@ -47,11 +44,6 @@ function getListOptions($list_id, $fieldnames = array('option_id', 'title', 'seq
     }
     $query = sqlStatement("SELECT ".implode(',', $fieldnames)." FROM list_options where list_id = ? AND activity = 1 order by seq", array($list_id));
     while ($list_options = sqlFetchArray($query)) {
-
-        // This is a special case for ethnicity and race
-        if (preg_match('/_/', $list_options['option_id']) && !preg_match('/_/', $list_options['title'])) {
-           $list_options['option_id'] = $list_options['title'];
-        }
 
         $output .= '<option value="'. $list_options['option_id'] .'" ';
 
@@ -87,7 +79,7 @@ function getListOptions($list_id, $fieldnames = array('option_id', 'title', 'seq
 ?>
 
 <html><head>
-<?php Header::setupHeader(['bootstrap', 'datetime-picker', 'select2']); ?>
+<?php Header::setupHeader(['bootstrap', 'datetime-picker']); ?>
 
 <script language="JavaScript">
 // required for textbox date verification
@@ -131,33 +123,44 @@ if (isset($_GET['id'])) {
 
 <div class="row">
 <div class="col-sm-12">
-<p>Thank you for answering these questions. You have the right to skip any of the questions you don’t want to answer.</p>
+<p><ul><li><?php
+echo xlt('Remind the participant the clinic isn\'t open and a clinician will return the call within 24 hours');
+?></li>
 
-<p>We at St. James recognize and embrace the variety and fluid nature of both sexual orientation and gender, and we are limited in the number of categories we can use. THANK YOU for your understanding and help!</p>
+<li><?php
+echo xlt('Send an email reminder with the participants medical record number to Chuck <chuck@stjamesinfirmary.org> for STRIDE participants and to Brianna <brianna@stjamesinfirmary.org>, <brianna.singleton@ucsf.edu> for all other participants');
+?></li></ul>
+</p>
+
+<p>
 </div> <!-- col-sm-12 -->
 </div> <!-- row -->
 
 <!-- aliases -->
 <div class="form-group row">
-<label for="aliases" class="col-sm-6 control-label"><?php echo xlt("Participant aliases"); ?>:</label>
-<div class="col-sm-6"><?php echo $obj['aliases']; ?></div>
+<label for="aliases" class="col-sm-6 control-label text-right"><?php echo xlt("Participant aliases"); ?>:</label>
+<div class="col-sm-6 float-left"><?php echo $obj['aliases']; ?></div>
 </div>
 
 <!-- gender -->
 <div class="form-group row">
-<label for="gender" class="col-sm-6 control-label"><?php echo xlt("Participant's gender"); ?>:</label>
+<label for="gender" class="col-sm-6 control-label text-right"><?php echo xlt("Participant's gender"); ?>:</label>
 <div class="col-sm-6"><?php echo $obj['gender']; ?></div>
 </div>
 
 <!-- pronouns -->
 <div class="form-group row">
-<label class="col-sm-6 control-label" for="pronouns"><?php echo xlt("Participant's pronouns"); ?></label>
-<div class="col-sm-6"><?php echo $obj['pronouns']; ?></div>
+<label class="col-sm-6 control-label text-right" for="pronouns"><?php echo xlt("Participant's pronouns"); ?>:</label>
+<div class="col-sm-6">
+<select id="pronouns" type=text name="pronouns" class="form-control select2">
+<option></option>
+<?php echo getListOptions('pronouns'); ?>
+</select>
 </div>
 
 <!-- work number -->
 <div class="form-group row">
-<label class="col-sm-6 control-label" for="phone_biz"><?php echo xlt('Business number'); ?></label>
+<label class="col-sm-6 control-label text-right" for="phone_biz"><?php echo xlt('Business number'); ?>:</label>
 <div class="col-sm-6">
 <input id="phone_biz" name="phone_biz" class="form-control" type=text
 <?php 
@@ -170,7 +173,7 @@ if (isset($obj['phone_biz'])) {
 
 <!-- home number -->
 <div class="form-group row">
-<label class="col-sm-6 control-label" for="phone_home"><?php echo xlt('Home number'); ?></label>
+<label class="col-sm-6 control-label text-right" for="phone_home"><?php echo xlt('Home number'); ?>:</label>
 <div class="col-sm-6">
 <input id="phone_home" name="phone_home" class="form-control" type=text
 <?php 
@@ -183,7 +186,7 @@ if (isset($obj['phone_home'])) {
 
 <!-- cell number -->
 <div class="form-group row">
-<label class="col-sm-6 control-label" for="phone_cell"><?php echo xlt('Cell number'); ?></label>
+<label class="col-sm-6 control-label text-right" for="phone_cell"><?php echo xlt('Cell number'); ?>:</label>
 <div class="col-sm-6">
 <input id="phone_cell" name="phone_cell" class="form-control" type=text
 <?php 
@@ -194,147 +197,106 @@ if (isset($obj['phone_cell'])) {
 </div>
 </div>
 
-<!-- ethnicity -->
+<!-- email -->
 <div class="form-group row">
-<label class="col-sm-6 control-label" for="ethnicity"><?php echo xlt('What is your ethnicity?'); ?></label>
+<label class="col-sm-6 control-label text-right" for="email"><?php echo xlt('Email address'); ?>:</label>
 <div class="col-sm-6">
-<select id="ethnicity" name="ethnicity" class="form-control select2">
-<option></option>
-<?php echo getListOptions('ethnicity'); ?>
-</select>
+<input id="email" name="email" class="form-control" type=text
+<?php 
+if (isset($obj['email'])) {
+   echo "value='". $obj['email'] ."'";
+}
+?>>
 </div>
 </div>
-<!-- ethnicity -->
 
-<!-- race -->
+<!-- hipaa_voice -->
 <div class="form-group row">
-<label class="col-sm-6 control-label" for="race"><?php echo xlt('What is your race?'); ?></label>
+<label class="col-sm-6 control-label text-right" for="hipaa_voice"><?php echo xlt('Can we leave a message with someone else at one of your numbers'); ?>?</label>
 <div class="col-sm-6">
-<select id="race" type=text name="race" class="form-control select2">
-<option></option>
-<?php echo getListOptions('race'); ?>
-</select>
+<input id="hipaa_voice" type=checkbox name="hipaa_voice" <?php 
+if (! empty($obj['hipaa_voice']) && preg_match('/YES/', $obj['hipaa_voice'])) {
+   echo "checked";
+}
+?>>
 </div>
 </div>
-<!-- race -->
 
-<!-- gender -->
+<!-- hipaa_message -->
 <div class="form-group row">
-<label class="col-sm-6 control-label" for="gender"><?php echo xlt('How do you define your gender?'); ?></label>
+<label class="col-sm-6 text-right control-label" for="hipaa_message"><?php echo xlt('Can we leave a voice mail message'); ?>?</label>
 <div class="col-sm-6">
-<select id="gender" type=text name="gender" class="form-control select2">
-<option></option>
-<?php echo getListOptions('gender'); ?>
-</select>
+<input id="hipaa_message" type=checkbox name="hipaa_message" <?php 
+if (! empty($obj['hipaa_message'])  && preg_match('/YES/', $obj['hipaa_message'])) {
+   echo "checked";
+}
+?>>
 </div>
 </div>
-<!-- gender-->
 
-<!-- sex -->
+<!-- hipaa_allowsms -->
 <div class="form-group row">
-<label class="col-sm-6 control-label" for="sex"><?php echo xlt('What is your sex assigned at birth?'); ?></label>
+<label class="col-sm-6 control-label text-right" for="hipaa_allowsms"><?php echo xlt('Can we send a text message'); ?>?</label>
 <div class="col-sm-6">
-<select id="sex" type=text name="sex" class="form-control select2">
-<option></option>
-<?php echo getListOptions('sex'); ?>
-</select>
+<input id="hipaa_allowsms" type=checkbox name="hipaa_allowsms" <?php 
+if (! empty($obj['hipaa_allowsms']) && preg_match('/YES/', $obj['hipaa_allowsms']) ) {
+   echo "checked";
+}
+?>>
 </div>
 </div>
-<!-- sex -->
 
-<!-- amab_4_amab -->
-<div class="form-group row" id=amab_4_amab>
-<label class="col-sm-6 control-label" for="amab_4_amab"><?php echo xlt('Have you EVER engaged in sexual activity (personal or professional) with someone else who was also assigned male at birth?'); ?></label>
-<div class="col-sm-6">
-<select id="amab_4_amab" name="amab_4_amab" class="form-control select2">
-<option></option>
-<?php echo getListOptions('amab_4_amab'); ?>
-</select>
-</div>
-</div>
-<!-- amab_4_amab -->
-
-<!-- pronouns -->
+<!-- hipaa_allowemail -->
 <div class="form-group row">
-<label class="col-sm-6 control-label" for="pronouns"><?php echo xlt('What are your pronouns?'); ?></label>
+<label class="col-sm-6 control-label text-right" for="hipaa_allowemail"><?php echo xlt('Can we send an email message'); ?>?</label>
 <div class="col-sm-6">
-<select id="pronouns" type=text name="pronouns" class="form-control select2">
-<option></option>
-<?php echo getListOptions('pronouns'); ?>
-</select>
+<input id="hipaa_allowemail" type=checkbox name="hipaa_allowemail" <?php 
+if (! empty($obj['hipaa_allowemail']) && preg_match('/YES/', $obj['hipaa_allowemail']) ) {
+   echo "checked";
+}
+?>>
 </div>
 </div>
-<!-- pronouns -->
 
-<!-- Sexual_Identity -->
+<!-- date -->
 <div class="form-group row">
-<label class="col-sm-6 control-label" for="sexual_identity"><?php echo xlt('What sexual orientation do you identify with the most?'); ?></label>
+<label class="col-sm-6 control-label text-right" for="race"><?php echo xlt('When was the participant contacted'); ?>?</label>
 <div class="col-sm-6">
-<select id="sexual_identity" type=text name="sexual_identity" class="form-control select2">
-<option></option>
-<?php echo getListOptions('sexual_identity'); ?>
-</select>
+<input id="date" type=text name="date" class="form-control datepicker" data-placeholder="<?php echo xlt('When was the participant contacted'); ?>"
+<?php 
+if (! empty($obj['date']) ) {
+   echo 'value="'. $obj['date'] .'"';
+}
+?>>
 </div>
 </div>
-<!-- sexual identity-->
 
-<!-- partners_gender -->
+<!-- reason -->
 <div class="form-group row">
-<label class="col-sm-6 control-label" for="partners_gender"><?php echo xlt('What genders are the people you have sex with?'); ?></label>
+<label class="col-sm-6 control-label text-right" for="reason"><?php echo xlt('Reason for call'); ?>:</label>
 <div class="col-sm-6">
-<select id="partners_gender" name="partners_gender[]" class="form-control select2" multiple=multiple>
-<?php echo getListOptions('partners_gender'); ?>
-</select>
+<?php
+if (! empty($obj['reason']) ) {
+   echo $obj['reason'];
+}
+?>
 </div>
 </div>
-<!-- partners gender -->
 
-<!-- sex_without_condom -->
+<!-- assesment_plan -->
 <div class="form-group row">
-<label class="col-sm-6 control-label" for="sex_without_condom"><?php echo xlt('In the last 12 months have you had sex without a condom with anyone?'); ?></label>
+<label class="col-sm-6 control-label text-right" for="assesment_plan"><?php echo xlt('Assesment and plan'); ?>:</label>
 <div class="col-sm-6">
-<select id="sex_without_condom" name="sex_without_condom" class="form-control select2">
-<option></option>
-<?php echo getListOptions('sex_without_condom'); ?>
-</select>
+<textarea rows=3 id="assesment_plan" type=text name="assesment_plan" class="form-control sm-textarea" 
+data-placeholder="<?php echo xlt('Assesment and plan'); ?>">
+<?php
+if (! empty($obj['assesment_plan']) ) {
+   echo $obj['assesment_plan'];
+}
+?>
+</textarea>
 </div>
 </div>
-<!-- sex without a condom -->
-
-<!-- injected_without_perscription -->
-<div class="form-group row">
-<label class="col-sm-6 control-label" for="injected_without_perscription"><?php echo xlt('Have you ever injected anything without a doctor\'s perscription?'); ?></label>
-<div class="col-sm-6">
-<select id="injected_without_perscription" name="injected_without_perscription" class="form-control select2">
-<option></option>
-<?php echo getListOptions('injected_without_perscription'); ?>
-</select>
-</div>
-</div>
-<!-- Injected drugs without a doctors perscription -->
-
-<!-- shared_needle -->
-<div class="form-group row">
-<label class="col-sm-6 control-label" for="shared_needle"><?php echo xlt('Have you used a needle that was used by any other person, including a sex partner, in the last 12 months?'); ?></label>
-<div class="col-sm-6">
-<select id="shared_needle" name="shared_needle" class="form-control select2">
-<option></option>
-<?php echo getListOptions('shared_needle'); ?>
-</select>
-</div>
-</div>
-
-<!-- active drug user-->
-<div class="form-group row">
-<label class="col-sm-6 control-label" for="active_drug_user"><?php echo xlt('Do you smoke anything, drink alcohol or use any drugs without a perscription?'); ?></label>
-<div class="col-sm-6">
-<select id="active_drug_user" name="active_drug_user" class="form-control select2">
-<option></option>
-<?php echo getListOptions('active_drug_user'); ?>
-</select>
-</div>
-</div>
-
 
 <div style="margin: 10px;">
 <input type="button" class="save" value="    <?php echo xla('Save'); ?>    "> &nbsp;
@@ -354,35 +316,15 @@ $(document).ready(function(){
     $(".save").click(function() { top.restoreSession(); $('#my_form').submit(); });
     $(".dontsave").click(function() { parent.closeTab(window.name, false); });
 
-    // If the participant was assigned male at birth show the optional question
-    var id = $('#sex').find("option:selected").attr("value");
-    if (id == 'Male') {
-       $('div#amab_4_amab').show();
-    } else {
-       $('div#amab_4_amab').hide();
-    }
-
-    $("#sex").change(function(){
-       var id = $(this).find("option:selected").attr("value");
-       if (id == 'Male') {
-          $('div#amab_4_amab').show();
-       } else {
-          $('div#amab_4_amab').hide();
-       }
-    });
-
     // Set the class to datepicker and let this do the rest
     $('.datepicker').datetimepicker({
-        <?php $datetimepicker_timepicker = false; ?>
+        <?php $datetimepicker_timepicker = true; ?>
         <?php $datetimepicker_showseconds = false; ?>
         <?php $datetimepicker_formatInput = false; ?>
         <?php require($GLOBALS['srcdir'] . '/js/xl/jquery-datetimepicker-2-5-4.js.php'); ?>
         <?php // can add any additional javascript settings to datetimepicker here; need to prepend first setting with a comma ?>
     });
 
-    $('.select2').select2({
-       tags: true,
-    });
 });
 
 </script>

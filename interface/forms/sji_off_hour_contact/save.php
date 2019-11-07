@@ -25,12 +25,13 @@ foreach ($intake_core_variable_columns as $column) {
 }
 
 if ($_GET["mode"] == "new") {
+    error_log(__FILE__ ." submission: ". print_r($submission, 1));
     $newid = formSubmit($table_name, $submission, '', $userauthorized);
-    addForm($encounter, "St. James Infirmary Intake - Core Variables", $newid, "sji_intake_core_variables", $pid, $userauthorized);
-    sji_extendedIntakeCoreVariables($newid, $_POST);
+    addForm($_SESSION['encounter'], "St. James Infirmary Off-hour Contact", $newid, "sji_off_hour_contact", $pid, $userauthorized);
+    sji_extendedOffHourContact($newid, $_POST);
 } elseif ($_GET["mode"] == "update") {
     $success = formUpdate($table_name, $submission, $_GET["id"], $userauthorized);
-    sji_extendedIntakeCoreVariables($_GET["id"], $_POST);
+    sji_extendedOffHourContact($_GET["id"], $_POST);
 }
 
 $_SESSION["encounter"] = $encounter;

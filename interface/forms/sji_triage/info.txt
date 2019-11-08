@@ -1,1 +1,1 @@
-Medical/Psychiatric encounter
+Triage encounter

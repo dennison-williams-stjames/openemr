@@ -19,17 +19,17 @@ use OpenEMR\Core\Header;
 include_once("../../globals.php");
 include_once("$srcdir/api.inc");
 require_once('common.php');
-formHeader("Form: Medical/Psychiatric encounter");
+formHeader("Form: Triage encounter");
 $returnurl = 'encounter_top.php';
 $provider_results = sqlQuery("select fname, lname from users where username=?", array($_SESSION{"authUser"}));
 /* name of this form */
-$form_name = "sji_medical_psychiatric";
+$form_name = "sji_triage";
 
 // get the record from the database
-if (isset($_GET['id']) && $_GET['id'] != "") {
+if (!empty($_GET['id'])) {
     $obj = array_merge(
         formFetch("form_".$form_name, $_GET["id"]),
-        sji_extendedMedicalPsychiatric_formFetch($_GET["id"]));
+        sji_extendedTriage_formFetch($_GET["id"]));
 
 }
 
@@ -103,54 +103,62 @@ function getListOptions($list_id, $fieldnames = array('option_id', 'title', 'seq
 
 <div class="row bg-primary">
 <div class="col-sm-12">
-<span class="title"><?php echo xlt('Medical/Psychiatric record'); ?></span>
+<span class="title"><?php echo xlt('Triage'); ?></span>
 </div> <!-- col-sm-12 -->
 </div> <!-- roww bg-primary -->
 
-<!-- Provider Type -->
+<!-- Name, alias -->
 <div class="form-group row">
-<label for="provider_type" class="col-sm-2 control-label"><?php echo xlt('Provider type:'); ?></label>
-<div class="col-sm-4">
-<select name="provider_type[]" id="provider_type" multiple=multiple class="select2 form-control" data-placeholder="Select or enter a counseling type...">
-<option></option>
-<?php echo getListOptions('sji_medical_psychiatric_provider_type'); ?>
-</select>
-</div>
+<label for="name" class="col-sm-2 control-label"><?php echo xlt('Name:'); ?></label>
+<div class="col-sm-4"><?php
+   if (!empty($obj['fname'])) {
+      echo $obj['fname'];
+   }
+
+   if (!empty($obj['lname'])) {
+      if (!empty($obj['fname'])) {
+         echo " ";
+      }
+      echo $obj['lname'];
+   }
+
+   if (!empty($obj['aliases'])) {
+      if (!empty($obj['fname']) || !empty($obj['lname'])) {
+         echo " ";
+      }
+      echo "AKA: ". $obj['aliases'];
+   }
+?></div>
 <div class="col-sm-6"></div>
 </div>
 
-<!-- Duration -->
+<!-- pronouns -->
 <div class="form-group row">
-<label for="duration" class="col-sm-2 control-label"><?php echo xlt('Duration:'); ?></label>
-<div class="col-sm-4">
-<select name="duration" id="duration" class="select2 form-control" data-placeholder="Select or enter the time spent...">
-<option></option>
-<?php echo getListOptions('sji_medical_psychiatric_duration'); ?>
-</select>
-</div> <!-- col-sm-6 -->
+<label for="pronouns" class="col-sm-2 control-label"><?php echo xlt('Pronouns:'); ?></label>
+<div class="col-sm-4"><?php
+   if (!empty($obj['pronouns'])) {
+      echo $obj['pronouns'];
+   }
+?></div> <!-- col-sm-6 -->
 <div class="col-sm-6"></div>
 </div> <!-- row -->
 
-<!-- Manage new -->
+<!-- temperature -->
 <div class="form-group row">
-<label for="evaluate_manage_new" class="control-label col-sm-2">Evaluate and manage new participant</label>
+<label for="temperature " class="control-label col-sm-2">Temperature:</label>
 <div class="col-sm-4">
-<input id="evaluate_manage_new" type=checkbox name="evaluate_manage_new" <?php 
-if (
-   isset($obj) && 
-   isset($obj['evaluate_manage_new']) && 
-   $obj['evaluate_manage_new']
-   ) { 
-      echo "checked"; 
-   } 
+<input id="temperature" type=text name="temperature" <?php
+   if (!empty($obj['temperature'])) {
+      echo "value='". $obj['temperature'] ."'";
+   }
 ?>>
 </div>
 <div class="col-sm-6 text-center"></div>
 </div>
 
-<!-- Manage established -->
+<!-- Blood pressure -->
 <div class="form-group row">
-<label for="evaluate_manage_established" class="control-label col-sm-2">Evaluate and manage established participant</label>
+<label for="blood_pressure" class="control-label col-sm-2">Blood pressure (sistolic/distolic)</label>
 <div class="col-sm-4">
 <input id="evaluate_manage_established" type=checkbox name="evaluate_manage_established" <?php 
 if (

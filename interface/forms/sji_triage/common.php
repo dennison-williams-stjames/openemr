@@ -73,6 +73,10 @@ function sji_extendedTriage($formid, $submission) {
           sqlStatement($sql, array($submission['temperature'], $submission['bps'], $submission['bpd']));
        } else {
           // TODO: add new vital forms
+          // TODO: Looking at the vitals form there does not seem to be a formSubmit followed by an addForm
+          // What is the 3rd argument here, $formid, this is usually returned by formSubmit
+          //$newid = formSubmit('form_sji_alert', $alert, $visit, $userauthorized);
+          $id = addForm($encounter, 'Vitals', $newid, 'vitals', $pid, $_SESSION['userauthorized']);
        }
     }
 

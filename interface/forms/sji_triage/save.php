@@ -24,15 +24,19 @@ include_once("$srcdir/forms.inc");
 /* 
  * name of the database table associated with this form
  */
-$table_name = "form_sji_medical_psychiatric";
-$form_name = "sji_medical_psychiatric";
+$table_name = "form_sji_triage";
+$form_name = "sji_triage";
 
 if (!$pid) {
     $pid = $_SESSION['pid'];
 }
 
 if ($encounter == "") {
-    $encounter = date("Ymd");
+    if (!empty($_SESSION['encounter'])) {
+       $encounter = $_SESSION['encounter'];
+    } else {
+       $encounter = date("Ymd");
+    }
 }
 
 /* Make some transformations */
@@ -57,11 +61,11 @@ foreach ($medical_psychiatric_columns as $column) {
 
 if ($_GET["mode"] == "new") {
     $newid = formSubmit($table_name, $submission, '', $userauthorized);
-    addForm($encounter, "Medical/Psychiatric", $newid, $form_name, $pid, $userauthorized);
-    sji_extendedMedicalPsychiatric($newid, $_POST);
+    addForm($encounter, "Triage", $newid, $form_name, $pid, $userauthorized);
+    sji_extendedTriage($newid, $_POST);
 } elseif ($_GET["mode"] == "update") {
     $success = formUpdate($table_name, $submission, $_GET["id"], $userauthorized);
-    sji_extendedMedicalPsychiatric($_GET['id'], $_POST);
+    sji_extendedTriage($_GET['id'], $_POST);
 }
 
 $_SESSION["encounter"] = $encounter;

@@ -160,99 +160,69 @@ function getListOptions($list_id, $fieldnames = array('option_id', 'title', 'seq
 <div class="form-group row">
 <label for="blood_pressure" class="control-label col-sm-2">Blood pressure (sistolic/distolic)</label>
 <div class="col-sm-4">
-<input id="evaluate_manage_established" type=checkbox name="evaluate_manage_established" <?php 
-if (
-   isset($obj) && 
-   isset($obj['evaluate_manage_established']) && 
-   $obj['evaluate_manage_established']
-   ) { 
-      echo "checked"; 
-   } 
+<input id="blood_pressure" type=text name="blood_pressure" <?php 
+if ( !empty($obj['bps']) && !empty($obj['bpd']) ) { 
+   echo $obj['bps'] .'/'. $obj['bpd']; 
+} 
 ?>>
 </div>
 <div class="col-sm-6 text-center"></div>
 </div>
 
-<!-- ICD9 primary -->
+<!-- Chief complaint 
+   TODO: Is this the same as the visit reason field?
+-->
 <div class="form-group row">
-<label for="icd9_primary" class="col-sm-2 control-label"><?php echo xlt('ICD9 primary:'); ?></label>
+<label for="chief_complaint" class="control-label col-sm-2">Chief Complaint</label>
 <div class="col-sm-4">
-<select name="icd9_primary[]" id="icd9_primary" multiple=multiple class="select2 form-control" data-placeholder="Select primary ICD9 codes">
-<option></option>
-<?php 
-echo getICD9PrimaryOptions(); 
-?>
-</select>
-</div> <!-- col-sm-6 -->
-<div class="col-sm-6"></div>
-</div> <!-- row -->
-
-<!-- ICD9 secondary -->
-<div class="form-group row">
-<label for="icd9_secondary" class="col-sm-2 control-label"><?php echo xlt('ICD9 secondary:'); ?></label>
-<div class="col-sm-4">
-<select name="icd9_secondary[]" id="icd9_secondary" multiple=multiple class="select2 form-control" data-placeholder="Select secondary ICD9 codes">
-<option></option>
-<?php 
-echo getICD9SecondaryOptions(); 
-?>
-</select>
-</div> <!-- col-sm-6 -->
-<div class="col-sm-6"></div>
-</div> <!-- row -->
-
-<!-- CPT -->
-<div class="form-group row">
-<label for="cpt_codes" class="col-sm-2 control-label"><?php echo xlt('CPT codes:'); ?></label>
-<div class="col-sm-4">
-<select name="cpt_codes[]" id="cpt_codes" multiple=multiple class="select2 form-control" data-placeholder="Select CPT codes">
-<option></option>
-<?php 
-echo getCPTCodes(); 
-?>
-</select>
-</div> <!-- col-sm-6 -->
-<div class="col-sm-6"></div>
-</div> <!-- row -->
-
-<!-- Methods codes -->
-<div class="form-group row">
-<label for="methods_codes" class="col-sm-2 control-label"><?php echo xlt('Methods codes:'); ?></label>
-<div class="col-sm-4">
-<select name="methods_codes[]" id="methods_codes" multiple=multiple class="select2 form-control" data-placeholder="Select Methods codes">
-<option></option>
-<?php 
-echo getMethodsCodes(); 
-?>
-</select>
-</div> <!-- col-sm-6 -->
-<div class="col-sm-6"></div>
-</div> <!-- row -->
-
-<!-- Range codes -->
-<div class="form-group row">
-<label for="range_codes" class="col-sm-2 control-label"><?php echo xlt('Range codes:'); ?></label>
-<div class="col-sm-4">
-<select name="range_codes[]" id="range_codes" multiple=multiple class="select2 form-control" data-placeholder="Select Range codes">
-<option></option>
-<?php 
-echo getRangeCodes(); 
-?>
-</select>
-</div> <!-- col-sm-6 -->
-<div class="col-sm-6"></div>
-</div> <!-- row -->
-
-<!-- Contraception method -->
-<div class="form-group row">
-<label for="contraception_method" class="col-sm-2 control-label"><?php echo xlt('Contraception method:'); ?></label>
-<div class="col-sm-4">
-<select name="contraception_method[]" id="contraception_method" multiple=multiple class="select2 form-control" data-placeholder="Select or enter a contraception method...">
-<option></option>
-<?php echo getListOptions('sji_medical_psychiatric_contraception_method'); ?>
-</select>
+<input id="chief_complaint" type=text name="chief_complaint" <?php 
+if ( !empty($obj['chief_complaint']) ) { 
+   echo $obj['chief_complaint']; 
+} 
+?>>
 </div>
-<div class="col-sm-6"></div>
+<div class="col-sm-6 text-center"></div>
+</div>
+
+<!-- Notes -->
+<div class="form-group row">
+<label for="notes" class="control-label col-sm-2">Onset/Location/Duration/Characteristics/Aggravating Factors/Relieving/Timing</label>
+<div class="col-sm-4">
+<textarea id="notes" rows=4 name="notes" <?php 
+if ( !empty($obj['notes']) ) { 
+   echo $obj['notes']; 
+} 
+?>>
+</div>
+<div class="col-sm-6 text-center"></div>
+</div>
+
+<!-- Concerns -->
+<div class="form-group row">
+<label for="concerns" class="control-label col-sm-2">Other Concerns/Perception of Health</label>
+<div class="col-sm-4">
+<textarea id="concerns" rows=4 name="concerns" <?php 
+if ( !empty($obj['concerns']) ) { 
+   echo $obj['concerns']; 
+} 
+?>>
+</div>
+<div class="col-sm-6 text-center"></div>
+</div>
+
+<!-- Other services 
+   TODO: how is this different than the information that's selected on the visit form?
+-->
+<div class="form-group row">
+<label for="services" class="control-label col-sm-2">Other services tonight</label>
+<div class="col-sm-4">
+<textarea id="services" rows=4 name="services" <?php 
+if ( !empty($obj['services']) ) { 
+   echo $obj['services']; 
+} 
+?>>
+</div>
+<div class="col-sm-6 text-center"></div>
 </div>
 
 </div> <!-- container -->

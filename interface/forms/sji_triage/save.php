@@ -40,11 +40,10 @@ if ($encounter == "") {
 }
 
 /* Make some transformations */
-if (isset($_POST['evaluate_manage_new'])) {
-   $_POST['evaluate_manage_new'] = 1;
-} else {
-   $_POST['evaluate_manage_new'] = 0;
-}
+if (!empty($_POST['contact_preferences'])) {
+   // TODO: set the hippa values based on which preferences is selected
+   error_log(__FILE__ .' POST: '. print_r($_POST, 1));
+} 
 
 if (isset($_POST['evaluate_manage_established'])) {
    $_POST['evaluate_manage_established'] = 1;
@@ -53,7 +52,7 @@ if (isset($_POST['evaluate_manage_established'])) {
 }
 
 $submission = array();
-foreach ($medical_psychiatric_columns as $column) {
+foreach ($triage_columns as $column) {
    if (isset($_POST[$column])) {
       $submission[$column] = $_POST[$column];
    }

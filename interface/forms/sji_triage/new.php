@@ -26,12 +26,12 @@ $provider_results = sqlQuery("select fname, lname from users where username=?", 
 $form_name = "sji_triage";
 
 // get the record from the database
+$obj = array();
 if (!empty($_GET['id'])) {
-    $obj = array_merge(
-        formFetch("form_".$form_name, $_GET["id"]),
-        sji_extendedTriage_formFetch($_GET["id"]));
-
+    $obj = formFetch("form_".$form_name, $_GET["id"]);
 }
+$obj = array_merge($obj,
+   sji_extendedTriage_formFetch());
 
 /* A helper function for getting list options */
 function getListOptions($list_id, $fieldnames = array('option_id', 'title', 'seq')) {
@@ -40,10 +40,6 @@ function getListOptions($list_id, $fieldnames = array('option_id', 'title', 'seq
     $found = 0;
 
     $selected = array();
-    preg_match('/sji_medical_psychiatric_(.*)/', $list_id, $matches);
-    if (isset($matches[1]) && isset($obj[$matches[1]])) {
-        $selected = $obj[$matches[1]];
-    }
 
     $query = sqlStatement("SELECT ".implode(',', $fieldnames)." FROM list_options where list_id = ? AND activity = 1 order by seq", array($list_id));
 
@@ -111,6 +107,7 @@ function getListOptions($list_id, $fieldnames = array('option_id', 'title', 'seq
 <div class="form-group row">
 <label for="name" class="col-sm-2 control-label"><?php echo xlt('Name:'); ?></label>
 <div class="col-sm-4"><?php
+/*
    if (!empty($obj['fname'])) {
       echo $obj['fname'];
    }
@@ -121,9 +118,13 @@ function getListOptions($list_id, $fieldnames = array('option_id', 'title', 'seq
       }
       echo $obj['lname'];
    }
+*/
+   if (!empty($obj['name'])) {
+      echo $obj['name'];
+   }
 
    if (!empty($obj['aliases'])) {
-      if (!empty($obj['fname']) || !empty($obj['lname'])) {
+      if (!empty($obj['fname']) || !empty($obj['lname']) || !empty($obj['name'])) {
          echo " ";
       }
       echo "AKA: ". $obj['aliases'];
@@ -158,7 +159,7 @@ function getListOptions($list_id, $fieldnames = array('option_id', 'title', 'seq
 
 <!-- Blood pressure -->
 <div class="form-group row">
-<label for="blood_pressure" class="control-label col-sm-2">Blood pressure (sistolic/distolic)</label>
+<label for="blood_pressure" class="control-label col-sm-2">Blood pressure (sistolic/distolic):</label>
 <div class="col-sm-4">
 <input id="blood_pressure" type=text name="blood_pressure" <?php 
 if ( !empty($obj['bps']) && !empty($obj['bpd']) ) { 
@@ -173,58 +174,139 @@ if ( !empty($obj['bps']) && !empty($obj['bpd']) ) {
    TODO: Is this the same as the visit reason field?
 -->
 <div class="form-group row">
-<label for="chief_complaint" class="control-label col-sm-2">Chief Complaint</label>
-<div class="col-sm-4">
-<input id="chief_complaint" type=text name="chief_complaint" <?php 
+<label for="chief_complaint" class="control-label col-sm-2">Chief Complaint:</label>
+<div class="col-sm-10">
+<input id="chief_complaint" type=text name="chief_complaint" size=125 <?php 
 if ( !empty($obj['chief_complaint']) ) { 
-   echo $obj['chief_complaint']; 
+   echo "value='". $obj['chief_complaint'] ."'"; 
 } 
 ?>>
 </div>
-<div class="col-sm-6 text-center"></div>
 </div>
 
 <!-- Notes -->
 <div class="form-group row">
-<label for="notes" class="control-label col-sm-2">Onset/Location/Duration/Characteristics/Aggravating Factors/Relieving/Timing</label>
-<div class="col-sm-4">
-<textarea id="notes" rows=4 name="notes" <?php 
+<label for="notes" class="control-label col-sm-2">Onset / Location / Duration / Characteristics / Aggravating Factors / Relieving / Timing:</label>
+<div class="col-sm-10">
+<textarea id="notes" rows=4 name="notes" class="col-sm-10" <?php 
 if ( !empty($obj['notes']) ) { 
    echo $obj['notes']; 
 } 
 ?>>
+</textarea>
 </div>
-<div class="col-sm-6 text-center"></div>
 </div>
 
 <!-- Concerns -->
 <div class="form-group row">
-<label for="concerns" class="control-label col-sm-2">Other Concerns/Perception of Health</label>
-<div class="col-sm-4">
-<textarea id="concerns" rows=4 name="concerns" <?php 
+<label for="concerns" class="control-label col-sm-2">Other Concerns / Perception of Health:</label>
+<div class="col-sm-10">
+<textarea id="concerns" rows=4 name="concerns" class="col-sm-10" <?php 
 if ( !empty($obj['concerns']) ) { 
    echo $obj['concerns']; 
 } 
 ?>>
+</textarea>
 </div>
-<div class="col-sm-6 text-center"></div>
 </div>
 
 <!-- Other services 
    TODO: how is this different than the information that's selected on the visit form?
 -->
 <div class="form-group row">
-<label for="services" class="control-label col-sm-2">Other services tonight</label>
-<div class="col-sm-4">
-<textarea id="services" rows=4 name="services" <?php 
+<label for="services" class="control-label col-sm-2">Other services tonight:</label>
+<div class="col-sm-10">
+<textarea id="services" rows=4 name="services" class="col-sm-10" <?php 
 if ( !empty($obj['services']) ) { 
    echo $obj['services']; 
+} 
+?>>
+</textarea>
+</div>
+</div>
+
+<!-- Pharmacy
+   The pharmacy association for a participant is done through by associating
+   a pharmacy record (entered in the practice administration page) via a select
+   list in the demographics edit page.  This is an issue because we might not 
+   know all of the pharmacies we might want to work with a head of time and
+   looking up this information may slow down clinic workflow.
+
+   Clinical staff suggest this process is currently using a paper perscription
+   and calls from providers to specific pharmacies
+
+-->
+<div class="form-group row">
+<label for="pharmacy" class="control-label col-sm-2">Pharmacy:</label>
+<div class="col-sm-10">
+<input id="pharmacy" name="pharmacy" type="text" size=125 <?php 
+if ( !empty($obj['pharmacy']) ) { 
+   echo $obj['pharmacy']; 
+} 
+?>>
+</div>
+</div>
+
+<!-- Contact preferences
+   We can contact participants by Voice, text, or email
+-->
+<div class="form-group row">
+<label for="contact_preferences" class="control-label col-sm-2">Contact preferences:</label>
+<div class="col-sm-4">
+<select name="contact_preferences" id="contact_preferences" class="select2 form-control"
+
+<?php if (isset($obj['contact_preferences'])) {
+   echo 'data-placeholder="'. $obj['contact_preferences'] .'"';
+} else {
+   echo 'data-placeholder="What are you contact preferences?"';
+}
+?>
+
+>
+<option></option>
+<?php echo getListOptions('contact_preferences'); ?>
+</select>
+</div>
+<div class="col-sm-6 text-center"></div>
+</div>
+
+<div id="email" class="form-group row ">
+<label for="email" class="control-label col-sm-2">Email:</label>
+<div class="col-sm-4">
+<input id="email" name="email" type="text" <?php 
+if ( !empty($obj['email']) ) { 
+   echo $obj['email']; 
 } 
 ?>>
 </div>
 <div class="col-sm-6 text-center"></div>
 </div>
 
+<div id="phone_home" class="form-group row ">
+<label for="phone_home" class="control-label col-sm-2">Other phone:</label>
+<div class="col-sm-4">
+<input id="phone_home" name="phone_home" type="text" <?php 
+if ( !empty($obj['phone_home']) ) { 
+   echo $obj['phone_home']; 
+} 
+?>>
+</div>
+<div class="col-sm-6 text-center"></div>
+</div>
+
+<div id="phone_cell" class="form-group row ">
+<label for="phone_cell" class="control-label col-sm-2">Cell phone:</label>
+<div class="col-sm-4">
+<input id="phone_cell" name="phone_cell" type="text" <?php 
+if ( !empty($obj['phone_cell']) ) { 
+   echo $obj['phone_cell']; 
+} 
+?>>
+</div>
+<div class="col-sm-6 text-center"></div>
+</div>
+
+</div> <!-- container -->
 </div> <!-- container -->
 
 <?php
@@ -258,8 +340,33 @@ $(document).ready(function(){
     $('.select2').select2({
        tags: true,
     });
+
+    // utility to display different forms based on the contact preferences 
+    // selected
+    $('div#phone_cell').hide();
+    $('div#phone_home').hide();
+    $('div#email').hide();
+
+    $('select#contact_preferences').change(function() {
+	    var contact_preferences = $('select#contact_preferences option:selected').text();
+	    if ( contact_preferences === 'text' ) {
+	       $('div#phone_cell').show();
+	       $('div#phone_home').hide();
+	       $('div#email').hide();
+	    } else if ( contact_preferences === 'email' ) {
+	       $('div#phone_cell').hide();
+	       $('div#phone_home').hide();
+	       $('div#email').show();
+	    } else if ( contact_preferences === 'phone call' ) {
+	       $('div#phone_cell').hide();
+	       $('div#phone_home').show();
+	       $('div#email').hide();
+	    }
+    });
+    
 });
 
+//# sourceURL=sji_triage.js
 </script>
 
 </html>

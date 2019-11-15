@@ -11,7 +11,14 @@ CREATE TABLE IF NOT EXISTS `form_sji_triage` (
 	notes varchar(255),
 	concerns varchar(255),
 	services varchar(255),
+	pharmacy varchar(255),
+	contact_preferences varchar(255),
 
 	PRIMARY KEY (id)
 ) ENGINE=InnoDB;
+
+/* contact preferences list */
+INSERT INTO list_options(list_id, option_id, title) values('contact_preferences', 'email', 'email');
+INSERT INTO list_options(list_id, option_id, title) values('contact_preferences', 'text', 'text');
+INSERT INTO list_options(list_id, option_id, title) values('contact_preferences', 'phone call', 'phone call');
 

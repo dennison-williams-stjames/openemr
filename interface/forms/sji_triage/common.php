@@ -7,10 +7,12 @@ $triage_columns = array(
    'chief_complaint',
    'notes',
    'concerns',
-   'services'
+   'services',
+   'pharmacy',
+   'contact_preferences'
 );
 
-function sji_extendedTriage_formFetch($formid) {
+function sji_extendedTriage_formFetch() {
     global $pid;
     $encounter = $_SESSION['encounter'];
     $return = array();
@@ -30,24 +32,32 @@ function sji_extendedTriage_formFetch($formid) {
 
     // get participant information
     $res = sqlStatement(
-       "select fname, lname, email, hipaa_allowemail, hippa_allowsms, hippa_message, hippa_voice ".
+       "select pid, fname, lname, email, phone_home, phone_cell, hipaa_allowemail, hipaa_allowsms, hipaa_message, hipaa_voice ".
        "from patient_data ".
        "where pid=?", array($pid));
 
     while ($row = sqlFetchArray($res)) {
        $return['name'] = $row['fname'] ." ". $row['lname'];
        $return['email'] = $row['email'];
+       $return['phone_home'] = $row['phone_home'];
+       $return['phone_cell'] = $row['phone_cell'];
        $return['hipaa_allowemail'] = $row['hipaa_allowemail'];
        $return['hipaa_allowsms'] = $row['hipaa_allowsms'];
        $return['hipaa_message'] = $row['hipaa_message'];
        $return['hipaa_voice'] = $row['hipaa_voice'];
+       $return['pid'] = $row['pid'];
     }
 
+    // TODO: set contact preferences based on the hipaa setting
+
     // get a few items from our core variables
-    $res = sqlStatement(
+    $sql =
        "select gender, pronouns, aliases ".
        "from form_sji_intake_core_variables ".
-       "where pid=? order by id asc limit 1", array($pid));
+       "where pid=? order by id desc limit 1";
+
+    $res = sqlStatement($sql, array($pid));
+    //error_log(__FUNCTION__ .'() sql: '. $sql .', pid: '. $pid);
 
     while ($row = sqlFetchArray($res)) {
        $return['gender'] = $row['gender'];
@@ -59,7 +69,7 @@ function sji_extendedTriage_formFetch($formid) {
 }
 
 function sji_extendedTriage($formid, $submission) {
-    lobal $pid;
+    global $pid;
     $encounter = $_SESSION['encounter'];
 
     // If we were passed in vitals we need to calculate a few values and either

@@ -18,13 +18,13 @@ include_once('common.php');
 include_once(dirname(__FILE__).'/../../globals.php');
 include_once($GLOBALS["srcdir"]."/api.inc");
 
-function sji_medical_psychiatric_report($pid, $encounter, $cols, $id)
+function sji_triage_report($pid, $encounter, $cols, $id)
 {
     $count = 0;
     $table = '';
     $data = array_merge(
-     formFetch("form_sji_medical_psychiatric", $id),
-     sji_extendedMedicalPsychiatric_formFetch($id)
+     formFetch("form_sji_triage", $id),
+     sji_extendedTriage_formFetch($id)
     );
     if ($data) {
         $table .= "<table>";

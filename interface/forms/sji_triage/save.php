@@ -41,7 +41,7 @@ if ($encounter == "") {
 
 /* Make some transformations */
 if (!empty($_POST['contact_preferences'])) {
-   // TODO: set the hippa values based on which preferences is selected
+   // set the hippa values based on which preferences is selected
    $_POST['hipaa_allowemail'] = 'NO';
    $_POST['hipaa_allowsms'] = 'NO';
    $_POST['hipaa_voice'] = 'NO';

@@ -29,11 +29,21 @@ $form_name = "sji_triage";
 $obj = array();
 if (!empty($_GET['id'])) {
     $obj = formFetch("form_".$form_name, $_GET["id"]);
-    error_log(__FILE__ .' _GET: '. print_r($obj, 1));
+} else {
+    // if we don't get passed an id then we do not have a triage row for this 
+    // encounter.  Let's look for a previous triage to see if we can 
+    // pre-populate the pharmacy and contact preferences columns
+    $sql =
+       "SELECT contact_preferences,pharmacy FROM form_sji_triage ".
+       "WHERE pid=? ".
+       "ORDER BY id DESC LIMIT 1";
+    $last_triage = sqlQuery($sql, array($pid));
+    if (!empty($last_triage)) {
+       $obj = $last_triage;
+    }
 }
 $obj = array_merge($obj,
    sji_extendedTriage_formFetch());
-error_log(__FILE__ .' obj: '. print_r($obj, 1));
 
 /* A helper function for getting list options */
 function getListOptions($list_id, $fieldnames = array('option_id', 'title', 'seq')) {
@@ -362,6 +372,10 @@ $(document).ready(function(){
     } else if ( contact_preferences === 'phone call' ) {
        $('div#phone_cell').hide();
        $('div#phone_home').show();
+       $('div#email').hide();
+    } else {
+       $('div#phone_cell').hide();
+       $('div#phone_home').hide();
        $('div#email').hide();
     }
 

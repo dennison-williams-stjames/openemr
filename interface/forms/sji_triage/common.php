@@ -22,8 +22,8 @@ function sji_extendedTriage_formFetch() {
        "select temperature,bps,bpd ".
        "from form_vitals ".
        "left join forms on (forms.form_id = form_vitals.id) ".
-       "where form_vitals.pid=? and forms.deleted=0 ".
-       "order by form_vitals.id desc limit 1", array($pid));
+       "where form_vitals.pid=? and forms.deleted=0 and forms.encounter=? ".
+       "order by form_vitals.id desc limit 1", array($pid, $encounter));
 
     while ($row = sqlFetchArray($res)) {
        $return['temperature'] = $row['temperature'];

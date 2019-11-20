@@ -29,9 +29,11 @@ $form_name = "sji_triage";
 $obj = array();
 if (!empty($_GET['id'])) {
     $obj = formFetch("form_".$form_name, $_GET["id"]);
+    error_log(__FILE__ .' _GET: '. print_r($obj, 1));
 }
 $obj = array_merge($obj,
    sji_extendedTriage_formFetch());
+error_log(__FILE__ .' obj: '. print_r($obj, 1));
 
 /* A helper function for getting list options */
 function getListOptions($list_id, $fieldnames = array('option_id', 'title', 'seq')) {
@@ -40,6 +42,9 @@ function getListOptions($list_id, $fieldnames = array('option_id', 'title', 'seq
     $found = 0;
 
     $selected = array();
+    if (isset($obj[$list_id])) {
+           $selected = $obj[$list_id];
+    }
 
     $query = sqlStatement("SELECT ".implode(',', $fieldnames)." FROM list_options where list_id = ? AND activity = 1 order by seq", array($list_id));
 
@@ -162,8 +167,8 @@ function getListOptions($list_id, $fieldnames = array('option_id', 'title', 'seq
 <label for="blood_pressure" class="control-label col-sm-2">Blood pressure (sistolic/distolic):</label>
 <div class="col-sm-4">
 <input id="blood_pressure" type=text name="blood_pressure" <?php 
-if ( !empty($obj['bps']) && !empty($obj['bpd']) ) { 
-   echo $obj['bps'] .'/'. $obj['bpd']; 
+if ( !empty($obj['blood_pressure']) ) { 
+   echo "value='". $obj['blood_pressure'] ."'"; 
 } 
 ?>>
 </div>
@@ -188,11 +193,11 @@ if ( !empty($obj['chief_complaint']) ) {
 <div class="form-group row">
 <label for="notes" class="control-label col-sm-2">Onset / Location / Duration / Characteristics / Aggravating Factors / Relieving / Timing:</label>
 <div class="col-sm-10">
-<textarea id="notes" rows=4 name="notes" class="col-sm-10" <?php 
+<textarea id="notes" rows=4 name="notes" class="col-sm-10"><?php 
 if ( !empty($obj['notes']) ) { 
    echo $obj['notes']; 
 } 
-?>>
+?>
 </textarea>
 </div>
 </div>
@@ -201,11 +206,12 @@ if ( !empty($obj['notes']) ) {
 <div class="form-group row">
 <label for="concerns" class="control-label col-sm-2">Other Concerns / Perception of Health:</label>
 <div class="col-sm-10">
-<textarea id="concerns" rows=4 name="concerns" class="col-sm-10" <?php 
+<textarea id="concerns" rows=4 name="concerns" class="col-sm-10">
+<?php 
 if ( !empty($obj['concerns']) ) { 
    echo $obj['concerns']; 
 } 
-?>>
+?>
 </textarea>
 </div>
 </div>
@@ -216,11 +222,12 @@ if ( !empty($obj['concerns']) ) {
 <div class="form-group row">
 <label for="services" class="control-label col-sm-2">Other services tonight:</label>
 <div class="col-sm-10">
-<textarea id="services" rows=4 name="services" class="col-sm-10" <?php 
+<textarea id="services" rows=4 name="services" class="col-sm-10">
+<?php 
 if ( !empty($obj['services']) ) { 
    echo $obj['services']; 
 } 
-?>>
+?>
 </textarea>
 </div>
 </div>
@@ -241,7 +248,7 @@ if ( !empty($obj['services']) ) {
 <div class="col-sm-10">
 <input id="pharmacy" name="pharmacy" type="text" size=125 <?php 
 if ( !empty($obj['pharmacy']) ) { 
-   echo $obj['pharmacy']; 
+   echo "value='". $obj['pharmacy'] ."'"; 
 } 
 ?>>
 </div>
@@ -273,9 +280,9 @@ if ( !empty($obj['pharmacy']) ) {
 <div id="email" class="form-group row ">
 <label for="email" class="control-label col-sm-2">Email:</label>
 <div class="col-sm-4">
-<input id="email" name="email" type="text" <?php 
+<input id="email" name="email" type="text" size=50 <?php 
 if ( !empty($obj['email']) ) { 
-   echo $obj['email']; 
+   echo "value='". $obj['email'] ."'"; 
 } 
 ?>>
 </div>
@@ -287,7 +294,7 @@ if ( !empty($obj['email']) ) {
 <div class="col-sm-4">
 <input id="phone_home" name="phone_home" type="text" <?php 
 if ( !empty($obj['phone_home']) ) { 
-   echo $obj['phone_home']; 
+   echo "value='". $obj['phone_home'] ."'"; 
 } 
 ?>>
 </div>
@@ -299,7 +306,7 @@ if ( !empty($obj['phone_home']) ) {
 <div class="col-sm-4">
 <input id="phone_cell" name="phone_cell" type="text" <?php 
 if ( !empty($obj['phone_cell']) ) { 
-   echo $obj['phone_cell']; 
+   echo "value='". $obj['phone_cell'] ."'"; 
 } 
 ?>>
 </div>
@@ -343,9 +350,20 @@ $(document).ready(function(){
 
     // utility to display different forms based on the contact preferences 
     // selected
-    $('div#phone_cell').hide();
-    $('div#phone_home').hide();
-    $('div#email').hide();
+    var contact_preferences = $('select#contact_preferences option:selected').text();
+    if ( contact_preferences === 'text' ) {
+       $('div#phone_cell').show();
+       $('div#phone_home').hide();
+       $('div#email').hide();
+    } else if ( contact_preferences === 'email' ) {
+       $('div#phone_cell').hide();
+       $('div#phone_home').hide();
+       $('div#email').show();
+    } else if ( contact_preferences === 'phone call' ) {
+       $('div#phone_cell').hide();
+       $('div#phone_home').show();
+       $('div#email').hide();
+    }
 
     $('select#contact_preferences').change(function() {
 	    var contact_preferences = $('select#contact_preferences option:selected').text();

@@ -99,7 +99,8 @@ function sji_extendedTriage($formid, $submission) {
           'bpd' => $submission['bpd'],
        ];
 
-       $sql = "select form_id from forms where pid=? and encounter=? and form_name='Vitals' and deleted=0 order by id desc limit 1";
+       $sql = "select form_id from forms where pid=? and encounter=? and ".
+          "form_name='Vitals' and deleted=0 order by id desc limit 1";
        $row = sqlFetchArray(sqlStatement($sql, array($pid, $encounter)));
        if (!empty($row)) {
           // TODO: error checking
@@ -110,6 +111,36 @@ function sji_extendedTriage($formid, $submission) {
        }
     }
 
+    // update participant contact preferences
+    $sql = 
+       "UPDATE patient_data SET ".
+       "hipaa_allowsms=?, ".
+       "hipaa_allowemail=?, ".
+       "hipaa_voice=? ";
+    
+    $contact_preferences = array(
+       $submission['hipaa_allowsms'], 
+       $submission['hipaa_allowemail'],
+       $submission['hipaa_voice']);
+
+    if (!empty($submission['email'])) {
+       $sql .= ', email=?';
+       $contact_preferences[] = $submission['email'];
+    }
+
+    if (!empty($submission['phone_home'])) {
+       $sql .= ', phone_home=?';
+       $contact_preferences[] = $submission['phone_home'];
+    }
+
+    if (!empty($submission['phone_cell'])) {
+       $sql .= ', phone_cell=?';
+       $contact_preferences[] = $submission['phone_cell'];
+    }
+
+    $sql .= " WHERE pid=?";
+    $contact_preferences[] = $pid;
+    sqlQuery($sql, $contact_preferences);
 
 }
 

@@ -36,14 +36,28 @@ function sji_triage_report($pid, $encounter, $cols, $id)
                 $key == "authorized" ||
                 $key == "activity" ||
                 $key == "date" ||
+                $key == "hipaa_allowemail" ||
+                $key == "hipaa_allowsms" ||
+                $key == "hipaa_message" ||
+                $key == "hipaa_voice" ||
+                $key == "email" ||
+                $key == "phone_cell" ||
+                $key == "phone_home" ||
+                $key == "contact_preferences" ||
+                $key == "bps" ||
+                $key == "bpd" ||
                 $value == "")
             {
                 continue;
             }
 
-            if ($value == "on" || $value == 1) {
+            if ($key === 'temperature' && $value == 0) {
+               continue;
+            }
+
+            if ($value == "on" || $value === 1) {
                 $value = "yes";
-            } else if ($value == "off" || $value == 0) {
+            } else if ($value == "off" || $value === 0) {
                 $value = "no";
             }
 

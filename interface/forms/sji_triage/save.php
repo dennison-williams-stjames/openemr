@@ -42,7 +42,23 @@ if ($encounter == "") {
 /* Make some transformations */
 if (!empty($_POST['contact_preferences'])) {
    // TODO: set the hippa values based on which preferences is selected
-   error_log(__FILE__ .' POST: '. print_r($_POST, 1));
+   $_POST['hipaa_allowemail'] = 'NO';
+   $_POST['hipaa_allowsms'] = 'NO';
+   $_POST['hipaa_voice'] = 'NO';
+   switch ($_POST['contact_preferences']) {
+      // TODO: we need a way to return errors here
+      case 'email':
+         $_POST['hipaa_allowemail'] = 'YES';
+         break;
+      case 'text':
+         $_POST['hipaa_allowsms'] = 'YES';
+         break;
+      case 'phone call':
+         $_POST['hipaa_voice'] = 'YES';
+         break;
+          
+          
+   }
 } 
 
 if (isset($_POST['evaluate_manage_established'])) {
@@ -52,6 +68,7 @@ if (isset($_POST['evaluate_manage_established'])) {
 }
 
 $submission = array();
+
 foreach ($triage_columns as $column) {
    if (isset($_POST[$column])) {
       $submission[$column] = $_POST[$column];

@@ -21,13 +21,13 @@ function sji_extendedTriage_formFetch() {
     $res = sqlStatement(
        "select temperature,bps,bpd ".
        "from form_vitals ".
-       "where pid=? ".
-       "order by id asc limit 1", array($pid));
+       "left join forms on (forms.form_id = form_vitals.id) ".
+       "where form_vitals.pid=? and forms.deleted=0 ".
+       "order by form_vitals.id desc limit 1", array($pid));
 
     while ($row = sqlFetchArray($res)) {
        $return['temperature'] = $row['temperature'];
-       $return['bps'] = $row['bps'];
-       $return['bpd'] = $row['bpd'];
+       $return['blood_pressure'] = $row['bps'] .'/'. $row['bpd'];
     }
 
     // get participant information
@@ -48,7 +48,18 @@ function sji_extendedTriage_formFetch() {
        $return['pid'] = $row['pid'];
     }
 
-    // TODO: set contact preferences based on the hipaa setting
+    // set contact preferences based on the hipaa setting
+    if ($return['hipaa_allowemail'] == 'YES') {
+       $return['Preferred contact (email)'] = $return['email'];
+    }
+
+    if ($return['hipaa_allowsms'] == 'YES') {
+       $return['Preferred contact (text)'] = $return['phone_cell'];
+    }
+
+    if ($return['hipaa_voice'] == 'YES') {
+       $return['Preferred contact (phone call)'] = $return['phone_home'];
+    }
 
     // get a few items from our core variables
     $sql =
@@ -57,7 +68,6 @@ function sji_extendedTriage_formFetch() {
        "where pid=? order by id desc limit 1";
 
     $res = sqlStatement($sql, array($pid));
-    //error_log(__FUNCTION__ .'() sql: '. $sql .', pid: '. $pid);
 
     while ($row = sqlFetchArray($res)) {
        $return['gender'] = $row['gender'];
@@ -78,22 +88,24 @@ function sji_extendedTriage($formid, $submission) {
        // parse distollic and sistolic values from the submission
        // TODO: how do we throw an error?
        preg_match(':(\d+)/(\d+):', $submission['blood_pressure'], $matches, PREG_OFFSET_CAPTURE);
-       $submission['bps'] = $matches[1];
-       $submission['bpd'] = $matches[2];
+       $submission['bps'] = $matches[1][0];
+       $submission['bpd'] = $matches[2][0];
     }
 
     if (!empty($submission['temperature']) || (!empty($submission['bps']) && !empty($submission['bpd']))) {
+       $vitals = [
+          'temperature' => $submission['temperature'],
+          'bps' => $submission['bps'],
+          'bpd' => $submission['bpd'],
+       ];
 
-       $sql = "select form_id from forms where pid=? and encounter=? and form_name='Vitals' order by id desc limit 1";
+       $sql = "select form_id from forms where pid=? and encounter=? and form_name='Vitals' and deleted=0 order by id desc limit 1";
        $row = sqlFetchArray(sqlStatement($sql, array($pid, $encounter)));
        if (!empty($row)) {
-          $sql = "insert into form_vitals(bps, bpd, pid, temp_method) values(?, ?, ?, $pid, 'Oral')";
           // TODO: error checking
-          sqlStatement($sql, array($submission['temperature'], $submission['bps'], $submission['bpd']));
+          formUpdate('form_vitals', $vitals, $row['form_id'], $_SESSION['userauthorized']);
        } else {
-          // TODO: add new vital forms
-          // TODO: Looking at the vitals form there does not seem to be a formSubmit followed by an addForm
-          $newid = formSubmit('form_vitals', $submission, $encounter, $_SESSION['userauthorized']);
+          $newid = formSubmit('form_vitals', $vitals, $encounter, $_SESSION['userauthorized']);
           $id = addForm($encounter, 'Vitals', $newid, 'vitals', $pid, $_SESSION['userauthorized']);
        }
     }

@@ -34,7 +34,6 @@ if (isset($_GET['id']) && $_GET['id'] != "") {
 } else {
     $obj = sji_extendedMedical_formFetch();
 }
-error_log(__FILE__ ." obj: ". print_r($obj, 1));
 
 /* A helper function for getting list options */
 function getListOptions($list_id, $fieldnames = array('option_id', 'title', 'seq')) {

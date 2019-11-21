@@ -22,7 +22,7 @@ CREATE TABLE IF NOT EXISTS `form_sji_medical_cpt_codes` (
         PRIMARY KEY (id)
 ) ENGINE=InnoDB;
 
-CREATE TABLE IF NOT EXISTS `form_sji_medical_psychiatric` (
+CREATE TABLE IF NOT EXISTS `form_sji_medical` (
 	id bigint(20) NOT NULL auto_increment,
 	date datetime default NULL,
 	pid bigint(20) default NULL,

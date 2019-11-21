@@ -41,9 +41,9 @@ function sji_medical_report($pid, $encounter, $cols, $id)
                 continue;
             }
 
-            if ($value == "on" || $value == 1) {
+            if ($value === "on" || $value === 1) {
                 $value = "yes";
-            } else if ($value == "off" || $value == 0) {
+            } else if ($value === "off" || $value === 0) {
                 $value = "no";
             }
 

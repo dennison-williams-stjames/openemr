@@ -17,7 +17,7 @@ function sji_extendedMedical_formFetch($formid = 0) {
        "from form_soap ".
        "left join forms on (forms.form_id = form_soap.id) ".
        "where form_soap.pid=? and forms.deleted=0 and forms.encounter=? ".
-       "order by form_soap.id desc limit 1", array($pid, $encounter));
+       "order by form_soap.id desc limit 1", array($pid, $_SESSION["encounter"]));
 
     while ($row = sqlFetchArray($res)) {
        $return = $row;
@@ -103,29 +103,29 @@ function sji_extendedMedical($formid, $submission) {
           // TODO: error checking
           formUpdate('form_soap', $soap, $row['form_id'], $_SESSION['userauthorized']);
        } else {
-          $newid = formSubmit('form_vitals', $soap, $encounter, $_SESSION['userauthorized']);
-          $id = addForm($encounter, 'SOAP', $newid, 'vitals', $pid, $_SESSION['userauthorized']);
+          $newid = formSubmit('form_soap', $soap, $encounter, $_SESSION['userauthorized']);
+          $id = addForm($encounter, 'SOAP', $newid, 'soap', $pid, $_SESSION['userauthorized']);
        }
     }
 
-    sqlStatement("delete from form_sji_medical_icd9_primary where pid=?", array($formid));
-    if (isset($submission['icd9_primary'])) {
-	foreach ($submission['icd9_primary'] as $icd9) {
-            if (!strlen($icd9)) {
+    sqlStatement("delete from form_sji_medical_icd10_primary where pid=?", array($formid));
+    if (isset($submission['icd10_primary'])) {
+	foreach ($submission['icd10_primary'] as $icd10) {
+            if (!strlen($icd10)) {
                continue;
             }
-            $sql = "insert into form_sji_medical_icd9_primary(icd_primary, pid) values(?, ?)";
-            sqlInsert($sql, array($icd9, $formid));
+            $sql = "insert into form_sji_medical_icd10_primary(icd_primary, pid) values(?, ?)";
+            sqlInsert($sql, array($icd10, $formid));
         }
     }
 
-    sqlStatement("delete from form_sji_medical_icd9_secondary where pid=?", array($formid));
-    if (isset($submission['icd9_secondary'])) {
-	foreach ($submission['icd9_secondary'] as $icd9) {
-            if (!strlen($icd9)) {
+    sqlStatement("delete from form_sji_medical_icd10_secondary where pid=?", array($formid));
+    if (isset($submission['icd10_secondary'])) {
+	foreach ($submission['icd10_secondary'] as $icd10) {
+            if (!strlen($icd10)) {
                continue;
             }
-            sqlInsert("insert into form_sji_medical_icd9_secondary(icd_secondary, pid) values(?, ?)", array($icd9, $formid));
+            sqlInsert("insert into form_sji_medical_icd10_secondary(icd_secondary, pid) values(?, ?)", array($icd10, $formid));
         }
     }
 
@@ -144,7 +144,7 @@ function getICD10PrimaryOptions() {
    global $obj;
    $output = "";
    $found = 0;
-   $sql = "SELECT id,code_text,code FROM codes WHERE code_type = 2";
+   $sql = "SELECT id,code_text,code FROM codes WHERE code_type = 102";
    $query = sqlStatement($sql);
    $debug = array();
    while ($icd9 = sqlFetchArray($query)) {
@@ -153,8 +153,8 @@ function getICD10PrimaryOptions() {
       //$debug[] = $icd9['code_text'];
 
       if (
-          isset($obj['icd9_primary']) &&
-          array_search($icd9['code_text'], $obj['icd9_primary']) !== false
+          isset($obj['icd10_primary']) &&
+          array_search($icd9['code_text'], $obj['icd10_primary']) !== false
       ) {
          $output .= 'selected="selected" ';
          $found = 1;
@@ -169,14 +169,14 @@ function getICD10SecondaryOptions() {
    global $obj;
    $output = "";
    $found = 0;
-   $sql = "SELECT id,code_text,code FROM codes WHERE code_type = 2";
+   $sql = "SELECT id,code_text,code FROM codes WHERE code_type = 102";
    $query = sqlStatement($sql);
    while ($icd9 = sqlFetchArray($query)) {
       $output .= '<option value="'. $icd9['code_text'] .'" ';
 
       if (
-          isset($obj['icd9_secondary']) &&
-          array_search($icd9['code_text'], $obj['icd9_secondary']) !== false
+          isset($obj['icd10_secondary']) &&
+          array_search($icd9['code_text'], $obj['icd10_secondary']) !== false
       ) {
          $output .= 'selected="selected" ';
          $found = 1;

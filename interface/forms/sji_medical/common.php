@@ -140,11 +140,32 @@ function sji_extendedMedical($formid, $submission) {
 
 }
 
+function getICD10Ajax($term) {
+   global $obj;
+   $output = "";
+   $found = 0;
+   $sql = "SELECT id,code_text,code ".
+      "FROM codes ".
+      "WHERE code_type = 102 ".
+      "AND ( code like CONCAT('%', ?, '%') ".
+      "OR code_text like CONCAT('%', ?, '%') ) ".
+      "LIMIT 100";
+   $query = sqlStatement($sql, array($term, $term));
+   $return = array();
+   while ($icd10 = sqlFetchArray($query)) {
+      $ret['id'] = $icd10['code'] .': '. $icd10['code_text'];;
+      $ret['text'] = $icd10['code'] .': '. $icd10['code_text'];
+      $return[] = $ret;
+   }
+
+   return json_encode($return);
+}
+
 function getICD10PrimaryOptions() {
    global $obj;
    $output = "";
    $found = 0;
-   $sql = "SELECT id,code_text,code FROM codes WHERE code_type = 102";
+   $sql = "SELECT id,code_text,code FROM codes WHERE code_type = 102 limit 100";
    $query = sqlStatement($sql);
    $debug = array();
    while ($icd9 = sqlFetchArray($query)) {
@@ -169,7 +190,7 @@ function getICD10SecondaryOptions() {
    global $obj;
    $output = "";
    $found = 0;
-   $sql = "SELECT id,code_text,code FROM codes WHERE code_type = 102";
+   $sql = "SELECT id,code_text,code FROM codes WHERE code_type = 102 limit 100";
    $query = sqlStatement($sql);
    while ($icd9 = sqlFetchArray($query)) {
       $output .= '<option value="'. $icd9['code_text'] .'" ';

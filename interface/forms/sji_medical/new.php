@@ -194,10 +194,15 @@ if ( !empty($obj['plan']) ) {
 <div class="form-group row">
 <label for="icd10_primary" class="col-sm-2 control-label"><?php echo xlt('ICD10 primary:'); ?></label>
 <div class="col-sm-4">
-<select name="icd10_primary[]" id="icd10_primary" multiple=multiple class="select2 form-control" data-placeholder="Select primary ICD10 codes">
-<option></option>
+<select name="icd10_primary[]" id="icd10_primary" multiple=multiple class="icd10 select2 form-control" data-placeholder="Select primary ICD10 codes">
 <?php 
-echo getICD10PrimaryOptions(); 
+if (is_array($obj['icd10_primary'])) {
+   foreach ($obj['icd10_primary'] as $icd10) {
+      echo "<option value='$icd10' selected='selected'>$icd10</option>\n";
+   }
+} else {
+   echo "<option></option>\n";
+}
 ?>
 </select>
 </div> <!-- col-sm-6 -->
@@ -208,10 +213,15 @@ echo getICD10PrimaryOptions();
 <div class="form-group row">
 <label for="icd10_secondary" class="col-sm-2 control-label"><?php echo xlt('ICD10 secondary:'); ?></label>
 <div class="col-sm-4">
-<select name="icd10_secondary[]" id="icd10_secondary" multiple=multiple class="select2 form-control" data-placeholder="Select secondary ICD10 codes">
-<option></option>
+<select name="icd10_secondary[]" id="icd10_secondary" multiple=multiple class="icd10 select2 form-control" data-placeholder="Select secondary ICD10 codes">
 <?php 
-echo getICD10SecondaryOptions(); 
+if (is_array($obj['icd10_secondary'])) {
+   foreach ($obj['icd10_secondary'] as $icd10) {
+      echo "<option value='$icd10' selected='selected'>$icd10</option>\n";
+   }
+} else {
+   echo "<option></option>\n";
+}
 ?>
 </select>
 </div> <!-- col-sm-6 -->
@@ -277,6 +287,22 @@ $(document).ready(function(){
     $('.select2').select2({
        tags: true,
     });
+
+    var url = "../../forms/sji_medical/save.php?mode=geticd10";
+    $('.icd10.select2').select2({
+       minimumInputLength: 3,
+       ajax: {
+          url: url, 
+          dataType: 'json',
+          processResults: function (data) {
+             return {
+                results: data
+             };
+          },
+          cache: true
+       }
+    });
+
 });
 
 </script>

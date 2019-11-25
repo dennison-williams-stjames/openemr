@@ -49,6 +49,9 @@ if ($_GET["mode"] == "new") {
 } elseif ($_GET["mode"] == "update") {
     $success = formUpdate($table_name, $submission, $_GET["id"], $userauthorized);
     sji_extendedMedical($_GET['id'], $_POST);
+} elseif ($_GET["mode"] == "geticd10") {
+    echo getICD10Ajax($_GET['term']);
+    return;  // this is required to prevent the json response from poisoning
 }
 
 $_SESSION["encounter"] = $encounter;

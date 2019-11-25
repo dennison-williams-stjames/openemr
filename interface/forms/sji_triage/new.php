@@ -201,7 +201,9 @@ if ( !empty($obj['chief_complaint']) ) {
 
 <!-- Notes -->
 <div class="form-group row">
-<label for="notes" class="control-label col-sm-2">Onset / Location / Duration / Characteristics / Aggravating Factors / Relieving / Timing:</label>
+<label for="notes" class="control-label col-sm-2"><?php 
+   echo xlt('Onset / Location / Duration / Characteristics / Aggravating Factors / Relieving / Timing');
+?>:</label>
 <div class="col-sm-10">
 <textarea id="notes" rows=4 name="notes" class="col-sm-10"><?php 
 if ( !empty($obj['notes']) ) { 

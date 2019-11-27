@@ -52,13 +52,14 @@ $issue = empty($_GET['issue']) ? 0 : 0 + $_GET['issue'];
  $auth_relaxed  = acl_check('encounters', 'relaxed');
  $auth_med      = acl_check('patients', 'med');
  $auth_demo     = acl_check('patients', 'demo');
+ $auth_forms    = acl_check('forms', 'view');
 
  $tmp = getPatientData($pid, "squad");
 if ($tmp['squad'] && ! acl_check('squads', $tmp['squad'])) {
     $auth_notes_a = $auth_notes = $auth_coding_a = $auth_coding = $auth_med = $auth_demo = $auth_relaxed = 0;
 }
 
-if (!($auth_notes_a || $auth_notes || $auth_coding_a || $auth_coding || $auth_med || $auth_relaxed)) {
+if (!($auth_notes_a || $auth_notes || $auth_coding_a || $auth_coding || $auth_med || $auth_relaxed || $auth_forms)) {
     echo "<body>\n<html>\n";
     echo "<p>(".htmlspecialchars(xl('Encounters not authorized'), ENT_NOQUOTES).")</p>\n";
     echo "</body>\n</html>\n";

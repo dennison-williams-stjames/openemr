@@ -46,6 +46,17 @@ if ($pid) {
     }
 }
 
+// Also get St. James Infirmary Core Variables
+require_once(dirname(__FILE__).'/../../../interface/forms/sji_intake_core_variables/report.php');
+$result4 = sji_intake_core_variables_fetch($pid);
+$submission = array();
+foreach ($intake_core_variable_columns as $column) {
+   if (isset($result4[$column])) {
+      $submission[$column] = $result4[$column];
+   }
+}
+$result = array_merge($result, $submission);
+
 $CPR = 4; // cells per row
 
 // $statii = array('married','single','divorced','widowed','separated','domestic partner');

@@ -915,7 +915,11 @@ $(document).ready(function() {
                 url += 'mf_' + flds[i] + '=' + encodeURIComponent(fval);
             }
         }
-        url+="&close"
+        //if (seperator == '?') {
+        //    url += seperator;
+        //}
+        url += 'close';
+
         dlgopen(url, '_blank', 700, 500);
         } // end function
     } // end function

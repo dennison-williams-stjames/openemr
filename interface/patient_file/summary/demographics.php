@@ -160,7 +160,14 @@ $result3 = getInsuranceData($pid, "primary", "copay, provider, DATE_FORMAT(`date
 // Also get St. James Infirmary Core Variables
 require_once(dirname(__FILE__).'/../../../interface/forms/sji_intake_core_variables/report.php');
 $result4 = sji_intake_core_variables_fetch($pid);
-$result = array_merge($result, $result4);
+$submission = array();
+foreach ($intake_core_variable_columns as $column) {
+   if (isset($result4[$column])) {
+      $submission[$column] = $result4[$column];
+   }
+}
+
+$result = array_merge($result, $submission);
 
 $insco_name = "";
 if ($result3['provider']) {   // Use provider in case there is an ins record w/ unassigned insco
@@ -546,7 +553,6 @@ while ($gfrow = sqlFetchArray($gfres)) {
        "and alert != '' ".
        "and forms.deleted=0";
 
-    error_log(__FILE__ .": sql => $sql, pid=> $pid");
     if ($query = sqlStatement($sql, array($pid))) {
         if ($results = sqlFetchArray($query)) {
 ?>

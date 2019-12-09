@@ -54,7 +54,7 @@ function get_cv_form_obj($pid, $id = 0) {
 
    // Add on partners genders
    $query = "select partners_gender from form_sji_intake_core_variables_partners_gender where pid = ?";
-   $res = sqlStatement($query, array($pid));
+   $res = sqlStatement($query, array($id));
    $partners = array();
    while ($row = sqlFetchArray($res)) {
       if (strlen($row['partners_gender'])) {

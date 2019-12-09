@@ -53,6 +53,35 @@ while ($frow = sqlFetchArray($fres)) {
 updatePatientData($pid, $newdata['patient_data']);
 updateEmployerData($pid, $newdata['employer_data']);
 
+// Add SJI Core variables info: If the participant has never had a 
+// core variables form added and this entry is being done for the first time
+// fromt the demographics edit page, than we will need to add the form
+// otherwise we should update it
+$query = "select * from form_sji_intake_core_variables where pid=? order by id desc limit 1";
+$res = sqlStatement($query, $pid);
+
+require_once(dirname(__FILE__) .'/../../../interface/forms/sji_intake_core_variables/common.php');
+$submission = array();
+
+foreach ($intake_core_variable_columns as $column) {
+   if (isset($_POST['form_'.$column])) {
+      if (preg_match('/partners_gender/', $column)) {
+         $submission[$column] = explode('|', $_POST['form_'.$column]);
+      } else {
+         $submission[$column] = $_POST['form_'.$column];
+      }
+   }
+}
+
+if ($row = sqlFetchArray($res)) {
+   $success = formUpdate('form_sji_intake_core_variables', $submission, $row["id"], $_SESSION['userauthorized']);
+   sji_extendedIntakeCoreVariables($row["id"], $_POST);
+} else {
+   $newid = formSubmit('form_sji_intake_core_variables', $submission, '', $_SESSION['userauthorized']);
+   addForm($_SESSION['encounter'], "St. James Infirmary Intake - Core Variables", $newid, "sji_intake_core_variables", $pid, $_SESSION['userauthorized']);
+   sji_extendedIntakeCoreVariables($newid, $_POST);
+}
+
 $i1dob = DateToYYYYMMDD(filter_input(INPUT_POST, "i1subscriber_DOB"));
 $i1date = DateToYYYYMMDD(filter_input(INPUT_POST, "i1effective_date"));
 

@@ -19,40 +19,10 @@
  */
 include_once(dirname(__FILE__).'/../../globals.php');
 include_once($GLOBALS["srcdir"]."/api.inc");
+include_once("common.php");
 
 function sji_intake_core_variables_fetch($pid, $id = 0) {
-   $form_name = "sji_intake_core_variables";
-
-   if (!isset($id) || !$id) {
-      $query = 'select form_id from forms where pid=? and form_name=? order by date desc limit 1';
-      $data = sqlQuery($query, array($pid, $form_name));
-      $id = $data['form_id'];
-   }
-
-   $data = formFetch("form_".$form_name, $id);
-
-   // get partners gender
-   $query = 'select `partners_gender` from form_sji_intake_core_variables_partners_gender where pid=?';
-   $result = sqlStatement($query, array($id));
-   $genders = '';
-   while ($row = sqlFetchArray($result)) {
-      if (strlen($genders)) {
-         $genders .= ', ';
-      }
-      $genders .= $row['partners_gender'];
-   }
-   $data['partners_gender'] = $genders;
-
-   // get a few other values
-   $query = 'select `DOB`,`sex`,`postal_code` from patient_data where pid=?';
-   $result = sqlQuery($query, array($pid));
-   foreach ($result as $key => $value) {
-      $key=ucwords(str_replace("_", " ", $key));
-      $data[$key] = $value;
-   }
-   //unset $data['Sex'];
-
-   return $data;
+   return get_cv_form_obj($pid, $id);
 }
 
 // TODO: should we ad the join tables to this?
@@ -62,7 +32,7 @@ function sji_intake_core_variables_report($pid, $encounter, $cols, $id)
     $count = 0;
     $data = sji_intake_core_variables_fetch($pid, $id);
     if ($data) {
-        $others = array('DOB', 'Sex', 'Postal Code');
+        $others = array('DOB', 'Sex', 'Postal Code', 'partners_gender');
         foreach ($others as $column) {
            if ($column == 'DOB' && isset($data[$column])) {
               $data['Date of birth'] = $data[$column];
@@ -70,7 +40,9 @@ function sji_intake_core_variables_report($pid, $encounter, $cols, $id)
               $data['Sex assigned at birth'] = $data[$column];
            } else if ($column == 'postal_code' && isset($data[$column])) {
               $data['Zip'] = $data[$column];
-           } 
+           } else if ($column == 'partners_gender' && isset($data[$column])) {
+              $data['Partners gender'] = join(', ', $data[$column]);
+           }
            unset($data[$column]);
         }
 

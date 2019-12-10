@@ -22,11 +22,27 @@ function sji_transgender_services_report($pid, $encounter, $cols, $id)
     $table = '';
     $data = formFetch("form_sji_transgender_services", $id);
     if ($data) {
-        $table .= "<table><tr>";
-        $table .= "<td><span class=bold>";
-        $table .= xlt($data['transgender_service_type']);
-        $table .= "</span></td>";
-        $table .= "</tr></table>\n";
+        $table .= "<table>";
+        foreach ($data as $key => $value) {
+            if ($key == "id" ||
+                $key == "pid" ||
+                $key == "user" ||
+                $key == "groupname" ||
+                $key == "authorized" ||
+                $key == "activity" ||
+                $key == "date" ||
+                $value == "")
+            {
+                continue;
+            }
+
+            if ($key == 'sji_transgender_services') {
+               $key = 'services';
+            }
+            $key=ucwords(str_replace("_", " ", $key));
+	    $table .= "<tr><td><span class=bold>" . xlt($key) . ": </span><span class=text>" . text($value) . "</span></td></tr>";
+        }
+        $table .= "</table>\n";
     }
     print $table;
 }

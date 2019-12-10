@@ -7,7 +7,9 @@ groupname varchar(255) default NULL,
 authorized tinyint(4) default NULL,
 activity tinyint(4) default NULL,
 
-transgender_service_type varchar(255),
+sji_transgender_services varchar(255),
+referral varchar(255),
+progress_notes varchar(255),
 
 PRIMARY KEY (id)
 ) ENGINE=InnoDB;

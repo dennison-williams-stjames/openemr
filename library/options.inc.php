@@ -3227,69 +3227,7 @@ function display_layout_tabs_data($formtype, $result1, $result2 = '')
 
             disp_end_row();
 
-            // Bolt on St. James Infirmary's Core Variables here
-            if ($first && $formtype == 'DEM') {
-               require_once(dirname(dirname(__FILE__)) . "/interface/forms/sji_intake_core_variables/common.php");
-               $cvs = get_cv_form_obj($pid);
-               error_log('cvs: '. print_r($cvs, 1));
-
-               if (isset($cvs['housing_situation'])) {
-                  echo '<tr><td class="label_custom" colspan="1" id="label_housing_situation"><span id="label_housing_situation">Housing situation:</span></td>'.
-                  '<td class="text data" colspan="1" id="text_housing_situation" data-value="'. $cvs['housing_situation'] .'">'. $cvs['housing_situation'] .'</td>'.
-                  '<td class="label_custom" colspan="1"></td><td class="text data" colspan="1" ></td></tr>';
-               }
-
-               if (isset($cvs['gender'])) {
-                  echo '<tr><td class="label_custom" colspan="1" id="label_gender"><span id="label_gender">Gender:</span></td>'.
-                  '<td class="text data" colspan="1" id="text_gender" data-value="'. $cvs['gender'] .'">'. $cvs['gender'] .'</td>'.
-                  '<td class="label_custom" colspan="1"></td><td class="text data" colspan="1" ></td></tr>';
-               }
-
-               if (isset($cvs['amab_4_amab'])) {
-                  echo '<tr><td class="label_custom" colspan="1" id="label_amab_4_amab"><span id="label_amab_4_amab">Sex with AMAB :</span></td>'.
-                  '<td class="text data" colspan="1" id="text_amab_4_amab" data-value="'. $cvs['amab_4_amab'] .'">'. $cvs['amab_4_amab'] .'</td>'.
-                  '<td class="label_custom" colspan="1"></td><td class="text data" colspan="1" ></td></tr>';
-               }
-
-               if (isset($cvs['pronouns'])) {
-                  echo '<tr><td class="label_custom" colspan="1" id="label_pronouns"><span id="label_pronouns">Prefered pronouns :</span></td>'.
-                  '<td class="text data" colspan="1" id="text_pronouns" data-value="'. $cvs['pronouns'] .'">'. $cvs['pronouns'] .'</td>'.
-                  '<td class="label_custom" colspan="1"></td><td class="text data" colspan="1" ></td></tr>';
-               }
-
-               if (isset($cvs['sexual_identity'])) {
-                  echo '<tr><td class="label_custom" colspan="1" id="label_sexual_identity"><span id="label_sexual_identity">Sexual identity :</span></td>'.
-                  '<td class="text data" colspan="1" id="text_sexual_identity" data-value="'. $cvs['sexual_identity'] .'">'. $cvs['sexual_identity'] .'</td>'.
-                  '<td class="label_custom" colspan="1"></td><td class="text data" colspan="1" ></td></tr>';
-               }
-
-               if (isset($cvs['sex_without_condom'])) {
-                  echo '<tr><td class="label_custom" colspan="1" id="label_sex_without_condom"><span id="label_sex_without_condom">Sex without condom:</span></td>'.
-                  '<td class="text data" colspan="1" id="text_sex_without_condom" data-value="'. $cvs['sex_without_condom'] .'">'. $cvs['sex_without_condom'] .'</td>'.
-                  '<td class="label_custom" colspan="1"></td><td class="text data" colspan="1" ></td></tr>';
-               }
-
-               if (isset($cvs['injected_without_perscription'])) {
-                  echo '<tr><td class="label_custom" colspan="1" id="label_injected_without_perscription"><span id="label_injected_without_perscription">Injected without perscription:</span></td>'.
-                  '<td class="text data" colspan="1" id="text_injected_without_perscription" data-value="'. $cvs['injected_without_perscription'] .'">'. $cvs['injected_without_perscription'] .'</td>'.
-                  '<td class="label_custom" colspan="1"></td><td class="text data" colspan="1" ></td></tr>';
-               }
-
-               if (isset($cvs['shared_needle'])) {
-                  echo '<tr><td class="label_custom" colspan="1" id="label_shared_needle"><span id="label_shared_needle">Ever shared a needle:</span></td>'.
-                  '<td class="text data" colspan="1" id="text_shared_needle" data-value="'. $cvs['shared_needle'] .'">'. $cvs['shared_needle'] .'</td>'.
-                  '<td class="label_custom" colspan="1"></td><td class="text data" colspan="1" ></td></tr>';
-               }
-
-               if (isset($cvs['active_drug_user'])) {
-                  echo '<tr><td class="label_custom" colspan="1" id="label_active_drug_user"><span id="label_active_drug_user">Active drug user:</span></td>'.
-                  '<td class="text data" colspan="1" id="text_active_drug_user" data-value="'. $cvs['active_drug_user'] .'">'. $cvs['active_drug_user'] .'</td>'.
-                  '<td class="label_custom" colspan="1"></td><td class="text data" colspan="1" ></td></tr>';
-               }
-            }
-
-            ?>
-
+?>
             </table>
         </div>
 

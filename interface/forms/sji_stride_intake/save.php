@@ -40,15 +40,35 @@ function sji_extendedIntake($formid, $submission) {
     global $pid;
 
     // Look for the external values which will likely have a different $encounter id */
+    $query = 
+       'SELECT id FROM form_sji_intake '.
+       'WHERE pid = ? '.
+       'ORDER BY id DESC '.
+       'LIMIT 1';
 
-    // TODO: look up the encounter 
-    sqlStatement("delete from form_sji_intake_supportive_people where pid=?", array($formid));
-    if (isset($submission['supportive_people'])) {
-        // TODO: audit this
-	foreach ($submission['supportive_people'] as $person) {
-            sqlInsert("insert into form_sji_intake_supportive_people(supportive_people, pid) values(?, ?)", array($person, $formid));
-        }
+    $res = sqlStatement($query, array($pid));
+
+    $row = sqlFetchArray($res);
+
+    if (isset($row['id'])) {
+
+       $formid = $row['id'];
+
+       sqlStatement("delete from form_sji_intake_supportive_people where pid=?", array($formid));
+
+       if (isset($submission['supportive_people'])) {
+          // TODO: audit this
+	  foreach ($submission['supportive_people'] as $person) {
+             $sql = "insert into form_sji_intake_supportive_people(supportive_people, pid) values(?, ?)";
+             sqlInsert($sql, array($person, $formid));
+          }
+       }
+    } else {
+       // This participant does not have a intake record.  We will need to add 
+       // one otherwise our insert here will fail
+       error_log(__FUNCTION__ .'() TODO: we need an intake record!!!');
     }
+
 
 }
 

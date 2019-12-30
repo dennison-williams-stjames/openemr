@@ -31,41 +31,51 @@ if (!$pid) {
 // get the record from the database
 if (!empty($_GET['id'])) {
 	$obj = formFetch("form_".$form_name, $_GET["id"]);
+ }
 
-        // Add on pronouns
-        $query = "select pronouns from form_sji_intake_core_variables where pid=? order by id desc limit 1";
-        $res = sqlStatement($query, array($_GET["id"]));
-        $work_with = array();
-        while ($row = sqlFetchArray($res)) {
-           $work_with[] = $row['work_with'];
-        }
-        if (sizeof($work_with)) {
-           $obj['work_with'] = $work_with;
-        }
+// Add on pronouns
+$query = "select pronouns from form_sji_intake_core_variables where pid=? order by id desc limit 1";
+$res = sqlStatement($query, array($pid));
+$pronouns = array();
+while ($row = sqlFetchArray($res)) {
+   $pronouns[] = $row['pronouns'];
+}
+if (sizeof($pronouns)) {
+   $obj['pronouns'] = $pronouns;
+}
 
-        // Add on supportive_people list
-        $query = "select supportive_people from form_sji_intake_supportive_people where pid=?";
-        $res = sqlStatement($query, array($_GET["id"]));
-        $supportive_people = array();
-        while ($row = sqlFetchArray($res)) {
-           $supportive_people[] = $row['supportive_people'];
-        }
-        if (sizeof($supportive_people)) {
-           $obj['supportive_people'] = $supportive_people;
-        }
+// Add on supportive_people list
+$query = "select id from form_sji_intake where pid = ? order by id DESC limit 1";
+$res = sqlStatement($query, array($pid));
+$intake = sqlFetchArray($res);
+$intake_id = $intake['id'];
+if (isset($intake_id)) {
+   $query = "select supportive_people from form_sji_intake_supportive_people where pid=?";
+   $res = sqlStatement($query, array($intake_id));
+   $supportive_people = array();
 
-        // TODO: the stride intake form additionaly asks for the dosage.  Is there a way
-        // we can easil add that?
-        // Add on hormones_types list
-        $query = "select hormones_types from form_sji_intake_hormones_types where pid=?";
-        $res = sqlStatement($query, array($_GET["id"]));
-        $hormones_types = array();
-        while ($row = sqlFetchArray($res)) {
-           $hormones_types[] = $row['hormones_types'];
-        }
-        if (sizeof($hormones_types)) {
-           $obj['hormones_types'] = $hormones_types;
-        }
+   while ($row = sqlFetchArray($res)) {
+      $supportive_people[] = $row['supportive_people'];
+   }
+   if (sizeof($supportive_people)) {
+      $obj['supportive_people'] = $supportive_people;
+   }
+}
+
+// TODO: the stride intake form additionaly asks for the dosage.  Is there a way
+// we can easil add that?
+// Add on hormones_types list
+$query = "select hormones_types from form_sji_intake_hormones_types where pid=?";
+$res = sqlStatement($query, array($intake_id));
+$hormones_types = array();
+while ($row = sqlFetchArray($res)) {
+   $hormones_types[] = $row['hormones_types'];
+}
+if (sizeof($hormones_types)) {
+   $obj['hormones_types'] = $hormones_types;
+   $obj['taken_hormones'] = 'Yes';
+} else {
+   $obj['taken_hormones'] = 'No';
 }
 
 /* remove the time-of-day from the date fields */
@@ -189,7 +199,7 @@ if (isset($obj['why_are_you_here'])) {
 <div class="form-group row">
 <label class="col-sm-6 control-label" for="taken_hormones">Have you taken hormones?</label>
 <div class="col-sm-6">
-<select class="select2 form-control" type=text id="taken_hormones" name="taken_hormones" data-placeholder="Have you taken hormones?">
+<select class="select2 form-control" id="taken_hormones" name="taken_hormones" data-placeholder="Have you taken hormones?">
 <option></option>
 <?php echo getListOptions('taken_hormones'); ?>
 </select>
@@ -403,17 +413,18 @@ $(document).ready(function(){
     //$("#printform").click(function() { PrintForm(); });
 
     // If the participant has taken hormones then show the related questions
+    $('#taken_hormones_questions').hide();
     var taken_hormones = $('#taken_hormones').val();
     if ( taken_hormones == 'Yes' ) {
-       $('#taken_hormones_questions').fadeOut('slow');
+       $('#taken_hormones_questions').fadeIn('slow');
     }
 
     // A UI helper function that allows us to hide the hormones questions if the participant refused it
     $('#taken_hormones').change(function() {
-       if (this.val() == 'Yes') {
-          $('#taken_hormones_questions').fadeOut('slow');
-       } else {
+       if (this.value == 'Yes') {
           $('#taken_hormones_questions').fadeIn('slow');
+       } else {
+          $('#taken_hormones_questions').fadeOut('slow');
        }
     });
 

@@ -906,6 +906,74 @@ if ($result3['provider']) {   // Use provider in case there is an ins record w/ 
        </td>
       </tr>
                     <?php } ?>
+<?php 
+// Custom demographics widget
+
+if (acl_check('patients', 'demo')) { ?>
+      <tr>
+       <td>
+<?php
+// SJI Demographics expand collapse widget
+$widgetTitle = xl("SJI Participant");
+$widgetLabel = "demographics";
+$widgetButtonLabel = xl("Edit");
+// TODO
+$widgetButtonLink = "demographics_full.php";
+$widgetButtonClass = "";
+// TODO: should this be JS?
+$linkMethod = "html";
+$bodyClass = "";
+$widgetAuth = acl_check('patients', 'demo', '', 'write');
+$fixedWidth = true;
+expand_collapse_widget(
+    $widgetTitle,
+    $widgetLabel,
+    $widgetButtonLabel,
+    $widgetButtonLink,
+    $widgetButtonClass,
+    $linkMethod,
+    $bodyClass,
+    $widgetAuth,
+    $fixedWidth
+);
+?>
+         <div id="SJI" >
+          <ul class="tabNav">
+            <?php 
+            // display tabs for: basic participant info,
+            // and all intakes: main, CV, STRIDE
+
+            print '<li class="current"> <a href="#" id="header_tab_Who"> Who</a> </li>'."\n";
+
+            // TODO: Should the following tabs display if there is no filled out form?
+            // Should they be visible and link to adding the new information?
+            // Should this data show when it was last updated?
+            print '<li class=""> <a href="#" id="header_tab_CV"> Core Variables</a> </li>'."\n";
+            print '<li class=""> <a href="#" id="header_tab_Intake"> Intake</a> </li>'."\n";
+            print '<li class=""> <a href="#" id="header_tab_Stride"> STRIDE</a> </li>'."\n";
+
+            ?>
+          </ul>
+          <div class="tabContainer">
+            <?php 
+            // TODO
+            // Get name, aliases, gender, pronouns
+            $sql = 'SELECT fname,lname,sex from patient_data where pid=?';
+            $sql = 'SELECT aliases,pronouns from form_sji_intake_core_variables '.
+                   'WHERE pid=? ORDER BY id DESC LIMIT 1';
+
+            // TODO
+            // The other tabs should populate data from the respective intake forms
+
+            // This is for LBF, we are not using it here
+            //display_layout_tabs_data('DEM', $result, $result2); 
+            ?>
+          </div>
+         </div>
+        </div> <!-- required for expand_collapse_widget -->
+       </td>
+      </tr>
+<?php } ?>
 
 <?php if (acl_check('patients', 'demo')) { ?>
       <tr>

@@ -915,10 +915,10 @@ if (acl_check('patients', 'demo')) { ?>
 <?php
 // SJI Demographics expand collapse widget
 $widgetTitle = xl("SJI Participant");
-$widgetLabel = "demographics";
+$widgetLabel = "intakes";
 $widgetButtonLabel = xl("Edit");
 // TODO
-$widgetButtonLink = "demographics_full.php";
+$widgetButtonLink = "intakes_full.php";
 $widgetButtonClass = "";
 // TODO: should this be JS?
 $linkMethod = "html";
@@ -955,12 +955,72 @@ expand_collapse_widget(
             ?>
           </ul>
           <div class="tabContainer">
+            <div class="tab current">
+              <table border=0 cellpadding=0>
+                <tbody>
             <?php 
             // TODO
-            // Get name, aliases, gender, pronouns
-            $sql = 'SELECT fname,lname,sex from patient_data where pid=?';
+            // Get name, gender
+            $sql = 'SELECT title,fname,mname,lname,sex from patient_data where pid=? ORDER BY id DESC limit 1';
+            $res = sqlStatement($sql, array($pid));
+            $patient_data = sqlFetchArray($res);
+            print '<tr><td class="label_custom"	colspan=1 id="label_title">';
+            print '<span id="label_title">Name:</span></td>'.
+                  "\n<td class='text data' colspan=1 id=text_title ";
+
+            if (isset($patient_data['title'])) {
+               print 'data-value="'. $patient_data['title'] .'">'. $patient_data['title'] .' ';
+            }else {
+               print '>';
+            }
+
+            if (isset($patient_data['fname'])) {
+               print '<span id="text_fname">'. $patient_data['fname'] .'</span>'."\n";
+            }
+
+            if (isset($patient_data['mname'])) {
+               print '<span id="text_mname">'. $patient_data['mname'] .'</span>'."\n";
+            }
+
+            if (isset($patient_data['lname'])) {
+               print '<span id="text_lname">'. $patient_data['lname'] .'</span>'."\n";
+            }
+            print "</td>\n</tr>\n";
+
+            // Get aliases and pronouns
             $sql = 'SELECT aliases,pronouns from form_sji_intake_core_variables '.
                    'WHERE pid=? ORDER BY id DESC LIMIT 1';
+            $res = sqlStatement($sql, array($pid));
+            $patient_cv = sqlFetchArray($res);
+            if (isset($patient_cv['aliases'])) {
+               print "<tr>\n<td class='label_custum colspan=1 id='label_aliases'>\n";
+               print "<span id='label_aliases'>". xl('Aliases') .":</span></td>\n".
+                  "<span id='label_aliases'><td>\n". 
+                  '<td class="text data" colspan=1 id="text_aliases">';
+               print '<span id="text_sex">'. $patient_cv['aliases'] .'</span>'.
+                  "\n</td>\n</tr>\n";
+            }
+
+            if (isset($patient_cv['pronouns'])) {
+               print "<tr>\n<td class='label_custum colspan=1 id='label_pronouns'>\n";
+               print "<span id='label_pronouns'>". xl('Pronouns') .":</span></td>\n".
+                  "<span id='label_pronouns'><td>\n". 
+                  '<td class="text data" colspan=1 id="text_pronouns">';
+               print '<span id="text_pronouns">'. $patient_cv['pronouns'] .'</span>'.
+                  "\n</td>\n</tr>\n";
+            }
+
+            if (isset($patient_data['sex'])) {
+               print "<tr>\n<td class='label_custum colspan=1 id='label_sex'>\n";
+               print "<span id='label_sex'>". xl('Gender') .":</span></td>\n".
+                  "<span id='label_sex'><td>\n". 
+                  '<td class="text data" colspan=1 id="text_gender">';
+               print '<span id="text_sex">'. $patient_data['lname'] .'</span>'.
+                  "\n</td>\n</tr>\n";
+            }
+            // close of the parent table and div
+            print "</tbody></table></div></div></div>";
+
 
             // TODO
             // The other tabs should populate data from the respective intake forms
@@ -968,6 +1028,7 @@ expand_collapse_widget(
             // This is for LBF, we are not using it here
             //display_layout_tabs_data('DEM', $result, $result2); 
             ?>
+
           </div>
          </div>
         </div> <!-- required for expand_collapse_widget -->

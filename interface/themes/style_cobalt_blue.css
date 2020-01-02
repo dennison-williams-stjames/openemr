@@ -350,6 +350,7 @@ background-color:transparent;RP_MODIFIED 1/18/2016*/
  * using the OEMR tool in the Admin section. For example, the
  * Patient Demographics are a custom layout.
  *============================================================*/
+#SJI .groupname,
 #DEM .groupname {
     font-weight: bold;
     color: #080;
@@ -357,12 +358,14 @@ background-color:transparent;RP_MODIFIED 1/18/2016*/
     padding-right: 5px;
     vertical-align: top;
 }
+#SJI .label_custom,
 #DEM .label_custom {
     font-weight: bold;
     font-size: 0.8em;
     vertical-align: top;
     text-align: right;
 }
+#SJI .data,
 #DEM .data {
     font-size: 0.8em;
     vertical-align: top;

@@ -22,10 +22,18 @@ include_once($GLOBALS["srcdir"]."/api.inc");
 include_once('common.php');
 
 // TODO: should we ad the join tables to this?
-function sji_intake_report($pid, $encounter, $cols, $id)
+function sji_intake_report($pid, $encounter, $cols, $id = 0)
 {
     $form_name = "sji_intake";
     $count = 0;
+
+    if (!$id) {
+       // If we did not recieve a form id then look it up
+       $query = "select id from form_sji_intake where pid=? order by date desc limit 1";
+       $res = sqlStatement($query, array($pid));
+       $row = sqlFetchArray($res);
+       $id = $row['id'];
+    }
 
     // TODO: should we add the associated join tables here too?
     $data = array_merge(
@@ -43,7 +51,7 @@ function sji_intake_report($pid, $encounter, $cols, $id)
                 $key == "activity" ||
                 $key == "date" ||
                 $value == "" ||
-                preg_match('/^0000/', $value) )
+                (is_string($value) && preg_match('/^0000/', $value) ) )
             {
                 continue;
             }

@@ -32,19 +32,44 @@ function sji_intake_core_variables_report($pid, $encounter, $cols, $id)
     $count = 0;
     $data = sji_intake_core_variables_fetch($pid, $id);
     if ($data) {
-        $others = array('DOB', 'Sex', 'Postal Code', 'partners_gender');
+        $others = array('dob', 'sex', 'postal_code', 'partners_gender', 'ethnicity', 'race');
         foreach ($others as $column) {
-           if ($column == 'DOB' && isset($data[$column])) {
+           if ($column == 'dob' && isset($data[$column])) {
               $data['Date of birth'] = $data[$column];
-           } else if ($column == 'Sex' && isset($data[$column])) {
-              $data['Sex assigned at birth'] = $data[$column];
+           } else if ($column == 'sex' && isset($data[$column])) {
+              $query = "select title from list_options where list_id='sex' and option_id = ?";
+              $res = sqlStatement($query, array($data[$column]));
+              $gender = sqlFetchArray($res);
+ 
+              if (isset($gender['title'])) {
+                 $data['Gender'] = $gender['title'];
+              } else {
+                 $data['Gender'] = $data[$column];
+              }
            } else if ($column == 'postal_code' && isset($data[$column])) {
               $data['Zip'] = $data[$column];
            } else if ($column == 'partners_gender' && isset($data[$column])) {
               $data['Partners gender'] = join(', ', $data[$column]);
+           } else if ($column == 'ethnicity' && isset($data[$column])) {
+              $query = "select title from list_options where list_id='ethnicity' and option_id = ?";
+              $res = sqlStatement($query, array($data[$column]));
+              $ethnicity = sqlFetchArray($res);
+
+              if (isset($ethnicity['title'])) {
+                 $data['Ethnicity'] = $ethnicity['title'];
+              }
+           } else if ($column == 'race' && isset($data[$column])) {
+              $query = "select title from list_options where list_id='race' and option_id = ?";
+              $res = sqlStatement($query, array($data[$column]));
+              $race = sqlFetchArray($res);
+
+              if (isset($race['title'])) {
+                 $data['Race'] = $race['title'];
+              }
            }
            unset($data[$column]);
         }
+        //error_log(__FUNCTION__ .'()'. ' data: '. print_r($data, 1));
 
         print "<table>";
         foreach ($data as $key => $value) {

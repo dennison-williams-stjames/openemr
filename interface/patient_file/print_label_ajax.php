@@ -47,12 +47,8 @@ if (isset($row['lname'])) {
 }
 $name .= $row['fname'];
 
-$sql = 'SELECT gender FROM form_sji_intake_core_variables WHERE pid=?';
-$res = sqlStatement($sql, array($pid));
-$row = sqlFetchArray($res);
-$gender = $row['gender'];
-$sex_code = code_sex($sex, $gender);
-error_log(__FUNCTION__ ."() gender: $gender sex_code: $sex_code");
+$sex_code = code_sex($sex);
+error_log(__FUNCTION__ ."() sex_code: $sex_code");
 
 $sql = 'SELECT name,policy_number FROM insurance_data '.
        'LEFT JOIN insurance_companies on (insurance_data.provider=insurance_companies.id) '.
@@ -139,10 +135,14 @@ if sex == 'F': sex = 'CF'
 if sex == 'OF': sex = 'NB AFAB'
 if sex == 'OM': sex = 'NB AMAB'
 */
-function code_sex($sex, $gender) {
-   if (strcmp($sex, 'Male') == 0 && strlen($gender) == 0) { return 'CM'; }
-   if (strcmp($sex, 'Female') == 0 && strlen($gender) == 0) { return 'CF'; }
-
+function code_sex($sex) {
+   if ($sex == 'Female') { return 'CF'; }
+   if ($sex == 'Male') { return 'CM'; }
+   if ($sex == 'NB AFAB') { return 'NB AFAB'; }
+   if ($sex == 'NB AMAB') { return 'NB AMAB'; }
+   if ($sex == 'Trans Female') { return 'TF'; }
+   if ($sex == 'Trans Male') { return 'TM'; }
+   /*
    if ($gender == 'Transgender Female') { return 'TF'; }
    if ($gender == 'Cisgender Female') { return 'CF'; }
    if ($gender == 'Cisgender Male') { return 'CM'; }
@@ -151,4 +151,5 @@ function code_sex($sex, $gender) {
    if ($gender == 'Other Male') { return 'NB AMAB'; }
    if ($gender == 'Other Female') { return 'NB AFAB'; }
    if ($gender == 'Intersex Female') { return 'IF'; }
+   */
 }

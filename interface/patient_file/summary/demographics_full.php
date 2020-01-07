@@ -689,7 +689,7 @@ echo xlt($CapInstype); ?></a></li><?php
                 <td class=required>:</td>
                 <td><input type='entry' size='11' class='datepicker form-control' id='i<?php echo $i?>subscriber_DOB' name='i<?php echo $i?>subscriber_DOB' value='<?php echo attr(oeFormatShortDate($result3['subscriber_DOB'])); ?>' />
         </td>
-                <td><label class=bold><?php echo xlt('Sex'); ?>: </label></td>
+                <td><label class=bold><?php echo xlt('Gender'); ?>: </label></td>
                 <td><?php
                  // Modified 6/2009 by BM to use list_options and function
                  generate_form_field(array('data_type'=>1,'field_id'=>('i'.$i.'subscriber_sex'),'list_id'=>'sex'), $result3['subscriber_sex']);

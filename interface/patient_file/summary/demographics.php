@@ -24,6 +24,9 @@ require_once("$srcdir/clinical_rules.php");
 require_once("$srcdir/options.js.php");
 require_once("$srcdir/group.inc");
 require_once(dirname(__FILE__)."/../../../library/appointments.inc.php");
+require_once(dirname(__FILE__)."/../../../interface/forms/sji_intake_core_variables/report.php");
+require_once(dirname(__FILE__)."/../../../interface/forms/sji_intake/report.php");
+require_once(dirname(__FILE__)."/../../../interface/forms/sji_stride_intake/report.php");
 
 use OpenEMR\Core\Header;
 use OpenEMR\Menu\PatientMenuRole;
@@ -916,14 +919,12 @@ if (acl_check('patients', 'demo')) { ?>
 // SJI Demographics expand collapse widget
 $widgetTitle = xl("SJI Participant");
 $widgetLabel = "intakes";
-$widgetButtonLabel = xl("Edit");
-// TODO
-$widgetButtonLink = "intakes_full.php";
+$widgetButtonLabel = '';
+$widgetButtonLink = "";
 $widgetButtonClass = "";
-// TODO: should this be JS?
 $linkMethod = "html";
 $bodyClass = "";
-$widgetAuth = acl_check('patients', 'demo', '', 'write');
+$widgetAuth = 0;
 $fixedWidth = true;
 expand_collapse_widget(
     $widgetTitle,
@@ -943,14 +944,30 @@ expand_collapse_widget(
             // display tabs for: basic participant info,
             // and all intakes: main, CV, STRIDE
 
-            print '<li class="current"> <a href="#" id="header_tab_Who"> Who</a> </li>'."\n";
+            print '<li class="current"> <a href="#" id="header_tab_Who"> Who</a></li>'."\n";
 
-            // TODO: Should the following tabs display if there is no filled out form?
-            // Should they be visible and link to adding the new information?
-            // Should this data show when it was last updated?
-            print '<li class=""> <a href="#" id="header_tab_CV"> Core Variables</a> </li>'."\n";
-            print '<li class=""> <a href="#" id="header_tab_Intake"> Intake</a> </li>'."\n";
-            print '<li class=""> <a href="#" id="header_tab_Stride"> STRIDE</a> </li>'."\n";
+            // TODO: data show when it was last updated?
+
+            $query = "select count(*) as ct from form_sji_intake_core_variables where pid=?";
+            $res = sqlStatement($query, array($pid));
+            $cv_rows = sqlFetchArray($res);
+            if (isset($cv_rows['ct']) && $cv_rows['ct'] > 0) {
+               print '<li class=""> <a href="#" id="header_tab_CV"> Core Variables</a> </li>'."\n";
+            }
+
+            $query = "select count(*) as ct from form_sji_intake where pid=?";
+            $res = sqlStatement($query, array($pid));
+            $intake_rows = sqlFetchArray($res);
+            if (isset($intake_rows['ct']) && $intake_rows['ct'] > 0) {
+               print '<li class=""> <a href="#" id="header_tab_Intake"> Intake</a> </li>'."\n";
+            }
+
+            $query = "select count(*) as ct from form_sji_stride_intake where pid=?";
+            $res = sqlStatement($query, array($pid));
+            $stride_rows = sqlFetchArray($res);
+            if (isset($stride_rows['ct']) && $stride_rows['ct'] > 0) {
+               print '<li class=""> <a href="#" id="header_tab_Stride"> STRIDE</a> </li>'."\n";
+            }
 
             ?>
           </ul>
@@ -959,67 +976,96 @@ expand_collapse_widget(
               <table border=0 cellpadding=0>
                 <tbody>
             <?php 
-            // TODO
             // Get name, gender
             $sql = 'SELECT title,fname,mname,lname,sex from patient_data where pid=? ORDER BY id DESC limit 1';
             $res = sqlStatement($sql, array($pid));
             $patient_data = sqlFetchArray($res);
+
+            $sql = 'SELECT title from list_options where list_id="sex" and option_id=?';
+            $res = sqlStatement($sql, array($patient_data['sex']));
+            $gender = sqlFetchArray($res);
+
             print '<tr><td class="label_custom"	colspan=1 id="label_title">';
             print '<span id="label_title">Name:</span></td>'.
                   "\n<td class='text data' colspan=1 id=text_title ";
 
             if (isset($patient_data['title'])) {
-               print 'data-value="'. $patient_data['title'] .'">'. $patient_data['title'] .' ';
+               print '>'. $patient_data['title'] .' ';
             }else {
                print '>';
             }
 
             if (isset($patient_data['fname'])) {
-               print '<span id="text_fname">'. $patient_data['fname'] .'</span>'."\n";
+               print $patient_data['fname'] .' ';
             }
 
             if (isset($patient_data['mname'])) {
-               print '<span id="text_mname">'. $patient_data['mname'] .'</span>'."\n";
+               print $patient_data['mname'] .' ';
             }
 
             if (isset($patient_data['lname'])) {
-               print '<span id="text_lname">'. $patient_data['lname'] .'</span>'."\n";
+               print $patient_data['lname'];
             }
             print "</td>\n</tr>\n";
 
             // Get aliases and pronouns
             $sql = 'SELECT aliases,pronouns from form_sji_intake_core_variables '.
-                   'WHERE pid=? ORDER BY id DESC LIMIT 1';
+                   'WHERE pid=? ORDER BY date DESC LIMIT 1';
             $res = sqlStatement($sql, array($pid));
             $patient_cv = sqlFetchArray($res);
             if (isset($patient_cv['aliases'])) {
-               print "<tr>\n<td class='label_custum colspan=1 id='label_aliases'>\n";
+               print "<tr>\n<td class='label_custom' colspan=1 id='label_aliases'>\n";
                print "<span id='label_aliases'>". xl('Aliases') .":</span></td>\n".
-                  "<span id='label_aliases'><td>\n". 
                   '<td class="text data" colspan=1 id="text_aliases">';
-               print '<span id="text_sex">'. $patient_cv['aliases'] .'</span>'.
-                  "\n</td>\n</tr>\n";
+               print $patient_cv['aliases'] ."\n</td>\n</tr>\n";
             }
 
             if (isset($patient_cv['pronouns'])) {
-               print "<tr>\n<td class='label_custum colspan=1 id='label_pronouns'>\n";
+               print "<tr>\n<td class='label_custom' colspan=1 id='label_pronouns'>\n";
                print "<span id='label_pronouns'>". xl('Pronouns') .":</span></td>\n".
-                  "<span id='label_pronouns'><td>\n". 
                   '<td class="text data" colspan=1 id="text_pronouns">';
-               print '<span id="text_pronouns">'. $patient_cv['pronouns'] .'</span>'.
-                  "\n</td>\n</tr>\n";
+               print $patient_cv['pronouns'] ."\n</td>\n</tr>\n";
             }
 
-            if (isset($patient_data['sex'])) {
-               print "<tr>\n<td class='label_custum colspan=1 id='label_sex'>\n";
+            if (isset($gender['title'])) {
+               print "<tr>\n<td class='label_custom' colspan=1 id='label_sex'>\n";
                print "<span id='label_sex'>". xl('Gender') .":</span></td>\n".
-                  "<span id='label_sex'><td>\n". 
                   '<td class="text data" colspan=1 id="text_gender">';
-               print '<span id="text_sex">'. $patient_data['lname'] .'</span>'.
-                  "\n</td>\n</tr>\n";
+               print $gender['title'] ."\n</td>\n</tr>\n";
+
+            } else if (isset($patient_data['sex'])) {
+               print "<tr>\n<td class='label_custom' colspan=1 id='label_sex'>\n";
+               print "<span id='label_sex'>". xl('Gender') .":</span></td>\n".
+                  '<td class="text data" colspan=1 id="text_gender">';
+               print $patient_data['sex'] ."\n</td>\n</tr>\n";
             }
-            // close of the parent table and div
-            print "</tbody></table></div></div></div>";
+
+            // close of the parent table and div."tab current"
+            print "</tbody></table></div>\n";
+
+            // create tab for CV
+            if (isset($cv_rows['ct']) && $cv_rows['ct'] > 0) {
+		    print "<div class='tab'>\n";
+		    sji_intake_core_variables_report($pid, 0, 0, 0);
+		    print "</div>\n";
+            }
+
+            // create tab for Intake
+            if (isset($intake_rows['ct']) && $intake_rows['ct'] > 0) {
+		    print "<div class='tab'>\n";
+		    sji_intake_report($pid, 0, 0, 0);
+		    print "</div>\n";
+            }
+
+            // create tab for STRIDE
+            if (isset($stride_rows['ct']) && $stride_rows['ct'] > 0) {
+		    print "<div class='tab'>\n";
+		    sji_stride_intake_report($pid, 0, 0, 0);
+		    print "</div>\n";
+            }
+
+            //close off div.tabContainer and div#SJI
+            print "</div></div>";
 
 
             // TODO

@@ -134,7 +134,7 @@ function sji_extendedIntakeCoreVariables($formid, $submission) {
 // merged
 $intake_core_variable_columns = array(
    'housing_situation',
-   'gender', 'amab_4_amab', 'pronouns',
+   'amab_4_amab', 'pronouns',
    'sexual_identity', 'sex_without_condom', 
    'injected_without_perscription', 'shared_needle',
    'active_drug_user', 'aliases'

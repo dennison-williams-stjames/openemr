@@ -16,7 +16,6 @@ CREATE TABLE IF NOT EXISTS `form_sji_intake_core_variables` (
 	activity tinyint(4) default NULL,
 
 	`housing_situation` varchar(50) DEFAULT NULL,
-	`gender` varchar(50) DEFAULT NULL,
 	`amab_4_amab` varchar(50) DEFAULT NULL,
 	`pronouns` varchar(255) DEFAULT NULL,
 	`sexual_identity` varchar(255) DEFAULT NULL,

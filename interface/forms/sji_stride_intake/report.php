@@ -18,10 +18,19 @@ include_once(dirname(__FILE__).'/../../globals.php');
 include_once($GLOBALS["srcdir"]."/api.inc");
 
 // TODO: add the join tables/columns
-function sji_stride_intake_report($pid, $encounter, $cols, $id)
+function sji_stride_intake_report($pid, $encounter, $cols, $id = 0)
 {
     $form_name = "sji_stride_intake";
     $count = 0;
+
+    if (!$id) {
+       // If we did not recieve a form id then look it up
+       $query = "select id from form_sji_stride_intake where pid=? order by date desc limit 1";
+       $res = sqlStatement($query, array($pid));
+       $row = sqlFetchArray($res);
+       $id = $row['id'];
+    }
+
     $data = formFetch("form_".$form_name, $id);
     if ($data) {
         print "<table><tr>";

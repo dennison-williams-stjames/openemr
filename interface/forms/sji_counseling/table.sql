@@ -9,6 +9,7 @@ activity tinyint(4) default NULL,
 
 counseling_type varchar(255),
 counseling_time varchar(255),
+progress_notes varchar(255),
 
 PRIMARY KEY (id)
 ) ENGINE=InnoDB;

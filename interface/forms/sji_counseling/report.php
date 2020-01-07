@@ -22,13 +22,11 @@ function sji_counseling_report($pid, $encounter, $cols, $id)
     $table = '';
     $data = formFetch("form_sji_counseling", $id);
     if ($data) {
-        $table .= "<table><tr>";
-        $table .= "<td><span class=bold>";
-        $table .= xlt($data['counseling_type']);
-        $table .= ": </span><span class=text>";
-        $table .= xlt($data['counseling_time']);
-        $table .= "</span></td>";
-        $table .= "</tr></table>\n";
+        $table .= "<table>";
+        $table .= "<tr><td><span class=bold>Type: </span><span class=text>". xlt($data['counseling_type'])."</span></td></tr>";
+        $table .= "<tr><td><span class=bold>Duration: </span><span class=text>". xlt($data['counseling_time'])."</span></td></tr>";
+        $table .= "<tr><td><span class=bold>Notes: </span><span class=text>". xlt($data['progress_notes'])."</span></td></tr>";
+        $table .= "</table>\n";
     }
     print $table;
 }

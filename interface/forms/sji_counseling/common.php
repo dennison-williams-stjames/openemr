@@ -4,5 +4,5 @@ include_once("$srcdir/api.inc");
 include_once("$srcdir/forms.inc");
 
 $counseling_columns = array(
-   'counseling_type', 'counseling_time'
+   'counseling_type', 'counseling_time', 'progress_notes'
 );

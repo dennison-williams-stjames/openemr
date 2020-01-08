@@ -25,6 +25,7 @@ $returnurl = 'encounter_top.php';
 $provider_results = sqlQuery("select fname, lname from users where username=?", array($_SESSION{"authUser"}));
 /* name of this form */
 $form_name = "sji_intake";
+$obj = array();
 
 if (!$pid) {
     $pid = $_SESSION['pid'];
@@ -32,15 +33,28 @@ if (!$pid) {
 
 // get the record from the database
 if (isset($_GET['id']) && $_GET['id'] != "") {
-	$obj = array_merge(
-		formFetch("form_".$form_name, $_GET["id"]),
-		sji_intake_formFetch($_GET["id"]));
+   $obj = array_merge(
+      formFetch("form_".$form_name, $_GET["id"]),
+      sji_intake_formFetch($_GET["id"]));
 
-	/* remove the time-of-day from the date fields */
-	if (isset($obj['date_of_signature']) && $obj['date_of_signature'] != "") {
-		$dateparts = explode(" ", $obj['date_of_signature']);
-		$obj['date_of_signature'] = $dateparts[0];
-	}
+}
+
+// else get the most recent copy of the data from the database
+else {
+   $sql = "SELECT id from form_sji_intake where pid = ? order by date DESC LIMIT 1";
+   $res = sqlStatement($sql, array($pid));
+   $intake = sqlFetchArray($res);
+   if (isset($intake['id'])) {
+      $obj = array_merge(
+         formFetch("form_".$form_name, $intake["id"]),
+         sji_intake_formFetch($intake["id"]));
+   }
+}
+
+/* remove the time-of-day from the date fields */
+if (isset($obj['date_of_signature']) && $obj['date_of_signature'] != "") {
+	$dateparts = explode(" ", $obj['date_of_signature']);
+	$obj['date_of_signature'] = $dateparts[0];
 }
 
 // TODO: figure out how to get values from the object selected
@@ -149,7 +163,7 @@ if (isset($_GET['id'])) {
 
 <div class="form-group row">
 
-<div class="col-sm-3 padding form-group">
+<div class="col-sm-2 padding form-group">
 <label for="declined_intake" class="control-label text-center">Declined intake</label>
 <input id="declined_intake" type=checkbox name="declined_intake" <?php 
 if (
@@ -167,8 +181,14 @@ if (
 <input type="button" class="dontsave" value="<?php echo xla('Don\'t Save'); ?>"> &nbsp;
 </div>
 
-<div class="col-sm-3 text-center">
-<?php echo date("F d, Y", time()); ?>
+<div class="col-sm-4 text-center">
+<?php 
+if (isset($obj['date'])) {
+echo 'Last updated: ' .date("F d, Y", strtotime($obj['date'])); 
+} else {
+echo date("F d, Y", time()); 
+}
+?>
 </div>
 
 </div> <!-- class="form-group row" -->

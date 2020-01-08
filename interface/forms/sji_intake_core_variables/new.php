@@ -31,11 +31,19 @@ if (!$pid) {
 }
 
 // get the record from the database
-if ($_GET['id'] != "") {
-   error_log(__FILE__ ." pid: $pid, id: ". $_GET["id"]);
+if (isset($_GET['id'])) {
    $obj = get_cv_form_obj($pid, $_GET["id"]);
-   error_log(__FILE__ ." obj: ". print_r($obj, 1));
 } 
+
+// else get the most recent copy of the data from the database
+else {
+   $sql = "SELECT id from form_sji_intake_core_variables where pid = ? order by date DESC LIMIT 1";
+   $res = sqlStatement($sql, array($pid));
+   $intake = sqlFetchArray($res);
+   if (isset($intake['id'])) {
+      $obj = get_cv_form_obj($pid, $intake["id"]);
+   }
+}
 
 /* remove the time-of-day from the date fields */
 if ($obj['date_of_signature'] != "") {
@@ -124,15 +132,21 @@ if (isset($_GET['id'])) {
 
 <div class="form-group row">
 
-<div class="col-sm-3 padding form-group"></div>
+<div class="col-sm-2 padding form-group"></div>
 
 <div class="col-sm-6 text-center">
 <input type="button" class="save" value="    <?php echo xla('Save'); ?>    "> &nbsp;
 <input type="button" class="dontsave" value="<?php echo xla('Don\'t Save'); ?>"> &nbsp;
 </div>
 
-<div class="col-sm-3 text-center">
-<?php echo date("F d, Y", time()); ?>
+<div class="col-sm-4 text-center">
+<?php
+if (isset($obj['date'])) {
+echo 'Last updated: ' .date("F d, Y", strtotime($obj['date'])); 
+} else {
+echo date("F d, Y", time()); 
+}
+?>
 </div>
 
 </div> <!-- class="form-group row" -->

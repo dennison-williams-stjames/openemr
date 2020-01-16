@@ -62,8 +62,6 @@ if (isset($intake_id)) {
    }
 }
 
-// TODO: the stride intake form additionaly asks for the dosage.  Is there a way
-// we can easil add that?
 // Add on hormones_types list
 $query = "select hormones_types from form_sji_intake_hormones_types where pid=?";
 $res = sqlStatement($query, array($intake_id));
@@ -73,9 +71,34 @@ while ($row = sqlFetchArray($res)) {
 }
 if (sizeof($hormones_types)) {
    $obj['hormones_types'] = $hormones_types;
-   $obj['taken_hormones'] = 'Yes';
-} else {
-   $obj['taken_hormones'] = 'No';
+} 
+
+// Add on taken_hormones
+$query = "select taken_hormones from form_sji_intake where id=?";
+$res = sqlStatement($query, array($intake_id));
+$row = sqlFetchArray($res);
+if (isset($row['taken_hormones'])) {
+   $obj['taken_hormones'] = $row['taken_hormones'];
+}
+
+// Add on street and phone
+$query = "select fname,lname,street,city,state,postal_code,phone_home,phone_biz,phone_cell from patient_data where pid=?";
+$res = sqlStatement($query, array($pid));
+$row = sqlFetchArray($res);
+$obj['Name'] = $row['fname'] .' '. $row['lname'];
+$obj['Address'] = $row['street'] .', '. $row['city'] .', '. $row['state'] .' '. $row['postal_code'];
+
+$obj['Phone'] = '';
+if (isset($row['phone_cell'])) {
+   $obj['Phone'] .= 'Cell: '. $row['phone_cell'];
+}
+
+if (isset($row['phone_home'])) {
+   $obj['Phone'] .= ', Home: '. $row['phone_home'];
+}
+
+if (isset($row['phone_biz'])) {
+   $obj['Phone'] .= ', Work: '. $row['phone_biz'];
 }
 
 /* remove the time-of-day from the date fields */
@@ -84,7 +107,6 @@ if (!empty($obj['date_of_signature'])) {
 	$obj['date_of_signature'] = $dateparts[0];
 }
 
-// TODO: figure out how to get values from the object selected
 /* A helper function for getting list options */
 function getListOptions($list_id, $fieldnames = array('option_id', 'title', 'seq')) {
     global $obj;
@@ -170,9 +192,42 @@ if (isset($_GET['id'])) {
 }
 ?>" name="my_form" id="my_form">
 
+<!-- Participant name -->
+<div class="form-group row">
+<label class="col-sm-6 control-label" for="name">Participant's name</label>
+<div class="col-sm-6" id="name"><?php
+if (isset($obj['Name'])) {
+   echo $obj['Name'];
+}
+?></div>
+</div>
+<!-- participant name -->
+
+<!-- address -->
+<div class="form-group row">
+<label class="col-sm-6 control-label" for="address">Participant's address</label>
+<div class="col-sm-6" id="address"><?php
+if (isset($obj['Address'])) {
+   echo $obj['Address'];
+}
+?></div>
+</div>
+<!-- address -->
+
+<!-- phone -->
+<div class="form-group row">
+<label class="col-sm-6 control-label" for="phone">Participant's phone</label>
+<div class="col-sm-6" id="phone"><?php
+if (isset($obj['Phone'])) {
+   echo $obj['Phone'];
+}
+?></div>
+</div>
+<!-- phone -->
+
 <!-- pronouns -->
 <div class="form-group row">
-<label class="col-sm-6 control-label" for="pronouns"><?php echo xlt('Pronouns'); ?></label>
+<label class="col-sm-6 control-label" for="pronouns"><?php echo xlt('Which pronouns do you prefer to use?'); ?></label>
 <div class="col-sm-6">
 <select id="pronouns" type=text name="pronouns" class="form-control select2">
 <option></option>
@@ -183,7 +238,7 @@ if (isset($_GET['id'])) {
 <!-- pronouns -->
 
 <div class="form-group row">
-<label class="col-sm-6 control-label" for="why_are_you_here">What brought you to the transgender care program today?</label>
+<label class="col-sm-6 control-label" for="why_are_you_here"><?php echo xlt('What brought you to the transgender care program today?'); ?></label>
 <div class="col-sm-6">
 <textarea class="form-control" rows=3 id="why_are_you_here" name="why_are_you_here">
 <?php
@@ -195,7 +250,7 @@ if (isset($obj['why_are_you_here'])) {
 </div>
 </div>
 
-<!-- TODO: setup js to expend or collapse this section depending on the value of the selection -->
+<!-- see below for js to expend or collapse this section depending on the value of the selection -->
 <div class="form-group row">
 <label class="col-sm-6 control-label" for="taken_hormones">Have you taken hormones?</label>
 <div class="col-sm-6">
@@ -211,28 +266,45 @@ if (isset($obj['why_are_you_here'])) {
 <div class="form-group row">
 <label class="col-sm-6 control-label" for="hormone_duration">For how long?</label>
 <div class="col-sm-6">
-<input class="form-control" type=text id="hormone_duration" name="hormone_duration">
+<input class="form-control" type=text id="hormone_duration" name="hormone_duration" <?php
+if (isset($obj['hormone_duration'])) {
+   echo "value='". $obj['hormone_duration'] ."'";
+}
+?>>
 </div>
 </div>
 
+<!-- TODO: this is partially duplicated in the intake form -->
 <div class="form-group row">
 <label class="col-sm-6 control-label" for="hormone_form_dosage">What form/dosage?</label>
 <div class="col-sm-6">
-<input class="form-control" type=text id="hormone_form_dosage" name="hormone_form_dosage">
+<input class="form-control" type=text id="hormone_form_dosage" name="hormone_form_dosage" <?php
+if (isset($obj["hormone_form_dosage"])) {
+   echo "value='". $obj["hormone_form_dosage"] ."'";
+}
+?>>
 </div>
 </div>
 
 <div class="form-group row">
 <label class="col-sm-6 control-label" for="hormone_program">Through which program?</label>
 <div class="col-sm-6">
-<input class="form-control" type=text id="hormone_program" name="hormone_program">
+<input class="form-control" type=text id="hormone_program" name="hormone_program" <?php
+if (isset($obj['hormone_program'])) {
+   echo "value='". $obj['hormone_program'] ."'";
+}
+?>>
 </div>
 </div>
 
 <div class="form-group row">
 <label class="col-sm-6 control-label" for="why_stopped">Why did you stop?</label>
 <div class="col-sm-6">
-<input class="form-control" type=text id="hormone_program" name="hormone_program">
+<input class="form-control" type=text id="why_stopped" name="why_stopped" <?php
+if(isset($obj['why_stopped'])) {
+   echo "value='". $obj['why_stopped'] ."'";
+}
+?>>
 </div>
 </div>
 

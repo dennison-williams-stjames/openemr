@@ -39,15 +39,15 @@ function getListOptions($list_id, $fieldnames = array('option_id', 'title', 'seq
     $query = sqlStatement("SELECT ".implode(',', $fieldnames)." FROM list_options where list_id = ? AND activity = 1 order by seq", array($list_id));
     while ($list_options = sqlFetchArray($query)) {
         $output .= '<option value="'. $list_options['option_id'] .'" ';
-        if ($obj['transgender_service_type'] == $list_options['option_id']) {
+        if ($obj['sji_transgender_services'] == $list_options['option_id']) {
            $output .= 'selected="selected" ';
            $found = 1;
         } 
         $output .= '>'. $list_options['title'] .'</option>';
     }
 
-    if (!$found && $obj['transgender_service_type'] && $list_id == 'sji_transgender_services') {
-       $output .= '<option selected="selected" value="'. $obj['transgender_service_type'] .'">'. $obj['transgender_service_type'] .'</>';
+    if (!$found && $obj['sji_transgender_services'] && $list_id == 'sji_transgender_services') {
+       $output .= '<option selected="selected" value="'. $obj['sji_transgender_services'] .'">'. $obj['sji_transgender_services'] .'</>';
     }
 
     return $output;
@@ -85,13 +85,38 @@ function getListOptions($list_id, $fieldnames = array('option_id', 'title', 'seq
 </div> <!-- roww bg-primary -->
 
 <div class="form-group row">
-<label for="transgender_service_type" class="col-sm-2 control-label"><?php echo xlt('Transgender service type:'); ?></label>
+<label for="sji_transgender_services" class="col-sm-2 control-label"><?php echo xlt('Transgender service type:'); ?></label>
 <div class="col-sm-4">
-<select name="transgender_service_type" id="transgender_service_type" class="select2 form-control" data-placeholder="Select or enter a transgender service ...">
+<select id="sji_transgender_services" name="sji_transgender_services" class="select2 form-control">
+<option></option>
 <?php echo getListOptions('sji_transgender_services'); ?>
 </select>
 </div> <!-- col-sm-4 -->
 <div class="col-sm-6"></div>
+</div> <!-- row -->
+
+<div class="form-group row">
+<label for="referral" class="col-sm-2 control-label"><?php echo xlt('Referrals:'); ?></label>
+<div class="col-sm-10">
+<textarea id="referral" rows=4 name="referral" class="col-sm-10"><?php 
+if ( !empty($obj['referral']) ) { 
+   echo $obj['referral']; 
+} 
+?>
+</textarea>
+</div>
+</div> <!-- row -->
+
+<div class="form-group row">
+<label for="progress_notes" class="col-sm-2 control-label"><?php echo xlt('Progress notes:'); ?></label>
+<div class="col-sm-10">
+<textarea id="progress_notes" rows=4 name="progress_notes" class="col-sm-10"><?php 
+if ( !empty($obj['progress_notes']) ) { 
+   echo $obj['progress_notes']; 
+} 
+?>
+</textarea>
+</div>
 </div> <!-- row -->
 
 <?php

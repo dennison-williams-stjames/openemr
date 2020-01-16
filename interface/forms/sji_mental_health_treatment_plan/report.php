@@ -14,13 +14,15 @@
  *   along with this program; if not, write to the Free Software
  *   Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
  */
+include_once('common.php');
 include_once(dirname(__FILE__).'/../../globals.php');
 include_once($GLOBALS["srcdir"]."/api.inc");
-function sji_transgender_services_report($pid, $encounter, $cols, $id)
+
+function sji_mental_health_treatment_plan_report($pid, $encounter, $cols, $id)
 {
     $count = 0;
     $table = '';
-    $data = formFetch("form_sji_transgender_services", $id);
+    $data = formFetch("form_sji_mental_health_treatment_plan", $id);
     if ($data) {
         $table .= "<table>";
         foreach ($data as $key => $value) {
@@ -36,13 +38,11 @@ function sji_transgender_services_report($pid, $encounter, $cols, $id)
                 continue;
             }
 
-            if ($key == 'sji_transgender_services') {
-               $key = 'services';
-            }
             $key=ucwords(str_replace("_", " ", $key));
-	    $table .= "<tr><td><span class=bold>" . xlt($key) . ": </span><span class=text>" . text($value) . "</span></td></tr>";
+    
+	$table .= "<tr><td><span class=bold>" . xlt($key) . ": </span><span class=text>" . text($value) . "</span></td></tr>";
         }
-        $table .= "</table>\n";
     }
+    $table .= "</table>\n";
     print $table;
 }

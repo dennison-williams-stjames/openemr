@@ -7,7 +7,7 @@ $progress_note_columns = array(
    'treatment_location',
    'service_type',
    'sji_progress_notes_duration',
-   'progress_note',
    'duration',
    'inactive'
+   'progress_note',
 );

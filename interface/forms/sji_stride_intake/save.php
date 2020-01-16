@@ -66,7 +66,6 @@ function sji_extendedIntake($formid, $submission) {
     // Update taken hormones if changed
     if (isset($submission['taken_hormones']) && isset($intake_id)) {
        $sql = 'UPDATE form_sji_intake SET taken_hormones = ? where id = ?';
-       error_log(__FUNCTION__ .'() taken_hormones sql: '. $sql .', taken_hormones: '. $submission['taken_hormones'] .', id: '. $intake_id);
        $res = sqlStatement($sql, array($submission['taken_hormones'], $intake_id));
     } 
 }

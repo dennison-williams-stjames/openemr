@@ -17,12 +17,66 @@
 include_once(dirname(__FILE__).'/../../globals.php');
 include_once($GLOBALS["srcdir"]."/api.inc");
 
-// TODO: add the join tables/columns
-function sji_stride_intake_report($pid, $encounter, $cols, $id)
+function sji_stride_intake_report($pid, $encounter, $cols, $id = 0)
 {
     $form_name = "sji_stride_intake";
     $count = 0;
+
+    if (!$id) {
+       // If we did not recieve a form id then look it up
+       $query = "select id from form_sji_stride_intake where pid=? order by date desc limit 1";
+       $res = sqlStatement($query, array($pid));
+       $row = sqlFetchArray($res);
+       $id = $row['id'];
+    }
+
     $data = formFetch("form_".$form_name, $id);
+
+    // Add on name, address, phone and pronouns
+    $query = "select fname,lname,street,city,state,postal_code,phone_home,phone_biz,phone_cell from patient_data where pid=?";
+    $res = sqlStatement($query, array($pid));
+    $row = sqlFetchArray($res);
+    $data['Name'] = $row['fname'] .' '. $row['lname'];
+    $data['Address'] = $row['street'] .', '. $row['city'] .', '. $row['state'] .' '. $row['postal_code'];
+
+    $data['Phone'] = '';
+    if (isset($row['phone_cell'])) {
+       $data['Phone'] .= 'Cell: '. $row['phone_cell'];
+    }
+
+    if (isset($row['phone_home'])) {
+       $data['Phone'] .= ', Home: '. $row['phone_home'];
+    }
+
+    if (isset($row['phone_biz'])) {
+       $data['Phone'] .= ', Work: '. $row['phone_biz'];
+    }
+
+    $query = "select pronouns from form_sji_intake_core_variables where pid=? order by date desc limit 1";
+    $res = sqlStatement($query, array($pid));
+    $row = sqlFetchArray($res);
+    if (isset($row['pronouns'])) {
+       $data['Pronouns'] = $row['pronouns'];
+    }
+
+    // Add on supportive people
+    $query = "select id from form_sji_intake where pid = ? order by id DESC limit 1";
+    $res = sqlStatement($query, array($pid));
+    $intake = sqlFetchArray($res);
+    $intake_id = $intake['id'];
+    if (isset($intake_id)) {
+       $query = "select supportive_people from form_sji_intake_supportive_people where pid=?";
+       $res = sqlStatement($query, array($intake_id));
+       $supportive_people = array();
+
+       while ($row = sqlFetchArray($res)) {
+          $supportive_people[] = $row['supportive_people'];
+       }
+       if (sizeof($supportive_people)) {
+          $data['supportive_people'] = implode(', ', $supportive_people);
+       }
+    }
+
     if ($data) {
         print "<table><tr>";
         foreach ($data as $key => $value) {
@@ -46,7 +100,18 @@ function sji_stride_intake_report($pid, $encounter, $cols, $id)
             $key=ucwords(str_replace("_", " ", $key));
             print("<tr>\n");
             print("<tr>\n");
-            print "<td><span class=bold>" . xlt($key) . ": </span><span class=text>" . text($value) . "</span></td>";
+
+            if ($key == "Why Are You Here") {
+               $key = xlt('Why are you here');
+            } else if ($key == "Hormone Duration"){
+               $key = xlt('Duration hormones have been taken');
+            } else if ($key == "Hormone Program"){
+               $key = xlt('Programs that have provided hormones');
+            }
+
+            print "<td><span class=bold>" . 
+               xlt($key) . ": </span><span class=text>" . 
+               text($value) . "</span></td>";
 
             $count++;
             if ($count == $cols) {

@@ -347,8 +347,10 @@ if (count($facilities) > 1) {
  foreach ($provinfo as $doc) {
     $username = $doc['username'];
     echo "    <option value='" . attr($username) . "'";
-    foreach ($providers as $provider)
+    foreach ($providers as $provider) {
         if ($provider['username'] == $username) echo " selected";
+        error_log(__FILE__ ." provider: ". print_r($provider, 1));
+    }
     echo ">" . htmlspecialchars($doc['lname'],ENT_QUOTES) . ", " . htmlspecialchars($doc['fname'],ENT_QUOTES) . "</option>\n";
  }
  echo "   </select>\n";

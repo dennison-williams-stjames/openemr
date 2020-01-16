@@ -30,8 +30,16 @@ if (!$pid) {
 
 // get the record from the database
 if (!empty($_GET['id'])) {
-	$obj = formFetch("form_".$form_name, $_GET["id"]);
- }
+   $obj = formFetch("form_".$form_name, $_GET["id"]);
+} else {
+// if none was supplied then we populate the obj from the most recent intake
+   $sql = 'SELECT id FROM form_sji_stride_intake where pid = ? order by date desc limit 1';
+   $res = sqlStatement($sql, array($pid));
+   $row = sqlFetchArray($res);
+   if (isset($row['id'])) {
+      $obj = formFetch("form_".$form_name, $row["id"]);
+   }
+}
 
 // Add on pronouns
 $query = "select pronouns from form_sji_intake_core_variables where pid=? order by id desc limit 1";

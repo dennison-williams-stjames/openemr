@@ -27,11 +27,6 @@ include_once("$srcdir/forms.inc");
  */
 $table_name = "form_sji_stride_intake";
 
-if ($encounter == "") {
-    // TODO: this should use the system sequence generator
-    $encounter = date("Ymd");
-}
-
 if (!$pid) {
     $pid = $_SESSION['pid'];
 }
@@ -43,33 +38,37 @@ function sji_extendedIntake($formid, $submission) {
     $query = 
        'SELECT id FROM form_sji_intake '.
        'WHERE pid = ? '.
-       'ORDER BY id DESC '.
+       'ORDER BY date DESC '.
        'LIMIT 1';
 
     $res = sqlStatement($query, array($pid));
 
     $row = sqlFetchArray($res);
 
-    if (isset($row['id'])) {
+    $intake_id = $row['id'];
 
-       $formid = $row['id'];
+    if (isset($intake_id) && isset($submission['supportive_people'])) {
 
-       sqlStatement("delete from form_sji_intake_supportive_people where pid=?", array($formid));
+       sqlStatement("delete from form_sji_intake_supportive_people where pid=?", array($intake_id));
 
-       if (isset($submission['supportive_people'])) {
-          // TODO: audit this
-	  foreach ($submission['supportive_people'] as $person) {
-             $sql = "insert into form_sji_intake_supportive_people(supportive_people, pid) values(?, ?)";
-             sqlInsert($sql, array($person, $formid));
-          }
-       }
-    } else {
-       // This participant does not have a intake record.  We will need to add 
-       // one otherwise our insert here will fail
-       error_log(__FUNCTION__ .'() TODO: we need an intake record!!!');
-    }
+       foreach ($submission['supportive_people'] as $person) {
+          $sql = "insert into form_sji_intake_supportive_people(supportive_people, pid) values(?, ?)";
+          sqlInsert($sql, array($person, $intake_id));
+       } // foreach
+    } 
 
+    // Update pronouns if they have changed
+    if (isset($submission['pronouns']) && isset($intake_id)) {
+       $sql = 'UPDATE form_sji_intake_core_variables SET pronouns = ? where pid = ?';
+       $res = sqlStatement($sql, array($submission['pronouns'], $pid));
+    } 
 
+    // Update taken hormones if changed
+    if (isset($submission['taken_hormones']) && isset($intake_id)) {
+       $sql = 'UPDATE form_sji_intake SET taken_hormones = ? where id = ?';
+       error_log(__FUNCTION__ .'() taken_hormones sql: '. $sql .', taken_hormones: '. $submission['taken_hormones'] .', id: '. $intake_id);
+       $res = sqlStatement($sql, array($submission['taken_hormones'], $intake_id));
+    } 
 }
 
 $intake_columns = array(
@@ -89,14 +88,13 @@ foreach ($intake_columns as $column) {
 
 if ($_GET["mode"] == "new") {
     $newid = formSubmit($table_name, $submission, '', $userauthorized);
-    addForm($encounter, "St. James Infirmary STRIDE Intake", $newid, "sji_stride_intake", $pid, $userauthorized);
+    addForm($_SESSION["encounter"], "St. James Infirmary STRIDE Intake", $newid, "sji_stride_intake", $pid, $userauthorized);
     sji_extendedIntake($newid, $_POST);
 } elseif ($_GET["mode"] == "update") {
     $success = formUpdate($table_name, $submission, $_GET["id"], $userauthorized);
     sji_extendedIntake($_GET["id"], $_POST);
 }
 
-$_SESSION["encounter"] = $encounter;
 formHeader("Redirecting....");
 formJump();
 formFooter();

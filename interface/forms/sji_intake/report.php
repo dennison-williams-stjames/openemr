@@ -21,7 +21,6 @@ include_once(dirname(__FILE__).'/../../globals.php');
 include_once($GLOBALS["srcdir"]."/api.inc");
 include_once('common.php');
 
-// TODO: should we ad the join tables to this?
 function sji_intake_report($pid, $encounter, $cols, $id = 0)
 {
     $form_name = "sji_intake";

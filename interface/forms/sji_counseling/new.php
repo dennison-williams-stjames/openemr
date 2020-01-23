@@ -18,6 +18,7 @@ use OpenEMR\Core\Header;
 
 include_once("../../globals.php");
 include_once("$srcdir/api.inc");
+require_once("common.php");
 formHeader("Form: Counseling encounter");
 $returnurl = 'encounter_top.php';
 $provider_results = sqlQuery("select fname, lname from users where username=?", array($_SESSION{"authUser"}));
@@ -25,38 +26,55 @@ $provider_results = sqlQuery("select fname, lname from users where username=?", 
 $form_name = "sji_counseling";
 
 // get the record from the database
-if ($_GET['id'] != "") {
-    $obj = formFetch("form_".$form_name, $_GET["id"]);
+if (isset($_GET['id'])) {
+    $obj = array_merge(
+	formFetch("form_".$form_name, $_GET["id"]),
+	sji_counseling_formFetch($_GET["id"]));
 }
 
-/* A helper function for getting list options */
 function getListOptions($list_id, $fieldnames = array('option_id', 'title', 'seq')) {
     global $obj;
+
     $output = "";
-    $found = 0;
-    $query = sqlStatement("SELECT ".implode(',', $fieldnames)." FROM list_options where list_id = ? AND activity = 1 order by seq", array($list_id));
+    $selected = array();
+    $list_id = preg_replace('/^sji_(.*)/', '$1', $list_id);
+
+    if (isset($obj[$list_id])) {
+           $selected = $obj[$list_id];
+    }
+    $query = sqlStatement("SELECT ".implode(',', $fieldnames)." FROM list_options where list_id = ? AND activity = 1 order by seq", array('sji_'. $list_id));
     while ($list_options = sqlFetchArray($query)) {
         $output .= '<option value="'. $list_options['option_id'] .'" ';
-        if ($obj['counseling_type'] == $list_options['option_id']) {
-           $output .= 'selected="selected" ';
-           $found = 1;
-        } else if ($obj['counseling_time'] == $list_options['option_id']) {
-           $output .= 'selected="selected" ';
-           $found = 1;
+
+        if (isset($selected)) {
+
+           if (is_array($selected) && in_array($list_options['option_id'], $selected)) {
+              $output .= "selected ";
+              $key = array_search($list_options['option_id'], $selected);
+              if ($key >= 0) {
+                 array_splice($selected, $key, 1);
+              }
+           } else if ($selected === $list_options['option_id']) {
+              $output .= "selected ";
+              unset($selected);
+           }
         }
         $output .= '>'. $list_options['title'] .'</option>';
     }
 
-    if (!$found && $obj['counseling_type'] && $list_id == 'sji_counseling') {
-       $output .= '<option selected="selected" value="'. $obj['counseling_type'] .'">'. $obj['counseling_type'] .'</>';
-    }
-
-    if (!$found && $obj['counseling_time'] && $list_id == 'sji_counseling_time') {
-       $output .= '<option selected="selected" value="'. $obj['counseling_time'] .'">'. $obj['counseling_time'] .'</>';
+    if (isset($selected)) {
+       if (is_array($selected)) {
+          foreach ($selected as $selection) {
+             $output .= '<option value="'. $selection .'" selected>'. $selection .'</option>';
+          }
+       } else if (strlen($selected)) {
+          $output .= '<option value="'. $selected .'" selected>'. $selected .'</option>';
+       }
     }
 
     return $output;
 }
+
 
 ?>
 
@@ -87,15 +105,28 @@ if (isset($obj['date'])) {
 
 <div class="row bg-primary">
 <div class="col-sm-12">
-<span class="title"><?php echo xlt('Counseling record'); ?></span>
+<span class="title"><?php echo xlt('Harm Reduction Counseling'); ?></span>
 </div> <!-- col-sm-12 -->
 </div> <!-- roww bg-primary -->
 
 <!-- Counseling Type -->
 <div class="form-group row">
-<label for="counseling_type" class="col-sm-2 control-label"><?php echo xlt('Counseling type:'); ?></label>
+<label for="counseling_type" class="col-sm-2 control-label"><?php echo xlt('Type of Session:'); ?></label>
 <div class="col-sm-4">
 <select name="counseling_type" id="counseling_type" class="select2 form-control" data-placeholder="Select or enter a counseling type...">
+<option></option>
+<?php echo getListOptions('sji_counseling_type'); ?>
+</select>
+</div>
+<div class="col-sm-6"></div>
+</div>
+<!-- Counseling Type -->
+
+<!-- Counseling-->
+<div class="form-group row">
+<label for="counseling" class="col-sm-2 control-label"><?php echo xlt('Counseling:'); ?></label>
+<div class="col-sm-4">
+<select name="counseling[]" id="counseling" class="select2 form-control" data-placeholder="Select or enter..." multiple=multiple>
 <?php echo getListOptions('sji_counseling'); ?>
 </select>
 </div>
@@ -107,6 +138,7 @@ if (isset($obj['date'])) {
 <label for="counseling_time" class="col-sm-2 control-label"><?php echo xlt('Duration:'); ?></label>
 <div class="col-sm-4">
 <select name="counseling_time" id="counseling_time" class="select2 form-control" data-placeholder="Select or enter the time spent...">
+<option></option>
 <?php echo getListOptions('sji_counseling_time'); ?>
 </select>
 </div> <!-- col-sm-6 -->
@@ -115,9 +147,9 @@ if (isset($obj['date'])) {
 
 <!-- Progress notes -->
 <div class="form-group row">
-<label for="progress_notes" class="col-sm-2 control-label"><?php echo xlt('Progress notes:'); ?></label>
+<label for="progress_notes" class="col-sm-2 control-label"><?php echo xlt('Counselor notes / Treatment dispensed:'); ?></label>
 <div class="col-sm-4">
-<textarea name="progress_notes" id="progress_notes" class="form-control" rows=3 ><?php
+<textarea name="progress_notes" id="progress_notes" class="form-control" rows=6 ><?php
 if (!empty($obj['progress_notes'])) {
    echo $obj['progress_notes'];
 }
@@ -125,6 +157,13 @@ if (!empty($obj['progress_notes'])) {
 </div> <!-- col-sm-4 -->
 <div class="col-sm-6"></div>
 </div> <!-- row form-group -->
+
+<div style="margin: 10px;">
+<input type="button" class="save" value="    <?php echo xla('Save'); ?>    "> &nbsp;
+<input type="button" class="dontsave" value="<?php echo xla('Don\'t Save'); ?>"> &nbsp;
+</div>
+
+</form>
 
 </div> <!-- container -->
 
@@ -135,13 +174,6 @@ if (!empty($obj['progress_notes'])) {
 <input type="checkbox" name="private" id="private"><label for="private">This note is private</label>
 <br>
 -->
-
-<div style="margin: 10px;">
-<input type="button" class="save" value="    <?php echo xla('Save'); ?>    "> &nbsp;
-<input type="button" class="dontsave" value="<?php echo xla('Don\'t Save'); ?>"> &nbsp;
-</div>
-
-</form>
 
 </body>
 
@@ -156,8 +188,9 @@ $(document).ready(function(){
     // selectize the two lists to allow selecting a predefined value from 
     // a staff managed list and allo for adding custum entered values since
     // we are storing it all as a vahchar(255) in the db anyhow
-    $('#counseling_type').select2({create: true});
-    $('#counseling_time').select2({create: true});
+    $('.select2').select2({
+       tags: true,
+    });
 });
 
 </script>

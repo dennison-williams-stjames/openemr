@@ -24,9 +24,9 @@ CREATE TABLE IF NOT EXISTS `form_sji_counseling` (
 ) ENGINE=InnoDB;
 
 -- generate default list of counseling services --
-INSERT INTO list_options(list_id, option_id, title) values('sji_session_type', 'Intial Intake', 'Initial Intake');
-INSERT INTO list_options(list_id, option_id, title) values('sji_session_type', 'Peer Counseling', 'Peer Counseling');
-INSERT INTO list_options(list_id, option_id, title) values('sji_session_type', 'STI Screening / Results', 'STI Screening / Results');
+INSERT INTO list_options(list_id, option_id, title) values('sji_counseling_type', 'Intial Intake', 'Initial Intake');
+INSERT INTO list_options(list_id, option_id, title) values('sji_counseling_type', 'Peer Counseling', 'Peer Counseling');
+INSERT INTO list_options(list_id, option_id, title) values('sji_counseling_type', 'STI Screening / Results', 'STI Screening / Results');
 
 -- generate default list of counseling services --
 INSERT INTO list_options(list_id, option_id, title) values('sji_counseling', 'Test results', 'Test results');

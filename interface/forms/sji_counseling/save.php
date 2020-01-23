@@ -19,6 +19,7 @@
 include_once("../../globals.php");
 include_once("$srcdir/api.inc");
 include_once("$srcdir/forms.inc");
+require_once("common.php");
 
 /* 
  * name of the database table associated with this form
@@ -30,11 +31,24 @@ if ($encounter == "") {
     $encounter = date("Ymd");
 }
 
+if (!$pid) {
+    $pid = $_SESSION['pid'];
+}
+
+$submission = array();
+foreach ($counseling_columns as $column) {
+   if (isset($_POST[$column])) {
+      $submission[$column] = $_POST[$column];
+   }
+}
+
 if ($_GET["mode"] == "new") {
-    $newid = formSubmit($table_name, $_POST, '', $userauthorized);
+    $newid = formSubmit($table_name, $submission, '', $userauthorized);
     addForm($encounter, "Counseling", $newid, $form_name, $pid, $userauthorized);
+    sji_extendedCounseling($newid, $_POST);
 } elseif ($_GET["mode"] == "update") {
-    $success = formUpdate($table_name, $_POST, $_GET["id"], $userauthorized);
+    $success = formUpdate($table_name, $submission, $_GET["id"], $userauthorized);
+    sji_extendedCounseling($_GET['id'], $_POST);
 }
 
 $_SESSION["encounter"] = $encounter;

@@ -2014,3 +2014,7 @@ th.currentvalues, th.historicalvalues {
     width:65% !Important;
 }
 /*~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~openemr5 batch payments, EOB *~~~~~~~~~~~~~~~~~~~~~~~~~*/
+
+.row.save {
+    margin-top: 1%;
+}

@@ -32,7 +32,10 @@ function sji_intake_core_variables_report($pid, $encounter, $cols, $id)
     $count = 0;
     $data = sji_intake_core_variables_fetch($pid, $id);
     if ($data) {
-        $others = array('dob', 'sex', 'postal_code', 'partners_gender', 'ethnicity', 'race');
+        $others = array('dob', 'sex', 'postal_code', 
+           'partners_gender', 'ethnicity', 'race', 
+           'emergency_relationsh', 'contact_relationship',
+           'phone_contact');
         foreach ($others as $column) {
            if ($column == 'dob' && isset($data[$column])) {
               $data['Date of birth'] = $data[$column];
@@ -66,10 +69,18 @@ function sji_intake_core_variables_report($pid, $encounter, $cols, $id)
               if (isset($race['title'])) {
                  $data['Race'] = $race['title'];
               }
+           } else if (($column == 'emergency_relationsh') && isset($data['emergency_relationsh'])){
+              $data['relationship with emergency contact'] =
+                 $data['emergency_relationsh'];
+           } else if (($column == 'contact_relationship') && isset($data['contact_relationship'])){
+              $data['emergency contact'] =
+                 $data['contact_relationship'];
+           } else if (($column == 'phone_contact') && isset($data['phone_contact'])){
+              $data['emergency contact number'] =
+                 $data['phone_contact'];
            }
            unset($data[$column]);
         }
-        //error_log(__FUNCTION__ .'()'. ' data: '. print_r($data, 1));
 
         print "<table>";
         foreach ($data as $key => $value) {
@@ -86,7 +97,7 @@ function sji_intake_core_variables_report($pid, $encounter, $cols, $id)
                 continue;
             }
     
-            if ($value == "on" || $value == 1) {
+            if ($value == "on" ) {
                 $value = "yes";
             }
     

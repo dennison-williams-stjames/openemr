@@ -343,13 +343,15 @@ if (count($facilities) > 1) {
  // ==============================
  echo "</div>";
  echo "   <select multiple size='5' name='pc_username[]' id='pc_username' class='view2'>\n";
- echo "    <option value='__PC_ALL__'>"  .xl ("All Users"). "</option>\n";
+ echo "    <option value='__PC_ALL__'>"  .xl ("All Providers"). "</option>\n";
+ echo "    <option value='__PC_SCHEDULED__'>"  .xl ("Scheduled Providers"). "</option>\n";
  foreach ($provinfo as $doc) {
     $username = $doc['username'];
     echo "    <option value='" . attr($username) . "'";
-    foreach ($providers as $provider)
+    foreach ($providers as $provider) {
         if ($provider['username'] == $username) echo " selected";
-    echo ">" . htmlspecialchars($doc['lname'],ENT_QUOTES) . ", " . htmlspecialchars($doc['fname'],ENT_QUOTES) . "</option>\n";
+    }
+    echo " id='". $doc['id'] ."'>" . htmlspecialchars($doc['lname'],ENT_QUOTES) . ", " . htmlspecialchars($doc['fname'],ENT_QUOTES) . "</option>\n";
  }
  echo "   </select>\n";
 
@@ -932,6 +934,20 @@ echo "<P>";
 
             dpCal=$("#datePicker>table");
             mp = $("#monthPicker"); mp.width(dpCal.width()); mp.toggle();});
+
+	// if no providers are selected then selected the ones that are scheduled
+        if ( $("#pc_username option:selected").length < 1 ) {
+            console.log('debug');
+            $("td.schedule.work-day").each(function() {
+                if ( $(this).has("div.calendar_day div.event_in") ) {
+                    // This is the users.id for the provider
+                    $("#pc_username option#"+ $(this).attr("provider")).attr('selected', 'selected');
+                }
+            });
+            $('#theform').submit();
+        } else {
+            console.log('debug'+ $("#pc_username option:selected").length);
+        }
     });
 
     /* edit an existing event */

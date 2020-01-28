@@ -1,11 +1,3 @@
-CREATE TABLE IF NOT EXISTS `form_sji_intake_core_variables_partners_gender` (
-	id bigint(20) NOT NULL auto_increment,
-	`partners_gender` varchar(200) NOT NULL,
-	pid bigint(20) default NULL,
-	PRIMARY KEY (id)
-
-) ENGINE=InnoDB;
-
 CREATE TABLE IF NOT EXISTS `form_sji_intake_core_variables` (
 	id bigint(20) NOT NULL auto_increment,
 	date datetime default NULL,
@@ -20,11 +12,11 @@ CREATE TABLE IF NOT EXISTS `form_sji_intake_core_variables` (
 	`pronouns` varchar(255) DEFAULT NULL,
 	`sexual_identity` varchar(255) DEFAULT NULL,
 
-	`sex_without_condom` varchar(50) default NULL,
-	`injected_without_perscription` varchar(50) default NULL,
-	`shared_needle` varchar(50) default NULL,
-	`active_drug_user` varchar(50) default NULL,
 	`aliases` varchar(255) DEFAULT NULL,
+	`disabled` varchar(255) DEFAULT NULL,
+	`mailing_list` varchar(255) DEFAULT NULL,
+	`dependents` varchar(255) DEFAULT NULL,
+	`hipaa_call_from_sji` varchar(255) DEFAULT NULL,
 
 	PRIMARY KEY (id)
 ) ENGINE=InnoDB;
@@ -106,3 +98,15 @@ CREATE TABLE IF NOT EXISTS `form_sji_intake_core_variables` (
 -- INSERT INTO list_options(list_id, option_id, title) values('active_drug_user', 'Declined to state', 'Declined to state');
 -- INSERT INTO list_options(list_id, option_id, title) values('active_drug_user', 'Don\'t know', 'Don\'t know');
 -- 
+INSERT INTO list_options(list_id, option_id, title) values('disabled', 'Yes', 'Yes');
+INSERT INTO list_options(list_id, option_id, title) values('disabled', 'No', 'No');
+INSERT INTO list_options(list_id, option_id, title) values('disabled', 'Declined', 'Declined');
+
+INSERT INTO list_options(list_id, option_id, title) values('mailing_list', 'Yes', 'Yes');
+INSERT INTO list_options(list_id, option_id, title) values('mailing_list', 'No', 'No');
+
+INSERT INTO list_options(list_id, option_id, title) values('hipaa_message', 'Yes', 'Yes');
+INSERT INTO list_options(list_id, option_id, title) values('hipaa_message', 'No', 'No');
+
+INSERT INTO list_options(list_id, option_id, title) values('hipaa_call_from_sji', 'Yes', 'Yes');
+INSERT INTO list_options(list_id, option_id, title) values('hipaa_call_from_sji', 'No', 'No');

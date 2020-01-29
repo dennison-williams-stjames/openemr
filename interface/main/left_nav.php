@@ -236,6 +236,7 @@ function genTreeLink($frame, $name, $title, $mono = false)
 function genMiscLink($frame, $name, $level, $title, $url, $mono = false, $encform = false)
 {
     global $disallowed;
+    error_log(__FUNCTION__ .'() disallowed: '. print_r($disallowed, 1));
     if (empty($disallowed[$name])) {
         $id = $name . $level;
         echo "<li><a href='' id='$id' onclick=\"";
@@ -1610,9 +1611,11 @@ if ($reglastcat) {
         (acl_check('patients', 'rx') && !$GLOBALS['disable_prescriptions'])) { ?>
       <li><a class="collapsed_lv2"><span><?php xl('Clients', 'e') ?></span></a>
         <ul>
-        <?php if (acl_check('patients', 'demo')) {
+        <?php 
+        genMiscLink('RTop', 'rep', '0', xl('Utilization Review'), 'reports/utilization_review.php');
+        if (acl_check('patients', 'demo')) {
             genMiscLink('RTop', 'rep', '0', xl('List'), 'reports/patient_list.php');
-} ?>
+        } ?>
     <?php if (acl_check('patients', 'rx') && !$GLOBALS['disable_prescriptions']) {
         genMiscLink('RTop', 'rep', '0', xl('Rx'), 'reports/prescriptions_report.php');
 } ?>

@@ -145,17 +145,23 @@ echo xlt('Send an email reminder with the participants medical record number to 
 <!-- gender -->
 <div class="form-group row">
 <label for="gender" class="col-sm-6 control-label text-right"><?php echo xlt("Participant's gender"); ?>:</label>
-<div class="col-sm-6"><?php echo $obj['gender']; ?></div>
+<div class="col-sm-6"><?php echo $obj['sex']; ?></div>
 </div>
 
 <!-- pronouns -->
 <div class="form-group row">
 <label class="col-sm-6 control-label text-right" for="pronouns"><?php echo xlt("Participant's pronouns"); ?>:</label>
-<div class="col-sm-6">
-<select id="pronouns" type=text name="pronouns" class="form-control select2">
-<option></option>
-<?php echo getListOptions('pronouns'); ?>
-</select>
+<div class="col-sm-6"><?php echo $obj['pronouns']; ?></div>
+</div>
+
+<!-- reason -->
+<div class="form-group row">
+<label class="col-sm-6 control-label text-right" for="reason"><?php echo xlt('Reason for call'); ?>:</label>
+<div class="col-sm-6"><?php
+if (! empty($obj['reason']) ) {
+   echo $obj['reason'];
+}
+?></div>
 </div>
 
 <!-- work number -->
@@ -212,22 +218,10 @@ if (isset($obj['email'])) {
 
 <!-- hipaa_voice -->
 <div class="form-group row">
-<label class="col-sm-6 control-label text-right" for="hipaa_voice"><?php echo xlt('Can we leave a message with someone else at one of your numbers'); ?>?</label>
+<label class="col-sm-6 control-label text-right" for="hipaa_voice"><?php echo xlt('Can we leave a message'); ?>?</label>
 <div class="col-sm-6">
 <input id="hipaa_voice" type=checkbox name="hipaa_voice" <?php 
-if (! empty($obj['hipaa_voice']) && preg_match('/YES/', $obj['hipaa_voice'])) {
-   echo "checked";
-}
-?>>
-</div>
-</div>
-
-<!-- hipaa_message -->
-<div class="form-group row">
-<label class="col-sm-6 text-right control-label" for="hipaa_message"><?php echo xlt('Can we leave a voice mail message'); ?>?</label>
-<div class="col-sm-6">
-<input id="hipaa_message" type=checkbox name="hipaa_message" <?php 
-if (! empty($obj['hipaa_message'])  && preg_match('/YES/', $obj['hipaa_message'])) {
+if (! empty($obj['hipaa_voice']) && preg_match('/(?:YES|on)/', $obj['hipaa_voice'])) {
    echo "checked";
 }
 ?>>
@@ -239,7 +233,7 @@ if (! empty($obj['hipaa_message'])  && preg_match('/YES/', $obj['hipaa_message']
 <label class="col-sm-6 control-label text-right" for="hipaa_allowsms"><?php echo xlt('Can we send a text message'); ?>?</label>
 <div class="col-sm-6">
 <input id="hipaa_allowsms" type=checkbox name="hipaa_allowsms" <?php 
-if (! empty($obj['hipaa_allowsms']) && preg_match('/YES/', $obj['hipaa_allowsms']) ) {
+if (! empty($obj['hipaa_allowsms']) && preg_match('/(?:YES|on)/', $obj['hipaa_allowsms']) ) {
    echo "checked";
 }
 ?>>
@@ -251,7 +245,7 @@ if (! empty($obj['hipaa_allowsms']) && preg_match('/YES/', $obj['hipaa_allowsms'
 <label class="col-sm-6 control-label text-right" for="hipaa_allowemail"><?php echo xlt('Can we send an email message'); ?>?</label>
 <div class="col-sm-6">
 <input id="hipaa_allowemail" type=checkbox name="hipaa_allowemail" <?php 
-if (! empty($obj['hipaa_allowemail']) && preg_match('/YES/', $obj['hipaa_allowemail']) ) {
+if (! empty($obj['hipaa_allowemail']) && preg_match('/(?:YES|on)/', $obj['hipaa_allowemail']) ) {
    echo "checked";
 }
 ?>>
@@ -260,26 +254,14 @@ if (! empty($obj['hipaa_allowemail']) && preg_match('/YES/', $obj['hipaa_allowem
 
 <!-- date -->
 <div class="form-group row">
-<label class="col-sm-6 control-label text-right" for="race"><?php echo xlt('When was the participant contacted'); ?>?</label>
+<label class="col-sm-6 control-label text-right" for="follow_up_date"><?php echo xlt('When was the participant contacted'); ?>?</label>
 <div class="col-sm-6">
-<input id="date" type=text name="date" class="form-control datepicker" data-placeholder="<?php echo xlt('When was the participant contacted'); ?>"
+<input id="follow_up_date" type=text name="follow_up_date" class="form-control datepicker" data-placeholder="<?php echo xlt('When was the participant contacted'); ?>"
 <?php 
-if (! empty($obj['date']) ) {
-   echo 'value="'. $obj['date'] .'"';
+if (! empty($obj['follow_up_date']) ) {
+   echo 'value="'. $obj['follow_up_date'] .'"';
 }
 ?>>
-</div>
-</div>
-
-<!-- reason -->
-<div class="form-group row">
-<label class="col-sm-6 control-label text-right" for="reason"><?php echo xlt('Reason for call'); ?>:</label>
-<div class="col-sm-6">
-<?php
-if (! empty($obj['reason']) ) {
-   echo $obj['reason'];
-}
-?>
 </div>
 </div>
 

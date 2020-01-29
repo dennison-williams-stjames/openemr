@@ -29,7 +29,7 @@ include_them();
 /* 
  * name of the database table associated with this form
  */
-$formdir = "sji_intake_core_variables";
+$formdir = "sji_off_hour_contact";
 $table_name = "form_".$formdir;
 
 if (!isset($encounter) || $encounter == "") {
@@ -59,19 +59,18 @@ function get_oh_form_obj($pid, $id) {
       $obj['reason'] = $row['reason'];
    }
 
-   // Add on participant gender, and pronouns
-   $query = "select gender,pronouns,aliases from form_sji_intake_core_variables where pid = ? order by id DESC limit 1";
+   // Add on participant and pronouns
+   $query = "select pronouns,aliases from form_sji_intake_core_variables where pid = ? order by id DESC limit 1";
    $res = sqlStatement($query, array($pid));
    $partners = array();
    $row = sqlFetchArray($res);
    if (isset($row)) {
-      $obj['gender'] = $row['gender'];
       $obj['pronouns'] = $row['pronouns'];
       $obj['aliases'] = $row['aliases'];
    }
 
    // Add on phone numbers and contact preferences
-   $query = "select sex as 'Sex assigned at birth', phone_home, phone_biz, phone_cell, email, hipaa_voice, hipaa_message, hipaa_allowsms, hipaa_allowemail ".
+   $query = "select sex, phone_home, phone_biz, phone_cell, email, hipaa_voice, hipaa_allowsms, hipaa_allowemail ".
       "from patient_data where pid = ? order by id desc limit 0,1";
    $res = sqlStatement($query, array($pid));
    if ($row = sqlFetchArray($res)) {
@@ -80,38 +79,21 @@ function get_oh_form_obj($pid, $id) {
       $obj['phone_cell'] = $row['phone_cell'];      
       $obj['email'] = $row['email'];      
       $obj['hipaa_voice'] = $row['hipaa_voice'];      
-      $obj['hipaa_message'] = $row['hipaa_message'];      
       $obj['hipaa_allowsms'] = $row['hipaa_allowsms'];      
       $obj['hipaa_allowemail'] = $row['hipaa_allowemail'];      
+
+      $query2 = 'SELECT title FROM list_options '.
+         'WHERE list_id = "sex" '.
+         'AND option_id = ?';
+      $res2 = sqlStatement($query2, $row['sex']);
+      $sex = sqlFetchArray($res2);
+      $obj['sex'] = $sex['title'];      
    }
    return $obj;
 }
 
 function sji_extendedOffHourContact($formid, $submission) {
     global $pid;
-
-    sqlStatement("delete from form_sji_intake_core_variables_partners_gender where pid=?", array($formid));
-    if (isset($submission['partners_gender'])) {
-        // TODO: audit this
-	foreach ($submission['partners_gender'] as $person) {
-            sqlInsert("insert into form_sji_intake_core_variables_partners_gender(partners_gender, pid) values(?, ?)", array($person, $formid));
-        }
-    }
-
-    // If we recieved a gender value we will need to update or insert a new core_variables row
-    if (!empty($submission['pronouns'])) {
-       $sql = "select count(*) as ct from form_sji_intake_core_variables where pid = ?";
-       $query = sqlStatement($sql, array($pid));
-       $row = sqlFetchArray($query);
-       if (!empty($row['ct']) && $row['ct']>=1) {
-          $sql = 'update patient_data set pronouns = ? where pid = ?';
-          sqlQuery($sql, array($submission['pronouns'], $pid));
-       } else {
-          $newid = formSubmit("form_sji_intake_core_variables", $submission, '', $userauthorized);
-          addForm($_SESSION['encounter'], "St. James Infirmary Intake - Core Variables", 
-             $newid, "sji_intake_core_variables", $pid, $userauthorized);
-       }
-    }
 
     if (isset($submission['phone_biz'])) {
         $sql = 'update patient_data set phone_biz = ? where pid = ?';
@@ -152,12 +134,10 @@ function sji_extendedOffHourContact($formid, $submission) {
         $sql = 'update patient_data set hipaa_allowemail = ? where pid = ?';
         sqlQuery($sql, array($submission['hipaa_allowemail'], $pid));
     }
-
-    // TODO: add date time participant was contacted
 }
 
 
-$intake_core_variable_columns = array(
-   'assesment_plan',
+$off_hour_contact_columns = array(
+   'assesment_plan', 'follow_up_date'
 );
 

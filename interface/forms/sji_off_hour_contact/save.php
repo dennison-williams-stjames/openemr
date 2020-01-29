@@ -18,14 +18,26 @@
 require_once('common.php');
 
 $submission = array();
-foreach ($intake_core_variable_columns as $column) {
+foreach ($off_hour_contact_columns as $column) {
    if (isset($_POST[$column])) {
       $submission[$column] = $_POST[$column];
    }
 }
 
+// make a few transformations 
+if (isset($_POST['hipaa_voice']) && $_POST['hipaa_voice'] === 'on') {
+   $_POST['hipaa_voice'] = 'YES';
+}
+
+if (isset($_POST['hipaa_allowsms']) && $_POST['hipaa_allowsms'] === 'on') {
+   $_POST['hipaa_allowsms'] = 'YES';
+}
+
+if (isset($_POST['hipaa_allowemail']) && $_POST['hipaa_allowemail'] === 'on') {
+   $_POST['hipaa_allowemail'] = 'YES';
+}
+
 if ($_GET["mode"] == "new") {
-    error_log(__FILE__ ." submission: ". print_r($submission, 1));
     $newid = formSubmit($table_name, $submission, '', $userauthorized);
     addForm($_SESSION['encounter'], "St. James Infirmary Off-hour Contact", $newid, "sji_off_hour_contact", $pid, $userauthorized);
     sji_extendedOffHourContact($newid, $_POST);

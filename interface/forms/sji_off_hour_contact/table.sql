@@ -8,6 +8,7 @@ CREATE TABLE IF NOT EXISTS `form_sji_off_hour_contact` (
 	activity tinyint(4) default NULL,
 
 	`assesment_plan` varchar(255) DEFAULT NULL,
+	`follow_up_date` datetime DEFAULT NULL,
 
 	PRIMARY KEY (id)
 ) ENGINE=InnoDB;

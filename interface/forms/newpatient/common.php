@@ -173,6 +173,7 @@ function set_counseling_services (){
       'Mental health services',
       'Case management',
       'Linkage to care',
+      'Psychotherapy'
    );
    $sql = 'INSERT INTO list_options(list_id, option_id, title) values("counseling_services", ?, ?)';
    foreach ($services as $service) {

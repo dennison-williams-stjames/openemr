@@ -211,28 +211,6 @@ if (isset($obj['Name'])) {
 </div>
 <!-- participant name -->
 
-<!-- address -->
-<div class="form-group row">
-<label class="col-sm-6 control-label" for="address">Participant's address</label>
-<div class="col-sm-6" id="address"><?php
-if (isset($obj['Address'])) {
-   echo $obj['Address'];
-}
-?></div>
-</div>
-<!-- address -->
-
-<!-- phone -->
-<div class="form-group row">
-<label class="col-sm-6 control-label" for="phone">Participant's phone</label>
-<div class="col-sm-6" id="phone"><?php
-if (isset($obj['Phone'])) {
-   echo $obj['Phone'];
-}
-?></div>
-</div>
-<!-- phone -->
-
 <!-- pronouns -->
 <div class="form-group row">
 <label class="col-sm-6 control-label" for="pronouns"><?php echo xlt('Which pronouns do you prefer to use?'); ?></label>

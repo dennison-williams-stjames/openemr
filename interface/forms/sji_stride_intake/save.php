@@ -49,6 +49,8 @@ function sji_extendedStrideIntake($formid, $submission) {
 
     $intake_id = $row['id'];
 
+    error_log(__FUNCTION__.'() intake_id: '. $intake_id);
+
     $query = 
        'SELECT id FROM form_sji_intake_core_variables '.
        'WHERE pid = ? '.
@@ -61,6 +63,8 @@ function sji_extendedStrideIntake($formid, $submission) {
 
     $cv_id = $row['id'];
 
+    error_log(__FUNCTION__.'() core variables id: '. $cv_id);
+
     $encounter = '';
     if (!empty($_SESSION['encounter'])) {
        $encounter = $_SESSION['encounter'];
@@ -68,7 +72,9 @@ function sji_extendedStrideIntake($formid, $submission) {
        $encounter = date("Ymd");
     }
 
-    sqlStatement("delete from form_sji_intake_supportive_people where pid=?", array($intake_id));
+    if (isset($intake_id)) {
+       sqlStatement("delete from form_sji_intake_supportive_people where pid=?", array($intake_id));
+    }
 
     if (
        isset($submission['supportive_people']) || 
@@ -88,13 +94,16 @@ function sji_extendedStrideIntake($formid, $submission) {
           // create a new intake and save intake_id
           $newid = formSubmit('form_sji_intake', $submission2, '', $userauthorized);
           $intake_id = addForm($encounter, "St. James Infirmary Intake", $newid, "sji_intake", $pid, $userauthorized);
+          error_log(__FUNCTION__.'() creating a new intake: '. $intake_id);
           sji_extendedIntake($newid, $_POST);
        } else {
 
+          if (isset($submission['supportive_people'])) {
           foreach ($submission['supportive_people'] as $person) {
              $sql = "insert into form_sji_intake_supportive_people(supportive_people, pid) values(?, ?)";
              sqlInsert($sql, array($person, $intake_id));
           } // foreach
+          } // if
 
           // Update taken hormones if changed
           if (isset($submission['taken_hormones']) && isset($intake_id)) {
@@ -119,6 +128,7 @@ function sji_extendedStrideIntake($formid, $submission) {
           // make sure to set cv_id
           $newid = formSubmit('form_sji_intake_core_variables', $submission3, '', $userauthorized);
           $cv_id = addForm($encounter, "St. James Infirmary Intake - Core Variables", $newid, "sji_intake_core_variables", $pid, $userauthorized);
+          error_log(__FUNCTION__.'() created a new core variables intake: '. $cv_id);
           sji_extendedIntakeCoreVariables($newid, $_POST);
        } else {
           $sql = 'UPDATE form_sji_intake_core_variables SET pronouns = ? where id = ?';
@@ -128,7 +138,7 @@ function sji_extendedStrideIntake($formid, $submission) {
 
 }
 
-$intake_columns = array(
+$stride_intake_columns = array(
    'why_are_you_here', 'hormone_duration', 'hormone_form_dosage',
    'hormone_program', 'why_stopped', 'why_continue', 
    'affect_expectations', 'effect_hopes', 'hormone_concerns',
@@ -137,15 +147,19 @@ $intake_columns = array(
 );
 
 $submission = array();
-foreach ($intake_columns as $column) {
+foreach ($stride_intake_columns as $column) {
    if (isset($_POST[$column])) {
       $submission[$column] = $_POST[$column];
    }
 }
 
 if ($_GET["mode"] == "new") {
+    error_log(__FILE__.' new STRIDE intake submission: '. "formSubmit($table_name, ". print_r($submission, 1) .", '', $userauthorized)");
     $newid = formSubmit($table_name, $submission, '', $userauthorized);
+    error_log(__FILE__.' newid: '. $newid);
+    error_log(__FILE__.' new STRIDE intake submission: '. " addForm(" . $_SESSION["encounter"] .', "St. James Infirmary STRIDE Intake", '. $newid .", \"sji_stride_intake\", $pid, $userauthorized)");
     addForm($_SESSION["encounter"], "St. James Infirmary STRIDE Intake", $newid, "sji_stride_intake", $pid, $userauthorized);
+    error_log(__FILE__.' sji_extendedStrideIntake('. $newid .', '. print_r($_POST, 1));
     sji_extendedStrideIntake($newid, $_POST);
 } elseif ($_GET["mode"] == "update") {
     $success = formUpdate($table_name, $submission, $_GET["id"], $userauthorized);

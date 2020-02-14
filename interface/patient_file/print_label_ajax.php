@@ -63,6 +63,28 @@ while ( $row = sqlFetchArray($res) ) {
 error_log(__FUNCTION__ ."() ins: $ins");
 
 // Create label string
+// https://www.zebra.com/content/dam/zebra/manuals/printers/common/programming/zpl-zbi2-pm-en.pdf
+/*
+^XA				// start new label
+^LH45,20			// start printing 45 dots down and 20 dots across
+^PQ$num				// print $num copies of this label
+^CFF				// use font F : 26 x 13 dots hight and width, with 3 dots for intercharacter gap
+^FO15,00			// start printing an additional 15 dots from the left
+^FDSJI/CTYC: $pid^FS		// print SJI/CTYC: $pid a total of 60 dots in from the left then 10*13 + 8*13 + 18*3 = 348 dots
+				// The Zebra GX420d is rated for 300 DPI, so our 2 1/4" labels have a total length of 675 dots
+				// which should give us plenty of space to print the entire string
+^CFD
+^FO00,30
+^FDVisit: $date^FS
+^FO00,55
+^FD$name^FS
+^FO00,80
+^FDDOB: $dob $sex_code^FS
+^FO00,105
+$ins
+^PH
+^XZ				// end label
+*/
 $message = <<<MSG
 ^XA
 ^LH45,20

@@ -1145,6 +1145,18 @@
         "icon": "fa-caret-right",
         "children": [
           {
+            "label": "Annual Utilization Report",
+            "menu_id": "rep0",
+            "target": "rep",
+            "url": "/interface/reports/utilization_review.php",
+            "children": [],
+            "requirement": 0,
+            "acl_req": [
+              "patients",
+              "demo"
+            ]
+          },
+          {
             "label": "List",
             "menu_id": "rep0",
             "target": "rep",

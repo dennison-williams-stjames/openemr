@@ -56,18 +56,20 @@ if (isset($_GET['sSearch']) && $_GET['sSearch'] !== "") {
         $where .= $where ? "OR " : "WHERE ( ";
         if ($colname == 'name') {
             $where .=
-            "lname LIKE '$sSearch%' OR " .
-            "fname LIKE '$sSearch%' OR " .
-            "mname LIKE '$sSearch%' ) OR ".
-            "form_sji_intake_core_variables.aliases LIKE '%$sSearch%'";
+            "lname LIKE '%$sSearch%' OR " .
+            "fname LIKE '%$sSearch%' OR " .
+            "mname LIKE '%$sSearch%' ) OR ".
+            "form_sji_intake_core_variables.aliases LIKE '%$sSearch%' ";
         } else {
-            $where .= "`" . escape_sql_column_name($colname, array('patient_data')) . "` LIKE '$sSearch%' ";
+            $where .= "`patient_data`.`" . escape_sql_column_name($colname, array('patient_data')) . "` LIKE '%$sSearch%' ";
         }
     }
 
+/*
     if ($where) {
         $where .= ")";
     }
+*/
 }
 
 // Column-specific filtering.
@@ -77,14 +79,15 @@ for ($i = 0; $i < count($aColumns); ++$i) {
     if (isset($_GET["bSearchable_$i"]) && $_GET["bSearchable_$i"] == "true" && $_GET["sSearch_$i"] != '') {
         $where .= $where ? ' AND' : 'WHERE';
         $sSearch = add_escape_custom($_GET["sSearch_$i"]);
-        if ($colname == 'name') {
+        if ($colname === 'name') {
             $where .= " ( " .
-            "lname LIKE '$sSearch%' OR " .
-            "fname LIKE '$sSearch%' OR " .
-            "mname LIKE '$sSearch%' ) OR ".
-            "form_sji_intake_core_variables.aliases LIKE '%$sSearch%'";
+            "lname LIKE '%$sSearch%' OR " .
+            "fname LIKE '%$sSearch%' OR " .
+            "mname LIKE '%$sSearch%' ) OR ".
+            "form_sji_intake_core_variables.aliases LIKE '%$sSearch%' ";
         } else {
-            $where .= " `" . escape_sql_column_name($colname, array('patient_data')) . "` LIKE '$sSearch%'";
+            //$where .= " `" . escape_sql_column_name($colname, array('patient_data')) . "` LIKE '$sSearch%'";
+            $where .= " `patient_data`.`" . escape_sql_column_name($colname, array('patient_data')) . "` LIKE '%$sSearch%' ";
         }
     }
 }

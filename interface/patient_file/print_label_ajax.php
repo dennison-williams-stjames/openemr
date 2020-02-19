@@ -48,7 +48,6 @@ if (isset($row['lname'])) {
 $name .= $row['fname'];
 
 $sex_code = code_sex($sex);
-error_log(__FUNCTION__ ."() sex_code: $sex_code");
 
 $sql = 'SELECT name,policy_number FROM insurance_data '.
        'LEFT JOIN insurance_companies on (insurance_data.provider=insurance_companies.id) '.
@@ -57,7 +56,8 @@ $res = sqlStatement($sql, array($pid));
 $ins = '';
 while ( $row = sqlFetchArray($res) ) {
    if (strlen($row['name']) > 0) {
-	   $ins .= '^FD'. $row['name'] .': '. $row['policy_number'] ."^FS\n";
+           // we split the insurance information up on 2 lines
+	   $ins .= '^FD'. $row['name'] .":^FS\n^FO15,130\n^FD". $row['policy_number'] ."^FS\n";
    }
 }
 error_log(__FUNCTION__ ."() ins: $ins");
@@ -66,40 +66,39 @@ error_log(__FUNCTION__ ."() ins: $ins");
 // https://www.zebra.com/content/dam/zebra/manuals/printers/common/programming/zpl-zbi2-pm-en.pdf
 /*
 ^XA				// start new label
-^LH45,20			// start printing 45 dots down and 20 dots across
 ^PQ$num				// print $num copies of this label
 ^CFF				// use font F : 26 x 13 dots hight and width, with 3 dots for intercharacter gap
-^FO15,00			// start printing an additional 15 dots from the left
+^FO00,00			// start printing an additional 15 dots from the left
 ^FDSJI/CTYC: $pid^FS		// print SJI/CTYC: $pid a total of 60 dots in from the left then 10*13 + 8*13 + 18*3 = 348 dots
 				// The Zebra GX420d is rated for 300 DPI, so our 2 1/4" labels have a total length of 675 dots
 				// which should give us plenty of space to print the entire string
 ^CFD
-^FO00,30
+^FO15,30
 ^FDVisit: $date^FS
-^FO00,55
+^FO15,55
 ^FD$name^FS
-^FO00,80
+^FO15,80
 ^FDDOB: $dob $sex_code^FS
-^FO00,105
+^FO15,105
 $ins
 ^PH
 ^XZ				// end label
 */
+
 $message = <<<MSG
 ^XA
-^LH45,20
 ^PQ$num
 ^CFF
-^FO15,00
+^FO00,00
 ^FDSJI/CTYC: $pid^FS
 ^CFD
-^FO00,30
+^FO15,30
 ^FDVisit: $date^FS
-^FO00,55
+^FO15,55
 ^FD$name^FS
-^FO00,80
-^FDDOB: $dob $sex_code^FS
-^FO00,105
+^FO15,80
+^FDDOB: $dob $ex_code^FS
+^FO15,105
 $ins
 ^PH
 ^XZ

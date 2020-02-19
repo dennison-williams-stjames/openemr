@@ -62,13 +62,9 @@ function getListOptions($list_id, $fieldnames = array('option_id', 'title', 'seq
     if (isset($obj[$list_id])) {
            $selected = $obj[$list_id];
     }
+
     $query = sqlStatement("SELECT ".implode(',', $fieldnames)." FROM list_options where list_id = ? AND activity = 1 order by seq", array($list_id));
     while ($list_options = sqlFetchArray($query)) {
-
-        // This is a special case for ethnicity and race
-        if (preg_match('/_/', $list_options['option_id']) && !preg_match('/_/', $list_options['title'])) {
-           $list_options['option_id'] = $list_options['title'];
-        }
 
         $output .= '<option value="'. $list_options['option_id'] .'" ';
 

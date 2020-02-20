@@ -97,7 +97,7 @@ $message = <<<MSG
 ^FO15,55
 ^FD$name^FS
 ^FO15,80
-^FDDOB: $dob $ex_code^FS
+^FDDOB: $dob $sex_code^FS
 ^FO15,105
 $ins
 ^PH

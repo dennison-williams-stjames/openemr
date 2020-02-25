@@ -24,7 +24,8 @@
     "requirement": 0,
     "acl_req": [
       "patients",
-      "appt"
+      "appt",
+      "admin"
     ],
     "global_req_strict": [
       "!disable_pat_trkr",
@@ -40,7 +41,8 @@
         "requirement": 0,
         "acl_req": [
           "patients",
-          "appt"
+          "appt",
+          "admin"
         ],
     "global_req_strict": [
       "!disable_rcb"
@@ -381,6 +383,7 @@
         "children": [],
         "requirement": 2,
         "acl_req": [
+          "admin",
           [
             "encounters",
             "coding",
@@ -1139,6 +1142,9 @@
   {
     "label": "Reports",
     "menu_id": "repimg",
+    "acl_req": [
+        "demo"
+    ],
     "children": [
       {
         "label": "Clients",
@@ -2043,6 +2049,9 @@
   {
     "label": "Popups",
     "menu_id": "popup",
+    "acl_req": [
+      "admin"
+    ],
     "children": [
       {
         "label": "Issues",
@@ -2196,6 +2205,10 @@
     "target": "msc",
     "url": "/interface/main/about_page.php",
     "children": [],
-    "requirement": 0
+    "requirement": 0,
+    "acl_req": [
+      "admin",
+      "super"
+    ]
   }
 ]

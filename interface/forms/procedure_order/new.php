@@ -34,7 +34,8 @@ require_once("../../../custom/code_types.inc.php");
 
 // Defaults for new orders.
 $row = array(
-  'provider_id' => $_SESSION['authUserID'],
+  // Custom feature for SJI
+  'provider_id' => 6,
   'date_ordered' => date('Y-m-d'),
   'date_collected' => date('Y-m-d H:i'),
 );
@@ -440,11 +441,20 @@ $(document).ready(function() {
                 <div class="col-sm-8">
                     <select name='form_lab_id' onchange='lab_id_changed()' class='form-control'>
                         <?php
+			// Custom feature for SJI
+                        $lab_id = $row['lab_id'];
+			if (!isset($lab_id)) {
+				$lab_id = 2;
+				if (date('N') == 4) {
+					$lab_id = 1;
+				}
+			}
+
                         $ppres = sqlStatement("SELECT ppid, name FROM procedure_providers " .
                             "ORDER BY name, ppid");
                         while ($pprow = sqlFetchArray($ppres)) {
                             echo "<option value='" . attr($pprow['ppid']) . "'";
-                            if ($pprow['ppid'] == $row['lab_id']) {
+                            if ($pprow['ppid'] == $lab_id) {
                                 echo " selected";
                             }
 

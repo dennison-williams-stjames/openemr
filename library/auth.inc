@@ -31,6 +31,9 @@ require_once("$srcdir/authentication/login_operations.php");
 
 $incoming_site_id = '';
 
+error_log('_POST: '. print_r($_POST, 1));
+error_log('_GET: '. print_r($_GET, 1));
+error_log('_SESSION: '. print_r($_SESSION, 1));
 if (isset($_GET['auth']) && ($_GET['auth'] == "login") && isset($_POST['authUser']) &&
     isset($_POST['clearPass']) && isset($_POST['authProvider'])) {
     $clearPass=$_POST['clearPass'];
@@ -114,6 +117,7 @@ if (!isset($_SESSION["last_update"])) {
 
 function authCheckSession()
 {
+    error_log(__FUNCTION__.'() _SESSION: '. print_r($_SESSION, 1));
     if (isset($_SESSION['authId'])) {
          // If active directory was used, check a different session variable (as there is no password in database).
         if ($GLOBALS['use_active_directory']) {

@@ -33,24 +33,11 @@ function sji_stride_intake_report($pid, $encounter, $cols, $id = 0)
     $data = formFetch("form_".$form_name, $id);
 
     // Add on name, address, phone and pronouns
-    $query = "select fname,lname,street,city,state,postal_code,phone_home,phone_biz,phone_cell from patient_data where pid=?";
+    $query = "select fname,lname,street,city,state,postal_code from patient_data where pid=?";
     $res = sqlStatement($query, array($pid));
     $row = sqlFetchArray($res);
     $data['Name'] = $row['fname'] .' '. $row['lname'];
     $data['Address'] = $row['street'] .', '. $row['city'] .', '. $row['state'] .' '. $row['postal_code'];
-
-    $data['Phone'] = '';
-    if (isset($row['phone_cell'])) {
-       $data['Phone'] .= 'Cell: '. $row['phone_cell'];
-    }
-
-    if (isset($row['phone_home'])) {
-       $data['Phone'] .= ', Home: '. $row['phone_home'];
-    }
-
-    if (isset($row['phone_biz'])) {
-       $data['Phone'] .= ', Work: '. $row['phone_biz'];
-    }
 
     $query = "select pronouns from form_sji_intake_core_variables where pid=? order by date desc limit 1";
     $res = sqlStatement($query, array($pid));
@@ -86,6 +73,8 @@ function sji_stride_intake_report($pid, $encounter, $cols, $id = 0)
                 $key == "groupname" ||
                 $key == "authorized" ||
                 $key == "activity" ||
+                $key == "Phone" ||
+                $key == "Address" ||
                 $key == "date" ||
                 $value == "" ||
                 preg_match('/^0000/', $value) )

@@ -820,7 +820,7 @@ function auditSQLEvent($statement, $outcome, $binds = null)
         }
     }
 
-    if (!($GLOBALS["audit_events_${event}"])) {
+    if (!(array_key_exists("audit_events_${event}", $GLOBALS) && $GLOBALS["audit_events_${event}"])) {
         if ((soundex($user) != soundex("emergency")) && (soundex($user) != soundex("breakglass"))) {
             return;
         }

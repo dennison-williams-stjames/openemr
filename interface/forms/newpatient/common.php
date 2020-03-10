@@ -727,12 +727,33 @@ echo xlt('What types of counseling services are you looking for?');
 echo xlt('Name of mental health provider you have an appointment with?');
 ?></label>
 <div class="col-sm-6">
-<input type=text class="col-sm-6 form-control" id="counselor_name" name="counselor_name" <?php 
-if (
-	isset($result['counselor_name']) &&
-	$result['counselor_name']
-) { echo 'value="'. $result['counselor_name'] .'"'; } 
-?>></input>
+<select class="form-control col-sm-6 select2" id="counselor_name" name="counselor_name"><?php
+
+$returnval = array();
+$sql = "select users.id as uid, fname, lname, list_options.title as title from users ".
+	"left join list_options on users.physician_type = list_options.option_id ".
+	"where users.authorized = 1 and " .
+	"users.active = 1 and ".
+	"users.username != '' and ".
+	"list_options.list_id = 'physician_type' ".
+	"order by fname,lname,title";
+
+$output = '';
+$rez = sqlStatement($sql);
+for ($iter=0; $row=sqlFetchArray($rez); $iter++) {
+	$name = $row['fname'] .' '. $row['lname'];
+	if (isset($row['title'])) {
+		$name .= ' ('. $row['title'] .')';
+	}
+	$output .= '<option value="'. $row['uid'] .'" ';
+	if (isset($result['counselor_name']) && $result['counselor_name'] === $row['uid']) {
+		$output .= "selected ";
+	}
+        $output .= '>'. $name .'</option>';
+}
+print $output;
+
+?></select>
 </div> <!-- col-sm-6 -->
 </div> <!-- row -->
 

@@ -80,6 +80,15 @@ function newpatient_report($pid, $encounter, $cols, $id)
            if ($result[$name] == 1) { $result[$name] = 'Yes'; }
            if (preg_match('/ (\d\d:\d\d):\d\d/', $result[$name], $matches)) { $result[$name] = $matches[1]; }
            if ($result[$name] == '00:00') { continue; }
+           if ($name === 'counselor_name') {
+		$sql = "select users.id as uid, fname, lname, list_options.title as title from users ".
+			"left join list_options on users.physician_type = list_options.option_id ".
+			"where users.id = ? and " .
+			"list_options.list_id = 'physician_type' ".
+			"order by fname,lname,title";
+		$counselor = sqlQuery($sql, array($result[$name]));
+		$result[$name] = $counselor['fname'] .' '. $counselor['lname'] .' ('. $counselor['title'] .')';
+           }
            print "<span class=bold>$label </span><span id=$name class=text>". $result[$name] . "</span><br>\n";
         }
     }

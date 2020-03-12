@@ -80,7 +80,13 @@ function sji_extendedMedical_formFetch($formid = 0) {
 
 function sji_extendedMedical($formid, $submission) {
     global $pid;
-    $encounter = $_SESSION['encounter'];
+    if (isset($_SESSION['encounter'])) {
+       $encounter = $_SESSION['encounter'];
+    } else {
+       $sql = 'select encounter from forms where form_id = ?';
+       $result = sqlQuery($sql, array($formid));
+       $encounter = $result['encounter'];
+    }
 
     // add the soap record
     if (

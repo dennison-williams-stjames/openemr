@@ -738,7 +738,7 @@ $sql = "select users.id as uid, fname, lname, list_options.title as title from u
 	"list_options.list_id = 'physician_type' ".
 	"order by fname,lname,title";
 
-$output = '';
+$output = '<option></option>';
 $rez = sqlStatement($sql);
 for ($iter=0; $row=sqlFetchArray($rez); $iter++) {
 	$name = $row['fname'] .' '. $row['lname'];

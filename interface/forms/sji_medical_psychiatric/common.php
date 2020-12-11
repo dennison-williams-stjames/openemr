@@ -84,7 +84,7 @@ function sji_extendedMedicalPsychiatric($formid, $submission) {
     sqlStatement("delete from form_sji_medical_psychiatric_provider_type where pid=?", array($formid));
     if (isset($submission['provider_type'])) {
         // TODO: audit this
-	foreach ($submission['provider_type'] as $icd9) {
+	foreach ($submission['provider_type'] as $key => $icd9) {
             if (!strlen($icd9)) {
                continue;
             }
@@ -94,7 +94,7 @@ function sji_extendedMedicalPsychiatric($formid, $submission) {
 
     sqlStatement("delete from form_sji_medical_psychiatric_icd9_primary where pid=?", array($formid));
     if (isset($submission['icd9_primary'])) {
-	foreach ($submission['icd9_primary'] as $icd9) {
+	foreach ($submission['icd9_primary'] as $key => $icd9) {
             if (!strlen($icd9)) {
                continue;
             }
@@ -105,7 +105,7 @@ function sji_extendedMedicalPsychiatric($formid, $submission) {
 
     sqlStatement("delete from form_sji_medical_psychiatric_icd9_secondary where pid=?", array($formid));
     if (isset($submission['icd9_secondary'])) {
-	foreach ($submission['icd9_secondary'] as $icd9) {
+	foreach ($submission['icd9_secondary'] as $key => $icd9) {
             if (!strlen($icd9)) {
                continue;
             }
@@ -116,7 +116,7 @@ function sji_extendedMedicalPsychiatric($formid, $submission) {
     sqlStatement("delete from form_sji_medical_psychiatric_cpt_codes where pid=?", array($formid));
     if (isset($submission['cpt_codes'])) {
         // TODO: audit this
-	foreach ($submission['cpt_codes'] as $cpt) {
+	foreach ($submission['cpt_codes'] as $key => $cpt) {
             sqlInsert("insert into form_sji_medical_psychiatric_cpt_codes(cpt_codes, pid) values(?, ?)", 
                array($cpt, $formid));
         }
@@ -125,7 +125,7 @@ function sji_extendedMedicalPsychiatric($formid, $submission) {
     sqlStatement("delete from form_sji_medical_psychiatric_method_codes where pid=?", array($formid));
     if (isset($submission['methods_codes'])) {
         // TODO: audit this
-	foreach ($submission['methods_codes'] as $mc) {
+	foreach ($submission['methods_codes'] as $key => $mc) {
             sqlInsert("insert into form_sji_medical_psychiatric_method_codes(method_codes, pid) values(?, ?)", 
                array($mc, $formid));
         }
@@ -134,7 +134,7 @@ function sji_extendedMedicalPsychiatric($formid, $submission) {
     sqlStatement("delete from form_sji_medical_psychiatric_range_codes where pid=?", array($formid));
     if (isset($submission['range_codes'])) {
         // TODO: audit this
-	foreach ($submission['range_codes'] as $mc) {
+	foreach ($submission['range_codes'] as $key => $mc) {
             sqlInsert("insert into form_sji_medical_psychiatric_range_codes(range_codes, pid) values(?, ?)", 
                array($mc, $formid));
         }
@@ -143,7 +143,7 @@ function sji_extendedMedicalPsychiatric($formid, $submission) {
     sqlStatement("delete from form_sji_medical_psychiatric_contraception_method where pid=?", array($formid));
     if (isset($submission['contraception_method'])) {
         // TODO: audit this
-	foreach ($submission['contraception_method'] as $mc) {
+	foreach ($submission['contraception_method'] as $key => $mc) {
             sqlInsert("insert into form_sji_medical_psychiatric_contraception_method(contraception_method, pid) values(?, ?)", 
                array($mc, $formid));
         }
@@ -197,7 +197,7 @@ function getICD9SecondaryOptions() {
    return $output;
 }
 
-function getCPTCodes() {
+function getCPTCodes2() {
    global $obj;
    $output = "";
    $found = 0;

@@ -57,7 +57,6 @@ function sji_medical_psychiatric_report($pid, $encounter, $cols, $id)
          
     
 	$table .= "<tr><td><span class=bold>" . xlt($key) . ": </span><span class=text>" . text($value) . "</span></td></tr>";
-        //$table .= print_r($data, 1);
         }
     }
     $table .= "</table>\n";

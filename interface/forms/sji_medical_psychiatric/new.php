@@ -200,7 +200,7 @@ echo getICD9SecondaryOptions();
 <select name="cpt_codes[]" id="cpt_codes" multiple=multiple class="select2 form-control" data-placeholder="Select CPT codes">
 <option></option>
 <?php 
-echo getCPTCodes(); 
+echo getCPTCodes2(); 
 ?>
 </select>
 </div> <!-- col-sm-6 -->

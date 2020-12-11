@@ -20,7 +20,6 @@ function getFormInfoById($id, $cols = "*")
     $sql = "select * from form_" . $result['formdir'] . " where id='" . $result['form_id']  . "'";
     //echo $sql . "<br />";
     $result =  sqlQuery($sql);
-    //print_r($result);
     return $result;
 }
 
@@ -92,8 +91,7 @@ function addForm(
         $therapy_group = $attendant_type == 'pid' ? null : $_SESSION['therapy_group'];
     }
 
-    //print_r($_SESSION['therapy_group']);die;
-        $arraySqlBind = array();
+    $arraySqlBind = array();
     $sql = "insert into forms (date, encounter, form_name, form_id, pid, " .
         "user, groupname, authorized, formdir, therapy_group_id) values (";
     if ($date == "NOW()") {

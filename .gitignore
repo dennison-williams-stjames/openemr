@@ -2,3 +2,8 @@
 /logs
 .env
 /.idea/*
+/gacl/admin/templates_c/*
+/interface/main/calendar/modules/PostCalendar/pntemplates/compiled/*
+/sites/default/documents/*
+/sites/default/procedure_results/*
+/sites/default/sqlconf.php

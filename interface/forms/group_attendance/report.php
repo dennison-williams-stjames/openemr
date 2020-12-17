@@ -38,7 +38,37 @@ function group_attendance_report($pid, $encounter, $cols, $id)
                 <td style='border:1px solid #ccc;padding:4px;'><span class=text><?php echo text($group_name); ?></span></td>
             </tr>
         </table>
+	<table style='border-collapse:collapse;border-spacing:0;width: 100%;'>
+	    <tr>
+		<td align='center' style='border:1px solid #ccc;padding:4px;'><span class=bold><?php echo xlt('Participant'); ?></span></td>
+		<td align='center' style='border:1px solid #ccc;padding:4px;'><span class=bold><?php echo xlt('Comment'); ?></span></td>
+	    </tr>
         <?php
-    }
+	    $sql = "SELECT tgpa.meeting_patient_comment as mpc, ".
+                "tgpa.meeting_patient_status as mps, ".
+                "pd.fname as fname, ".
+                "pd.lname as lname ".
+		"FROM `therapy_groups_participant_attendance` as tgpa ".
+		"LEFT JOIN patient_data as pd on (pd.pid = tgpa.pid) ".
+		"WHERE form_id=?";
+
+	    $res = sqlStatement($sql, array($form_data['id']));
+	    while ($form_att_data = sqlFetchArray($res)) {
+
+		error_log(print_r($form_att_data, 1));
+		?>
+		<tr>
+		<td style='border:1px solid #ccc;padding:4px;'><span class=text><?php 
+			echo text($form_att_data['lname']) .', '. 
+				text($form_att_data['fname']) .' ('.
+				text($form_att_data['mps']) .')'; 
+		?></span></td>
+		<td style='border:1px solid #ccc;padding:4px;'><span class=text><?php echo text($form_att_data['mpc']); ?></span></td>
+		</tr>
+<?php
+	    }
+		
+	print "</table>\n";
+   }
 }
 ?>

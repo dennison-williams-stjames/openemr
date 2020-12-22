@@ -36,6 +36,7 @@ CREATE TABLE IF NOT EXISTS `form_sji_oth_intake` (
 	activity tinyint(4) default NULL,
 
         /* pronouns are stored in the form_sji_intake_core_variables table */
+        rental_agreement_name varchar(255) default NULL,
 
         landlord_name varchar(255) default NULL,
         

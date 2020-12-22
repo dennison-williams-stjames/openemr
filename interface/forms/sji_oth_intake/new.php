@@ -18,6 +18,7 @@ use OpenEMR\Core\Header;
 
 include_once("../../globals.php");
 include_once("$srcdir/api.inc");
+require_once('common.php');
 
 formHeader("Form: Our Trans Home Rental Subsidy Application");
 $returnurl = 'encounter_top.php';
@@ -30,44 +31,20 @@ if (!$pid) {
 
 // get the record from the database
 if (!empty($_GET['id'])) {
-   $obj = formFetch("form_".$form_name, $_GET["id"]);
+   $obj = array_merge(
+      formFetch("form_".$form_name, $_GET["id"]),
+      sji_extendedOTH_formFetch($_GET["id"])
+   );
 } else {
-// if none was supplied then we populate the obj from the most recent intake
+   // if none was supplied then we populate the obj from the most recent intake
    $sql = 'SELECT id FROM form_sji_oth_intake where pid = ? order by date desc limit 1';
    $res = sqlStatement($sql, array($pid));
    $row = sqlFetchArray($res);
    if (isset($row['id'])) {
-      $obj = formFetch("form_".$form_name, $row["id"]);
+      $obj = array_merge(
+         formFetch("form_".$form_name, $row["id"]),
+         sji_extendedOTH_formFetch($_GET["id"]));
    }
-}
-
-// Add on pronouns
-$query = "select aliases,pronouns,housing_situation from form_sji_intake_core_variables where pid=? order by id desc limit 1";
-$res = sqlStatement($query, array($pid));
-$pronouns = array();
-$row = sqlFetchArray($res);
-$obj['pronouns'] = $row['pronouns'];
-$obj['Aliases'] = $row['Aliases'];
-$obj['housing_situation'] = $row['housing_situation'];
-
-
-// Add on street and phone
-$query = "select DOB,fname,lname,street,city,state,postal_code,phone_home,phone_biz,phone_cell,email,monthly_income from patient_data where pid=?";
-$res = sqlStatement($query, array($pid));
-$row = sqlFetchArray($res);
-$obj['Name'] = $row['fname'] .' '. $row['lname'];
-$obj['Email'] = $row['email'];
-$obj['monthly_income'] = $row['monthly_income'];
-$obj['DOB'] = $row['DOB'];
-$obj['Address'] = $row['street'] .', '. $row['city'] .', '. $row['state'] .' '. $row['postal_code'];
-
-$obj['Phone'] = '';
-if (isset($row['phone_cell'])) {
-   $obj['Phone'] = $row['phone_cell'];
-} else if (isset($row['phone_home'])) {
-   $obj['Phone'] = $row['phone_home'];
-} else if (isset($row['phone_biz'])) {
-   $obj['Phone'] = $row['phone_biz'];
 }
 
 /* A helper function for getting list options */
@@ -112,21 +89,10 @@ function getListOptions($list_id, $fieldnames = array('option_id', 'title', 'seq
     return $output;
 }
 
-function getListOptionsJson($list_id, $fieldnames = array('option_id', 'title', 'seq')) {
-    global $obj;
-    $output = "[";
-    $query = sqlStatement("SELECT ".implode(',', $fieldnames)." FROM list_options where list_id = ? AND activity = 1 order by seq", array($list_id));
-    while ($list_options = sqlFetchArray($query)) {
-        $output .= '{ value: "'. $list_options['option_id'] .'", name: "'. $list_options['option_id'] .'" },'. "\n";
-    }
-
-    return $output . "]";
-}
-
 ?>
 
 <html><head>
-<?php Header::setupHeader(['bootstrap', 'select2']); ?>
+<?php Header::setupHeader(['bootstrap', 'select2', 'datetime-picker']); ?>
 
 <link rel="stylesheet" href="<?php echo $css_header;?>" type="text/css">
 
@@ -163,45 +129,35 @@ if (isset($_GET['id'])) {
 ?>" name="my_form" id="my_form">
 
 <!-- Participant alias -->
-<?php 
-if (isset($obj['Aliases'])) {
-?>
 <div class="form-group row">
 <label class="col-sm-6 control-label" for="alias">Aliases (name(s) you go by)</label>
-<div class="col-sm-6" id="alias"><?php
-if (isset($obj['Aliases'])) {
-   echo $obj['Aliases'];
+<div class="col-sm-6" id="alias">
+<input type="text" name="aliases" id="aliases" class="form-control"
+<?php
+if (isset($obj['aliases'])) {
+   echo 'value="'. $obj['aliases'] .'"';
 }
-?></div>
+?>
+>
+</div>
 </div>
 <!-- participant Alias -->
-<?php
-}
-?>
-
-<!-- pronouns -->
-<div class="form-group row">
-<label class="col-sm-6 control-label" for="pronouns"><?php echo xlt('Pronouns'); ?></label>
-<div class="col-sm-6">
-<?php
-if (isset($obj['pronouns'])) {
-   echo $obj['pronouns'];
-}
-?>
-</div>
-</div>
-<!-- pronouns -->
 
 
 <!-- TODO: is there any reason the name on the application would be different then the primary name we have for them in the EMR -->
 <!-- Participant name -->
 <div class="form-group row">
-<label class="col-sm-6 control-label" for="name">Name (on the rental agreement)</label>
-<div class="col-sm-6" id="name"><?php
-if (isset($obj['Name'])) {
-   echo $obj['Name'];
+<label class="col-sm-6 control-label" for="rental_agreement_name">Name (on the rental agreement)</label>
+<div class="col-sm-6" id="rental_agreement_name">
+<input type="text" name="rental_agreement_name" id="rental_agreement_name" class="form-control"
+<?php
+if (isset($obj['rental_agreement_name'])) {
+   echo 'value="'. $obj['rental_agreement_name'] .'"';
+} else if (isset($obj['Name'])) {
+   echo 'value="'. $obj['Name'] .'"';
 }
-?></div>
+?>>
+</div>
 </div>
 <!-- participant name -->
 
@@ -209,24 +165,39 @@ if (isset($obj['Name'])) {
 <div class="form-group row">
 <label for="DOB" class="col-sm-6 control-label">Date of Birth</label>
 <div class="col-sm-6">
+<input type="text" name="DOB" id="DOB" class="form-control datepicker"
 <?php
-if (isset($obj['DOB'])) {
-   echo $obj['DOB'];
+if (isset($obj['DOB']) && !preg_match('/^0000/', $obj['DOB'])) {
+   echo 'value="'. $obj['DOB'] .'"';
 }
 ?>
+>
 </div>
 </div>
 <!-- dob -->
 
-<!-- phone -->
+<!-- pronouns -->
 <div class="form-group row">
-<label class="col-sm-6 control-label" for="phone"><?php echo xlt('Phone Number'); ?></label>
+<label class="col-sm-6 control-label" for="pronouns"><?php echo xlt('Pronouns'); ?></label>
 <div class="col-sm-6">
+<select id="pronouns" type=text name="pronouns" class="form-control select2">
+<option></option>
+<?php echo getListOptions('pronouns'); ?>
+</select>
+</div>
+</div>
+<!-- pronouns -->
+
+<!-- cell phone -->
+<div class="form-group row">
+<label class="col-sm-6 control-label" for="phone_cell"><?php echo xlt('Cell Phone Number'); ?></label>
+<div class="col-sm-6">
+<input type="text" name="phone_cell" id="phone_cell" class="form-control"
 <?php
-if (isset($obj['Phone'])) {
-   echo $obj['Phone'];
+if (isset($obj['phone_cell'])) {
+   echo 'value="'. $obj['phone_cell'] .'"';
 }
-?>
+?>>
 </div>
 </div>
 <!-- phone -->
@@ -237,8 +208,8 @@ if (isset($obj['Phone'])) {
 <div class="col-sm-6">
 <input type="text" name="email" id="email" class="form-control"
 <?php
-if (isset($obj['Email'])) {
-   echo 'value="'. $obj['Email'] .'"';
+if (isset($obj['email'])) {
+   echo 'value="'. $obj['email'] .'"';
 }
 ?>
 >
@@ -249,13 +220,14 @@ if (isset($obj['Email'])) {
 <!-- Are you trans? -->
 <div class="form-group row">
 <label class="col-sm-6 control-label" for="is_trans"><?php echo xlt('Are you trans, non-binary, gender variant, or intersex?'); ?></label>
-<div class="col-sm-6">
+<div class="col-sm-1">
 <input type="checkbox" <?php
-if (isset($obj['is_trans'])) {
+if (isset($obj['is_trans']) && $obj['is_trans'] == 1) {
    echo 'checked ';
 }
 ?>name="is_trans"></input>
 </div>
+<div class="col-sm-5"></div>
 </div>
 
 <!-- What are you requesting? -->
@@ -378,12 +350,12 @@ if (isset($obj['city'])) {
 
 <!-- zip -->
 <div class="form-group row">
-<label class="col-sm-6 control-label" for="zip"><?php echo xlt('Zip'); ?></label>
+<label class="col-sm-6 control-label" for="postal_code"><?php echo xlt('Zip'); ?></label>
 <div class="col-sm-6">
-<input type="text" name="zip" id="zip" class="form-control"
+<input type="text" name="postal_code" id="postal_code" class="form-control"
 <?php
-if (isset($obj['zip'])) {
-   echo 'value="'. $obj['zip'] .'"';
+if (isset($obj['postal_code'])) {
+   echo 'value="'. $obj['postal_code'] .'"';
 }
 ?>
 >
@@ -434,24 +406,21 @@ if (isset($obj['your_rent'])) {
 <!-- your_rent -->
 
 <div class="form-group row">
-<label class="col-sm-12 control-label"><?php echo xlt('** Please include a copy of your rental agreement and a copy of your landlord\'s W9 **'); ?></label>
-</div>
-
-<div class="form-group row">
 <label class="col-sm-6 control-label" for="eviction_risk"><?php echo xlt('Are you at risk for eviction?'); ?></label>
-<div class="col-sm-6">
-<input type="checkbox" name="eviction_risk" id="eviction_risk" class="form-control"
+<div class="col-sm-1">
+<input type="checkbox" name="eviction_risk" id="eviction_risk"
 <?php
-if (isset($obj['eviction_risk'])) {
+if (isset($obj['eviction_risk']) && $obj['eviction_risk'] == 1) {
    echo 'checked ';
 }
 ?>
 >
 </div>
+<div class="col-sm-5"></div>
 </div>
 <!-- eviction_risk -->
 
-<div class="form-group row">
+<div class="form-group row" id="eviction-risk-questions">
 <label class="col-sm-6 control-label" for="eviction_risk_description">If you are at risk for eviction, please provide more information about your circumstances</label>
 <div class="col-sm-6">
 <textarea class="form-control" rows=3 id="eviction_risk_description" name="eviction_risk_description">
@@ -480,15 +449,16 @@ if (isset($obj['monthly_income'])) {
 >
 </div>
 </div>
-<!-- eviction_risk -->
 
 <!-- income_sources -->
 <div class="form-group row">
 <label class="col-sm-6 control-label" for="income_sources"><?php echo xlt('Please select all applicable income sources'); ?></label>
 <div class="col-sm-6">
-<select id="income_sources" type=text name="income_source" class="form-control select2" multiple="multiple">
+<select id="income_sources" type=text name="income_sources[]" class="form-control select2" multiple="multiple">
 <option></option>
-<?php echo getListOptions('income_sources'); ?>
+<?php 
+echo getListOptions('income_sources'); 
+?>
 </select>
 </div>
 </div>
@@ -498,7 +468,7 @@ if (isset($obj['monthly_income'])) {
 <div class="form-group row">
 <label class="col-sm-6 control-label" for="income_verification"><?php echo xlt('What type of income verification documents are you submitting with your application? {Please include these documents with your application)'); ?></label>
 <div class="col-sm-6">
-<select id="income_verification" type=text name="income_verification" class="form-control select2" multiple="multiple">
+<select id="income_verification" type=text name="income_verification[]" class="form-control select2" multiple="multiple">
 <option></option>
 <?php echo getListOptions('income_verification'); ?>
 </select>
@@ -510,7 +480,7 @@ if (isset($obj['monthly_income'])) {
 <div class="form-group row">
 <label class="col-sm-6 control-label" for="noncash_assistance"><?php echo xlt('Please specify any non-cash assistance programs you are enrolled in)'); ?></label>
 <div class="col-sm-6">
-<select id="noncash_assistance" type=text name="income_assistance" class="form-control select2" multiple="multiple">
+<select id="noncash_assistance" type=text name="noncash_assistance[]" class="form-control select2" multiple="multiple">
 <option></option>
 <?php echo getListOptions('noncash_assistance'); ?>
 </select>
@@ -518,24 +488,25 @@ if (isset($obj['monthly_income'])) {
 </div>
 <!-- income_verification-->
 
-<!-- TODO: What should happen if this box is checked? -->
+<!-- TODO: this should add a callback reminder for the registration administrator -->
 <div class="form-group row">
 <label class="col-sm-6 control-label" for="interested_in_sji"><?php echo xlt('Our Trans Home SF is a program of St. James Infirmary, a clinic that offers services to current and former sex workers. Are you interested in receiving medical or mental health services through St. James?'); ?></label>
-<div class="col-sm-6">
-<input type="checkbox" name="interested_in_sji" id="interested_in_sji" class="form-control"
+<div class="col-sm-1">
+<input type="checkbox" name="interested_in_sji" id="interested_in_sji" 
 <?php
-if (isset($obj['interested_in_sji'])) {
+if (isset($obj['interested_in_sji']) && $obj['interested_in_sji'] == 1) {
    echo 'checked ';
 }
 ?>
 >
 </div>
+<div class="col-sm-5"></div>
 </div>
 
 <div class="form-group row">
 <label class="col-sm-6 control-label" for="priorities"><?php echo xlt('We prioritize BIPOC (Black, Indigenous, and People of Color), those living with HIV/AIDS, current and former sex workers, people with diabilities, and those who were formerly incarcerated. Check all that apply (if comfortable)'); ?></label>
 <div class="col-sm-6">
-<select multiple="multiple" id="priorities" type=text name="priorities" class="form-control select2">
+<select multiple="multiple" id="priorities" type=text name="priorities[]" class="form-control select2">
 <option></option>
 <?php echo getListOptions('priorities'); ?>
 </select>
@@ -594,15 +565,16 @@ if (isset($obj['interested_in_sji'])) {
 
 <div class="form-group row">
 <label class="col-sm-6 control-label" for="veteran"><?php echo xlt('Are you a veteran?'); ?></label>
-<div class="col-sm-6">
-<input type="checkbox" name="veteran" id="veteran" class="form-control"
+<div class="col-sm-1">
+<input type="checkbox" name="veteran" id="veteran" 
 <?php
-if (isset($obj['veteran'])) {
+if (isset($obj['veteran']) && $obj['veteran'] == 1) {
    echo 'checked ';
 }
 ?>
 >
 </div>
+<div class="col-sm-5"></div>
 </div>
 
 <div style="margin: 10px;">
@@ -622,23 +594,12 @@ if (isset($obj['veteran'])) {
 $(document).ready(function(){
     $(".save").click(function() { top.restoreSession(); $('#my_form').submit(); });
     $(".dontsave").click(function() { parent.closeTab(window.name, false); });
-    //$("#printform").click(function() { PrintForm(); });
 
-    // If the participant has taken hormones then show the related questions
-    $('#taken_hormones_questions').hide();
-    var taken_hormones = $('#taken_hormones').val();
-    if ( taken_hormones == 'Yes' ) {
-       $('#taken_hormones_questions').fadeIn('slow');
+    $('#eviction_risk_questions').hide();
+    var eviction_risk = $('#taken_hormones').val();
+    if ( eviction_risk == 'Yes' ) {
+       $('#eviction_risk_questions').fadeIn('slow');
     }
-
-    // A UI helper function that allows us to hide the hormones questions if the participant refused it
-    $('#taken_hormones').change(function() {
-       if (this.value == 'Yes') {
-          $('#taken_hormones_questions').fadeIn('slow');
-       } else {
-          $('#taken_hormones_questions').fadeOut('slow');
-       }
-    });
 
     $('.select2').select2({
        tags: true,

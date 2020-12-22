@@ -33,18 +33,23 @@ function sji_oth_intake_report($pid, $encounter, $cols, $id = 0)
     $data = formFetch("form_".$form_name, $id);
 
     // Add on name, address, phone and pronouns
-    $query = "select fname,lname,street,city,state,postal_code,email from patient_data where pid=?";
+    $query = "select concat(fname, ' ', lname) as Name, ".
+	"concat(street, ', ', city, ', ', state, ' ', postal_code) as Address, ".
+	"email, phone_cell as Cell, DOB, monthly_income from patient_data where pid=?";
     $res = sqlStatement($query, array($pid));
     $row = sqlFetchArray($res);
-    $data['Name'] = $row['fname'] .' '. $row['lname'];
-    $data['Address'] = $row['street'] .', '. $row['city'] .', '. $row['state'] .' '. $row['postal_code'];
     $data['Email'] = $row['email'];
+    $data['Cell'] = $row['Cell'];
+    $data['monthly_income'] = $row['monthly_income'];
 
-    $query = "select pronouns from form_sji_intake_core_variables where pid=? order by date desc limit 1";
+    $query = "select pronouns,aliases,housing_situation,gender,sexual_identity from form_sji_intake_core_variables where pid=? order by date desc limit 1";
     $res = sqlStatement($query, array($pid));
-    $row = sqlFetchArray($res);
-    if (isset($row['pronouns'])) {
+    if ($row = sqlFetchArray($res)) {
        $data['Pronouns'] = $row['pronouns'];
+       $data['Aliases'] = $row['aliases'];
+       $data['housing_situation'] = $row['housing_situation'];
+       $data['gender'] = $row['gender'];
+       $data['sexual_identity'] = $row['sexual_identity'];
     }
 
     if ($data) {
@@ -65,10 +70,14 @@ function sji_oth_intake_report($pid, $encounter, $cols, $id = 0)
                 continue;
             }
     
-            if ($value == "on") {
+            if ($value == "on" || $value === '1') {
                 $value = "yes";
             }
-    
+
+            if ($value == '0') {
+                $value = "no";
+            }
+
             $key=ucwords(str_replace("_", " ", $key));
             print("<tr>\n");
             print("<tr>\n");

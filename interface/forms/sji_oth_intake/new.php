@@ -151,7 +151,7 @@ if (isset($obj['aliases'])) {
 <div class="col-sm-6" id="rental_agreement_name">
 <input type="text" name="rental_agreement_name" id="rental_agreement_name" class="form-control"
 <?php
-if (isset($obj['rental_agreement_name'])) {
+if (isset($obj['rental_agreement_name']) && strlen($obj['rental_agreement_name'])) {
    echo 'value="'. $obj['rental_agreement_name'] .'"';
 } else if (isset($obj['Name'])) {
    echo 'value="'. $obj['Name'] .'"';

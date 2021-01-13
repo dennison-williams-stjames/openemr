@@ -343,12 +343,39 @@ require_once($GLOBALS['srcdir'] . "/validation/validation_script.js.php"); ?>
 
  });
 
+<<<<<<< HEAD
 function bill_loc(){
 	var pid=<?php echo attr($pid);?>;
 	var dte=document.getElementById('form_date').value;
 	var facility=document.forms[0].facility_id.value;
 	ajax_bill_loc(pid,dte,facility);
 }
+=======
+ function bill_loc() {
+     var pid =<?php echo attr($pid);?>;
+     var dte = document.getElementById('form_date').value;
+     var facility = document.forms[0].facility_id.value;
+     ajax_bill_loc(pid, dte, facility);
+     // double duty to update pos to new facility pos
+     //
+        <?php if ($GLOBALS['set_pos_code_encounter']) { ?>
+     $.ajax({
+         url: "./../../../library/ajax/facility_ajax_code.php",
+         method: "GET",
+         data: {
+             mode: "get_pos",
+             facility_id: facility
+         }
+     })
+         .done(function (fid) {
+             document.forms[0].pos_code.value = fid;
+         })
+         .fail(function (xhr) {
+             console.log('error', xhr);
+         });
+        <?php } ?>
+ }
+>>>>>>> v5_0_1_7
 
 // Handler for Cancel clicked when creating a new encounter.
 // Show demographics or encounters list depending on what frame we're in.
@@ -583,7 +610,29 @@ echo xlt('Do you have a current illness or symptoms?');
 <?php if (isset($result['symptoms'])) {
    echo 'value="'. $result['symptoms'] .'"';
 } else {
+<<<<<<< HEAD
    echo 'data-placeholder="'. xlt('Describe the symptoms') .'"';
+=======
+    $dres = sqlStatement("select facility_id from users where username = ?", array($_SESSION['authUser']));
+    $drow = sqlFetchArray($dres);
+    $def_facility = $drow['facility_id'];
+}
+$posCode = '';
+$facilities = $facilityService->getAllServiceLocations();
+if ($facilities) {
+    foreach ($facilities as $iter) { ?>
+        <option value="<?php echo attr($iter['id']); ?>"
+            <?php
+            if ($def_facility == $iter['id']) {
+                if (!$viewmode) {
+                    $posCode = $iter['pos_code'];
+                }
+                echo "selected";
+            }?>><?php echo text($iter['name']); ?>
+        </option>
+        <?php
+    }
+>>>>>>> v5_0_1_7
 }
 ?>></div> <!-- col-sm-6 -->
 </div> <!-- row -->
@@ -600,9 +649,43 @@ echo xlt('What type of medical service are you looking for?');
 // TODO: add this list
 echo getListOptions('medical_services'); 
 ?>
+<<<<<<< HEAD
 </select>
 </div> <!-- col-sm-6 -->
 </div> <!-- row -->
+=======
+      </select>
+     </td>
+    </tr>
+    <tr>
+        <td class='bold' nowrap><?php echo xlt('Billing Facility'); ?>:</td>
+        <td class='text'>
+            <div id="ajaxdiv">
+            <?php
+            billing_facility('billing_facility', $result['billing_facility']);
+            ?>
+            </div>
+        </td>
+     </tr>
+        <?php if ($GLOBALS['set_pos_code_encounter']) { ?>
+        <tr>
+            <td><span class='bold' nowrap><?php echo xlt('POS Code'); ?>: </span></td>
+            <td colspan="6">
+                <select class="form-control" name="pos_code">
+                <?php
+
+                $pc = new POSRef();
+
+                foreach ($pc->get_pos_ref() as $pos) {
+                    echo "<option value=\"" . attr($pos["code"]) . "\" ";
+                    if (($pos["code"] == $result['pos_code'] && $viewmode) || ($pos["code"] == $posCode && !$viewmode)) {
+                        echo "selected";
+                    }
+
+                    echo ">" . text($pos['code'])  . ": ". xlt($pos['title']);
+                    echo "</option>\n";
+                }
+>>>>>>> v5_0_1_7
 
 
 </div> <!-- medical-care -->

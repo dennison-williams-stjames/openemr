@@ -1,4 +1,9 @@
 <?php
+// Only clinicians should have access to this
+// Clinicians at SJI are those allowed to see lab results
+require_once("$srcdir/acl.inc");
+if (!acl_check('patients','lab')) die("Access Denied.");
+
 //------------Forms generated from formsWiz
 include_once(dirname(__FILE__).'/../../globals.php');
 include_once($GLOBALS["srcdir"]."/api.inc");

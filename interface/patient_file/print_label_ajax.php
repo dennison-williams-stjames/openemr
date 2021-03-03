@@ -89,16 +89,16 @@ $message = <<<MSG
 ^XA
 ^PQ$num
 ^CFF
-^FO00,00
+^FO45,40
 ^FDSJI/CTYC: $pid^FS
 ^CFD
-^FO15,30
+^FO60,70
 ^FDVisit: $date^FS
-^FO15,55
+^FO60,95
 ^FD$name^FS
-^FO15,80
+^FO60,120
 ^FDDOB: $dob $sex_code^FS
-^FO15,105
+^FO0,145
 $ins
 ^PH
 ^XZ

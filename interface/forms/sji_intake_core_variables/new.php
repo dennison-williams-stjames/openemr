@@ -43,8 +43,11 @@ else {
    $intake = sqlFetchArray($res);
    if (isset($intake['id'])) {
       $obj = get_cv_form_obj($pid, $intake["id"]);
+   } else {
+      $obj = get_cv_form_obj($pid);
    }
 }
+
 
 /* remove the time-of-day from the date fields */
 if (isset($obj['date_of_signature'])) {

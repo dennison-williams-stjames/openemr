@@ -64,7 +64,7 @@ function get_cv_form_obj($pid, $id = 0) {
       "ORDER BY id DESC LIMIT 1";
    $res = sqlStatement($query, array($pid));
    if ($row = sqlFetchArray($res)) {
-      $obj = array_merge($obj, $row);
+      $obj = array_merge(is_array($obj) ? $obj : array(), $row);
    }
 
    // Add on insurance info

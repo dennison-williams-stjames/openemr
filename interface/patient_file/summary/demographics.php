@@ -951,21 +951,21 @@ expand_collapse_widget(
             $query = "select count(*) as ct from form_sji_intake_core_variables where pid=?";
             $res = sqlStatement($query, array($pid));
             $cv_rows = sqlFetchArray($res);
-            if (isset($cv_rows['ct']) && $cv_rows['ct'] > 0) {
+            if (isset($cv_rows['ct']) && $cv_rows['ct'] > 0 && acl_check('forms', 'intake')) {
                print '<li class=""> <a href="#" id="header_tab_CV"> Core Variables</a> </li>'."\n";
             }
 
             $query = "select count(*) as ct from form_sji_intake where pid=?";
             $res = sqlStatement($query, array($pid));
             $intake_rows = sqlFetchArray($res);
-            if (isset($intake_rows['ct']) && $intake_rows['ct'] > 0) {
+            if (isset($intake_rows['ct']) && $intake_rows['ct'] > 0 && acl_check('forms', 'intake')) {
                print '<li class=""> <a href="#" id="header_tab_Intake"> Intake</a> </li>'."\n";
             }
 
             $query = "select count(*) as ct from form_sji_stride_intake where pid=?";
             $res = sqlStatement($query, array($pid));
             $stride_rows = sqlFetchArray($res);
-            if (isset($stride_rows['ct']) && $stride_rows['ct'] > 0) {
+            if (isset($stride_rows['ct']) && $stride_rows['ct'] > 0 && acl_check('forms', 'intake')) {
                print '<li class=""> <a href="#" id="header_tab_Stride"> STRIDE</a> </li>'."\n";
             }
 
@@ -1044,21 +1044,24 @@ expand_collapse_widget(
             print "</tbody></table></div>\n";
 
             // create tab for CV
-            if (isset($cv_rows['ct']) && $cv_rows['ct'] > 0) {
+            if ( isset($cv_rows['ct']) && $cv_rows['ct'] > 0 && acl_check('forms', 'intake')
+	    ) {
 		    print "<div class='tab'>\n";
 		    sji_intake_core_variables_report($pid, 0, 0, 0);
 		    print "</div>\n";
             }
 
             // create tab for Intake
-            if (isset($intake_rows['ct']) && $intake_rows['ct'] > 0) {
+            if (isset($intake_rows['ct']) && $intake_rows['ct'] > 0 && acl_check('forms', 'intake')
+	    ) {
 		    print "<div class='tab'>\n";
 		    sji_intake_report($pid, 0, 0, 0);
 		    print "</div>\n";
             }
 
             // create tab for STRIDE
-            if (isset($stride_rows['ct']) && $stride_rows['ct'] > 0) {
+            if (isset($stride_rows['ct']) && $stride_rows['ct'] > 0 && acl_check('forms', 'intake')
+	    ) {
 		    print "<div class='tab'>\n";
 		    sji_stride_intake_report($pid, 0, 0, 0);
 		    print "</div>\n";

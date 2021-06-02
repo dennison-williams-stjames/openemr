@@ -6,14 +6,6 @@
 // as published by the Free Software Foundation; either version 2
 // of the License, or (at your option) any later version.
 
-isPortal = typeof isPortal === 'undefined' ? 0 : isPortal;
-if (isPortal) {
-    top.restoreSession = function() {
-        // dummy function;
-    }
-    top.tab_mode = 1;
-}
-
 // open a new cascaded window
 function cascwin(url, winname, width, height, options) {
     var mywin = window.parent ? window.parent : window;
@@ -327,7 +319,7 @@ if (typeof dlgclose !== "function") {
             }
             dialogModal.modal('hide');
         }
-    }
+    };
 }
 
 /*
@@ -346,11 +338,7 @@ if (typeof dlgclose !== "function") {
 * */
 function dlgopen(url, winname, width, height, forceNewWindow, title, opts) {
     // First things first...
-    isPortal = typeof isPortal === 'undefined' ? 0 : isPortal;
-    if (!isPortal) {
-        top.restoreSession();
-    }
-
+    top.restoreSession();
     // A matter of Legacy
     if (forceNewWindow) {
         return dlgOpenWindow(url, winname, width, height);
@@ -519,8 +507,8 @@ function dlgopen(url, winname, width, height, forceNewWindow, title, opts) {
 
     var embedded = 'embed-responsive embed-responsive-16by9';
 
-    var bodyStyles = (' style="margin:2px;padding:2px;height:%initHeight%;max-height:90vh;"')
-        .replace('%initHeight%', opts.sizeHeight !== 'full' ? mHeight : '90vh');
+    var bodyStyles = (' style="margin:2px;padding:2px;height:%initHeight%;max-height:94vh;overflow-y:auto;"')
+        .replace('%initHeight%', opts.sizeHeight !== 'full' ? mHeight : '94vh');
 
     var altClose = '<div class="closeDlgIframe" data-dismiss="modal" ></div>';
 
@@ -594,14 +582,6 @@ function dlgopen(url, winname, width, height, forceNewWindow, title, opts) {
                         sizing(e, height); // must be full height of container
                     }
                 }, 500);
-            });
-        } else {
-            var modalwin = where.jQuery('body').find("[name='" + winname + "']");
-            jQuery('div.modal-dialog', modalwin).css({'margin': '1.25rem auto'});
-            modalwin.on('show.bs.modal', function (e) {
-                setTimeout(function () {
-                    sizing(e, height);
-                }, 800);
             });
         }
 
@@ -773,28 +753,29 @@ function dlgopen(url, winname, width, height, forceNewWindow, title, opts) {
     // dynamic sizing - special case for full height - @todo use for fixed wt and ht
     function sizing(e, height) {
         let viewPortHt = 0;
-        if (opts.sizeHeight === 'auto') {
-            dlgContainer.find('div.modal-body').css({'overflow-y': 'auto'});
-            // let BS determine height for alerts etc
-            return;
-        }
-        viewPortHt = Math.max(window.document.documentElement.clientHeight, window.innerHeight || 0);
-        let frameContentHt = opts.sizeHeight === 'full' ? viewPortHt : height;
-        let hasHeader = dlgContainer.find('div.modal-content').find('div.modal-header').height() || 0;
-        let hasFooter = dlgContainer.find('div.modal-content').find('div.modal-footer').height() || 0;
-        frameContentHt = frameContentHt - hasHeader - hasFooter - 80;
-        frameContentHt = frameContentHt >= viewPortHt ? viewPortHt : frameContentHt;
-        size = (frameContentHt / viewPortHt * 100).toFixed(2);
-        size = size + 'vh';
-        dlgContainer.find('div.modal-body').css({'height': size});
-        if (opts.type === 'iframe') {
-            dlgContainer.find('div.modal-body').css({'overflow-y': 'hidden'});
+        let $idoc = jQuery(e.currentTarget);
+        if (top.tab_mode) {
+        viewPortHt = Math.max(top.window.document.documentElement.clientHeight, top.window.innerHeight || 0);
+        viewPortWt = Math.max(top.window.document.documentElement.clientWidth, top.window.innerWidth || 0);
         } else {
-            dlgContainer.find('div.modal-body').css({'overflow-y': 'auto'});
+            viewPortHt = window.innerHeight || 0;
+            viewPortWt = window.innerWidth || 0;
         }
+        let frameContentHt = opts.sizeHeight === 'full' ? viewPortHt : height;
+        frameContentHt = frameContentHt > viewPortHt ? viewPortHt : frameContentHt;
+        let hasHeader = $idoc.parents('div.modal-content').find('div.modal-header').height() || 0;
+        let hasFooter = $idoc.parents('div.modal-content').find('div.modal-footer').height() || 0;
+        frameContentHt = frameContentHt - hasHeader - hasFooter;
+        size = (frameContentHt / viewPortHt * 100).toFixed(4);
+        let maxsize = hasHeader ? 90 : hasFooter ? 86.5 : 95.5;
+        maxsize = hasHeader && hasFooter ? 80 : maxsize;
+        maxsize = maxsize + 'vh';
+        size = size + 'vh';
+        $idoc.parents('div.modal-body').css({'height': size, 'max-height': maxsize, 'max-width': '96vw'});
 
         return size;
     }
+
     // sizing for modals with iframes
     function SizeModaliFrame(e, minSize) {
         let viewPortHt;

@@ -59,7 +59,6 @@ var pageAudit = {
 
 		pageAudit.onsitePortalActivities.fetch({
 			data: params,
-            wait: true,
 			success: function() {
 				if (pageAudit.onsitePortalActivities.collectionHasChanged) {
 				}

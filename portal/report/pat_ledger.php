@@ -647,9 +647,11 @@ function checkSubmit() {
 
 
     if ($_REQUEST['form_refresh'] && $orow <= 0) {
-        $msg = xlj('No matches found. Try search again.');
-        echo '<script>alert(' . $msg . '); document.getElementById("report_results").style.display="none";</script>';
-        //echo '<script>document.getElementById("controls").style.display="none";</script>';
+        echo "<span style='font-size:10pt;'>";
+        echo xlt('No matches found. Try search again.');
+        echo "</span>";
+        echo '<script>document.getElementById("report_results").style.display="none";</script>';
+        echo '<script>document.getElementById("controls").style.display="none";</script>';
     }
 
     if (!$_REQUEST['form_refresh']) { ?>

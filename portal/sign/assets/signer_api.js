@@ -480,20 +480,11 @@ function initSignerApi() {
 
             if (type === "admin-signature" && isPortal) {
                 // don't allow patient to change user signature.
-                $lastEl.css('cursor', 'default').off();
                 return false;
-            }
-            if (type === "patient-signature" && !isPortal && !isModule) {
-                // don't allow user to change patient signature.
-                // patient may sign in module
-                $lastEl.css('cursor', 'default').off();
-                return false;
-            }
-            if(isPortal) {
+            } else if(isPortal) {
                 getSignature(this);
                 return false;
             }
-
             $lastEl.attr('src', signhere);
 
             fetch(url, {
@@ -718,15 +709,13 @@ function initSignerApi() {
             }
         });
 
-        if (placeSignatureButton && placeSignatureButton !== null) {
-            placeSignatureButton.addEventListener("click", function (event) {
-                let thisElement = $(this);
-                getSignature(thisElement, true).then(r => {
-                    let imgurl = thisElement.attr('src');
-                    signaturePad.fromDataURL(imgurl);
-                });
+        placeSignatureButton.addEventListener("click", function (event) {
+            let thisElement = $(this);
+            getSignature(thisElement, true).then(r => {
+                let imgurl = thisElement.attr('src');
+                signaturePad.fromDataURL(imgurl);
             });
-        }
+        });
 
         showSignature.addEventListener("click", function (event) { // for modal view
             let showElement = document.getElementById('signatureModal');

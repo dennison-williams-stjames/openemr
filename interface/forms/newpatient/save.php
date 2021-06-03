@@ -12,10 +12,7 @@
  */
 
 
-require_once("../../globals.php");
-require_once("$srcdir/forms.inc");
-require_once("$srcdir/encounter.inc");
-require_once("$srcdir/acl.inc");
+require_once('shared.php');
 
 use OpenEMR\Common\Csrf\CsrfUtils;
 use OpenEMR\Services\FacilityService;
@@ -50,101 +47,22 @@ $nexturl = $normalurl;
 $provider_id = $_SESSION['authUserID'] ? $_SESSION['authUserID'] : 0;
 $provider_id = $encounter_provider ? $encounter_provider : $provider_id;
 
-if ($mode == 'new') {
-    $encounter = generate_id();
-    addForm(
-        $encounter,
-        "New Patient Encounter",
-        sqlInsert(
-            "INSERT INTO form_encounter SET
-                date = ?,
-                onset_date = ?,
-                reason = ?,
-                facility = ?,
-                pc_catid = ?,
-                facility_id = ?,
-                billing_facility = ?,
-                sensitivity = ?,
-                referral_source = ?,
-                pid = ?,
-                encounter = ?,
-                pos_code = ?,
-                external_id = ?,
-                provider_id = ?",
-            [
-                $date,
-                $onset_date,
-                $reason,
-                $facility,
-                $pc_catid,
-                $facility_id,
-                $billing_facility,
-                $sensitivity,
-                $referral_source,
-                $pid,
-                $encounter,
-                $pos_code,
-                $external_id,
-                $provider_id
-            ]
-        ),
-        "newpatient",
-        $pid,
-        $userauthorized,
-        $date
-    );
-} else if ($mode == 'update') {
-    $id = $_POST["id"];
-    $result = sqlQuery("SELECT encounter, sensitivity FROM form_encounter WHERE id = ?", array($id));
-    if ($result['sensitivity'] && !acl_check('sensitivities', $result['sensitivity'])) {
-        die(xlt("You are not authorized to see this encounter."));
-    }
+if (!$pid) {
+    $pid = $_SESSION['pid'];
+}
 
-    $encounter = $result['encounter'];
-    // See view.php to allow or disallow updates of the encounter date.
-    $datepart = "";
-    $sqlBindArray = array();
-    if (acl_check('encounters', 'date_a')) {
-        $datepart = "date = ?, ";
-        $sqlBindArray[] = $date;
-    }
-    array_push(
-        $sqlBindArray,
-        $onset_date,
-        $provider_id,
-        $reason,
-        $facility,
-        $pc_catid,
-        $facility_id,
-        $billing_facility,
-        $sensitivity,
-        $referral_source,
-        $pos_code,
-        $id
-    );
-    sqlStatement(
-        "UPDATE form_encounter SET
-            $datepart
-            onset_date = ?,
-            provider_id = ?,
-            reason = ?,
-            facility = ?,
-            pc_catid = ?,
-            facility_id = ?,
-            billing_facility = ?,
-            sensitivity = ?,
-            referral_source = ?,
-            pos_code = ? WHERE id = ?",
-        $sqlBindArray
-    );
+if ($mode == 'new') {
+   new_visit(array_merge($_POST, $_GET), $pid);
+} else if ($mode == 'update') {
+   update_visit(array_merge($_POST, $_GET), $pid);
 } else {
-    die("Unknown mode '" . text($mode) . "'");
+   die("Unknown mode '" . text($mode) . "'");
 }
 
 setencounter($encounter);
 
 // Update the list of issues associated with this encounter.
-if (is_array($_POST['issues'])) {
+if (isset($_POST['issues']) && is_array($_POST['issues'])) {
     sqlStatement("DELETE FROM issue_encounter WHERE " .
     "pid = ? AND encounter = ?", array($pid, $encounter));
     foreach ($_POST['issues'] as $issue) {

@@ -13,6 +13,11 @@
 require_once($GLOBALS['fileroot'] . "/library/forms.inc");
 require_once("FormSOAP.class.php");
 
+// Only clinicians should have access to this
+// Clinicians at SJI are those allowed to see lab results
+require_once("$srcdir/acl.inc");
+if (!acl_check('patients','lab')) die("Access Denied.");
+
 use OpenEMR\Common\Csrf\CsrfUtils;
 
 class C_FormSOAP extends Controller

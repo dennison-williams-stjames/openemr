@@ -217,10 +217,6 @@ if (strlen($sSearch)) {
 	$query = "SELECT $sellist FROM patient_data WHERE $where $orderby $limit";
 }
 $res = sqlStatement($query, $srch_bind);
-$out['query'] = $query;
-$out['srch_bind'] = $srch_bind;
-$out['sellist'] = $sellist;
-$out['where'] = $where;
 while ($row = sqlFetchArray($res)) {
     // Each <tr> will have an ID identifying the patient.
     $arow = array('DT_RowId' => 'pid_' . $row['pid']);

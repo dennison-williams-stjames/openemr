@@ -461,28 +461,10 @@ For nine or more, add this amount for each additional person
 </tbody>
 </table>
 
-  <div class="col-sm-12">
-   <span class="title"><?php echo xlt('Age'); ?></span>
-  </div>
-  <table id='myagetable'>
-   <thead>
-    <th> <?php echo xlt('Under 1 year'); ?> </th>
-    <th> <?php echo xlt('1 - 4 years'); ?> </th>
-    <th> <?php echo xlt('5 - 12 years'); ?> </th>
-    <th> <?php echo xlt('13 - 14 years'); ?> </th>
-    <th> <?php echo xlt('15 - 19 years'); ?> </th>
-    <th> <?php echo xlt('20 - 34 years'); ?> </th>
-    <th> <?php echo xlt('35 - 44 years'); ?> </th>
-    <th> <?php echo xlt('45 - 64 years'); ?> </th>
-    <th> <?php echo xlt('65 and Over'); ?> </th>
-    <th> <?php echo xlt('Unknown'); ?> </th>
-    <th> <?php echo xlt('Total'); ?> </th>
- </thead>
- <tbody>
 <?php
     $totalpts = 0;
     $sqlArrayBind = array();
-    $query = "SELECT year(DOB) as birth_year, p.pid as mrn,max(e.id) " .
+    $query = "SELECT year(DOB) as birth_year, p.sex as sex, p.pid as mrn,max(e.id) " .
     "FROM patient_data AS p ";
     if (!empty($from_date)) {
         $query .= "JOIN form_encounter AS e ON " .
@@ -505,6 +487,11 @@ For nine or more, add this amount for each additional person
 
         $total = $total + 1;
 
+	$sex = 'Female';
+	if ($row['sex'] === 'Male') {
+		$sex = 'Male';
+	}
+
         if (!isset($row['birth_year']) || strlen($row['birth_year']) == 0) {
            error_log('ERROR: could not determine birth year');
            exit;
@@ -519,11 +506,22 @@ For nine or more, add this amount for each additional person
            } else {
               $ages['Unknown'] = 1;
            }
+
+           if (isset($ages[$sex]['Unknown'])) {
+              $ages[$sex]['Unknown'] = $ages[$sex]['Unknown'] + 1;
+           } else {
+              $ages[$sex]['Unknown'] = 1;
+           }
         } else if ($age < 1) {
            if (isset($ages['Under'])) {
               $ages['Under'] = $ages['Under'] + 1;
            } else {
               $ages['Under'] = 1;
+           }
+           if (isset($ages[$sex]['Under'])) {
+              $ages[$sex]['Under'] = $ages[$sex]['Under'] + 1;
+           } else {
+              $ages[$sex]['Under'] = 1;
            }
         } else if ($age < 5) {
            if (isset($ages[4])) {
@@ -531,11 +529,21 @@ For nine or more, add this amount for each additional person
            } else {
               $ages[4] = 1;
            }
+           if (isset($ages[$sex][4])) {
+              $ages[$sex][4] = $ages[$sex][4] + 1;
+           } else {
+              $ages[$sex][4] = 1;
+           }
         } else if ($age < 12) {
            if (isset($ages[12])) {
               $ages[12] = $ages[12] + 1;
            } else {
               $ages[12] = 1;
+           }
+           if (isset($ages[$sex][12])) {
+              $ages[$sex][12] = $ages[$sex][12] + 1;
+           } else {
+              $ages[$sex][12] = 1;
            }
         } else if ($age < 15) {
            if (isset($ages[14])) {
@@ -543,11 +551,21 @@ For nine or more, add this amount for each additional person
            } else {
               $ages[14] = 1;
            }
+           if (isset($ages[$sex][14])) {
+              $ages[$sex][14] = $ages[$sex][14] + 1;
+           } else {
+              $ages[$sex][14] = 1;
+           }
         } else if ($age < 20) {
            if (isset($ages['19'])) {
               $ages['19'] = $ages['19'] + 1;
            } else {
               $ages['19'] = 1;
+           }
+           if (isset($ages[$sex]['19'])) {
+              $ages[$sex]['19'] = $ages[$sex]['19'] + 1;
+           } else {
+              $ages[$sex]['19'] = 1;
            }
         } else if ($age < 35) {
            if (isset($ages['34'])) {
@@ -555,11 +573,21 @@ For nine or more, add this amount for each additional person
            } else {
               $ages['34'] = 1;
            }
+           if (isset($ages[$sex]['34'])) {
+              $ages[$sex]['34'] = $ages[$sex]['34'] + 1;
+           } else {
+              $ages[$sex]['34'] = 1;
+           }
         } else if ($age < 45) {
            if (isset($ages['44'])) {
               $ages['44'] = $ages['44'] + 1;
            } else {
               $ages['44'] = 1;
+           }
+           if (isset($ages[$sex]['44'])) {
+              $ages[$sex]['44'] = $ages[$sex]['44'] + 1;
+           } else {
+              $ages[$sex]['44'] = 1;
            }
         } else if ($age < 65) {
            if (isset($ages['64'])) {
@@ -567,11 +595,21 @@ For nine or more, add this amount for each additional person
            } else {
               $ages['64'] = 1;
            }
+           if (isset($ages[$sex]['64'])) {
+              $ages[$sex]['64'] = $ages[$sex]['64'] + 1;
+           } else {
+              $ages[$sex]['64'] = 1;
+           }
         } else if ($age >= 65) {
            if (isset($ages['65'])) {
               $ages['65'] = $ages['65'] + 1;
            } else {
               $ages['65'] = 1;
+           }
+           if (isset($ages[$sex]['65'])) {
+              $ages[$sex]['65'] = $ages[$sex]['65'] + 1;
+           } else {
+              $ages[$sex]['65'] = 1;
            }
         } else {
            error_log('Unknown age '. $age .' for pid: '. $row['mrn'] );
@@ -581,23 +619,59 @@ For nine or more, add this amount for each additional person
     }
 
         ?>
+
+  <div class="col-sm-12">
+   <span class="title"><?php echo xlt('Age by sex'); ?></span>
+  </div>
+
+  <table id='myagetable'>
+   <thead>
+    <th></th>
+    <th> <?php echo xlt('Under 1 year'); ?> </th>
+    <th> <?php echo xlt('1 - 4 years'); ?> </th>
+    <th> <?php echo xlt('5 - 12 years'); ?> </th>
+    <th> <?php echo xlt('13 - 14 years'); ?> </th>
+    <th> <?php echo xlt('15 - 19 years'); ?> </th>
+    <th> <?php echo xlt('20 - 34 years'); ?> </th>
+    <th> <?php echo xlt('35 - 44 years'); ?> </th>
+    <th> <?php echo xlt('45 - 64 years'); ?> </th>
+    <th> <?php echo xlt('65 and Over'); ?> </th>
+    <th> <?php echo xlt('Unknown'); ?> </th>
+    <th> <?php echo xlt('Total'); ?> </th>
+ </thead>
+ <tbody>
    <tr>
-   <td> <?php echo isset($ages['Under']) ? text($ages['Under']) : 0; ?> </td>
-   <td> <?php echo isset($ages[4]) ? text($ages[4]) : 0; ?> </td>
-   <td> <?php echo isset($ages[12]) ? text($ages[12]) : 0; ?> </td>
-   <td> <?php echo isset($ages[14]) ? text($ages[14]) : 0; ?> </td>
-   <td> <?php echo isset($ages[19]) ? text($ages[19]) : 0; ?> </td>
-   <td> <?php echo isset($ages[34]) ? text($ages[34]) : 0; ?> </td>
-   <td> <?php echo isset($ages[44]) ? text($ages[44]) : 0; ?> </td>
-   <td> <?php echo isset($ages[64]) ? text($ages[64]) : 0; ?> </td>
-   <td> <?php echo isset($ages[65]) ? text($ages[65]) : 0; ?> </td>
-   <td> <?php echo isset($ages['Unknown']) ? text($ages['Unknown']) : 0; ?> </td>
+   <td><b>Male</b></td>
+   <td> <?php echo isset($ages['Male']['Under']) ? text($ages['Male']['Under']) : 0; ?> </td>
+   <td> <?php echo isset($ages['Male'][4]) ? text($ages['Male'][4]) : 0; ?> </td>
+   <td> <?php echo isset($ages['Male'][12]) ? text($ages['Male'][12]) : 0; ?> </td>
+   <td> <?php echo isset($ages['Male'][14]) ? text($ages['Male'][14]) : 0; ?> </td>
+   <td> <?php echo isset($ages['Male'][19]) ? text($ages['Male'][19]) : 0; ?> </td>
+   <td> <?php echo isset($ages['Male'][34]) ? text($ages['Male'][34]) : 0; ?> </td>
+   <td> <?php echo isset($ages['Male'][44]) ? text($ages['Male'][44]) : 0; ?> </td>
+   <td> <?php echo isset($ages['Male'][64]) ? text($ages['Male'][64]) : 0; ?> </td>
+   <td> <?php echo isset($ages['Male'][65]) ? text($ages['Male'][65]) : 0; ?> </td>
+   <td> <?php echo isset($ages['Male']['Unknown']) ? text($ages['Male']['Unknown']) : 0; ?> </td>
+   <td></td>
+   </tr>
+
+   <tr>
+   <td><b>Female</b></td>
+   <td> <?php echo isset($ages['Female']['Under']) ? text($ages['Female']['Under']) : 0; ?> </td>
+   <td> <?php echo isset($ages['Female'][4]) ? text($ages['Female'][4]) : 0; ?> </td>
+   <td> <?php echo isset($ages['Female'][12]) ? text($ages['Female'][12]) : 0; ?> </td>
+   <td> <?php echo isset($ages['Female'][14]) ? text($ages['Female'][14]) : 0; ?> </td>
+   <td> <?php echo isset($ages['Female'][19]) ? text($ages['Female'][19]) : 0; ?> </td>
+   <td> <?php echo isset($ages['Female'][34]) ? text($ages['Female'][34]) : 0; ?> </td>
+   <td> <?php echo isset($ages['Female'][44]) ? text($ages['Female'][44]) : 0; ?> </td>
+   <td> <?php echo isset($ages['Female'][64]) ? text($ages['Female'][64]) : 0; ?> </td>
+   <td> <?php echo isset($ages['Female'][65]) ? text($ages['Female'][65]) : 0; ?> </td>
+   <td> <?php echo isset($ages['Female']['Unknown']) ? text($ages['Female']['Unknown']) : 0; ?> </td>
    <td> <?php echo text($total); ?> </td>
-  </tr>
+   </tr>
 
 </tbody>
 </table>
-
 
 </div> <!-- end of results -->
 <?php

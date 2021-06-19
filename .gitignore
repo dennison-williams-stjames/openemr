@@ -21,4 +21,6 @@ ccdaservice/node_modules
 /nbproject/*
 
 # deployment pii
-/sites/*/documents/*
+/sites/*/documents/[0-9]*
+/sites/*/documents/smarty
+/sites/*/documents/procedure_results

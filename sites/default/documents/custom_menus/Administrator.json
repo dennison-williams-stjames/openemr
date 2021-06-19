@@ -1,0 +1,772 @@
+[
+  {
+    "label": "Calendar",
+    "menu_id": "cal0",
+    "target": "cal",
+    "url": "/interface/main/main_info.php",
+    "children": [],
+    "requirement": 0,
+    "acl_req": [
+      "patients",
+      "appt"
+    ],
+    "global_req_strict": [
+      "!disable_calendar",
+      "!ippf_specific"
+    ]
+  },
+  {
+    "label": "Patient/Client",
+    "menu_id": "patimg",
+    "children": [
+      {
+        "label": "Patients",
+        "menu_id": "fin0",
+        "target": "fin",
+        "url": "/interface/main/finder/dynamic_finder.php",
+        "children": [],
+        "requirement": 0,
+        "acl_req": [
+          "patients",
+          "demo"
+        ]
+      },
+      {
+        "label": "New/Search",
+        "menu_id": "new0",
+        "target": "pat",
+        "url": "/interface/new/new.php",
+        "children": [],
+        "requirement": 0,
+        "acl_req": [
+          "patients",
+          "demo",
+          "write",
+          "addonly"
+        ],
+        "global_req": "full_new_patient_form"
+      },
+      {
+        "label": "New",
+        "menu_id": "new0",
+        "target": "pat",
+        "url": "/interface/new/new.php",
+        "children": [],
+        "requirement": 0,
+        "acl_req": [
+          "patients",
+          "demo",
+          "write",
+          "addonly"
+        ],
+        "global_req": "!full_new_patient_form"
+      }
+    ],
+    "requirement": 0
+  },
+  {
+    "label": "Groups",
+    "menu_id": "groupimg",
+    "children": [
+      {
+        "label": "Groups",
+        "menu_id": "gfn0",
+        "target": "gfn",
+        "url": "/interface/therapy_groups/index.php?method=listGroups",
+        "children": [],
+        "requirement": 0,
+        "acl_req": [
+          [
+            "groups",
+            "gadd",
+            "view"
+          ],
+          [
+            "groups",
+            "gadd",
+            "write"
+          ]
+        ]
+      },
+      {
+        "label": "New",
+        "menu_id": "gng0",
+        "target": "gng",
+        "url": "/interface/therapy_groups/index.php?method=addGroup",
+        "children": [],
+        "requirement": 0,
+        "acl_req": [
+          [
+            "groups",
+            "gadd",
+            "view"
+          ],
+          [
+            "groups",
+            "gadd",
+            "write"
+          ]
+        ]
+      },
+      {
+        "label": "Group Details",
+        "menu_id": "gdg4",
+        "target": "gdg",
+        "url": "/interface/therapy_groups/index.php?method=groupDetails&group_id=from_session",
+        "children": [],
+        "requirement": 4,
+        "acl_req": [
+          [
+            "groups",
+            "gadd",
+            "view"
+          ],
+          [
+            "groups",
+            "gadd",
+            "write"
+          ]
+        ]
+      },
+      {
+        "label": "Visits",
+        "icon": "fa-caret-right",
+        "children": [
+          {
+            "label": "Create Visit",
+            "menu_id": "gcv4",
+            "target": "enc",
+            "url": "/interface/forms/newGroupEncounter/new.php?autoloaded=1&calenc==",
+            "children": [],
+            "requirement": 4,
+            "acl_req": [
+              [
+                "groups",
+                "gcalendar",
+                "view"
+              ],
+              [
+                "groups",
+                "gcalendar",
+                "write"
+              ]
+            ]
+          },
+          {
+            "label": "Current",
+            "menu_id": "enc5",
+            "target": "enc",
+            "url": "/interface/patient_file/encounter/encounter_top.php",
+            "children": [],
+            "requirement": 5,
+            "acl_req": [
+              [
+                "groups",
+                "glog",
+                "view"
+              ],
+              [
+                "groups",
+                "glog",
+                "write"
+              ]
+            ]
+          },
+          {
+            "label": "Visit History",
+            "menu_id": "gvh4",
+            "target": "enc",
+            "url": "/interface/patient_file/history/encounters.php",
+            "children": [],
+            "requirement": 4,
+            "acl_req": [
+              [
+                "groups",
+                "glog",
+                "view"
+              ],
+              [
+                "groups",
+                "glog",
+                "write"
+              ]
+            ]
+          }
+        ],
+        "requirement": 0
+      }
+    ],
+    "requirement": 0,
+    "global_req": "enable_group_therapy"
+  },
+  {
+    "label": "Modules",
+    "menu_id": "modimg",
+    "children": [
+      {
+        "label": "Manage Modules",
+        "menu_id": "adm0",
+        "target": "pat",
+        "url": "/interface/modules/zend_modules/public/Installer",
+        "children": [],
+        "requirement": 0,
+        "acl_req": [
+          "admin",
+          "manage_modules"
+        ]
+      }
+    ],
+    "requirement": 0,
+    "acl_req": [
+    "menus",
+    "modle"
+  ]
+  },
+  {
+    "label": "Procedures",
+    "menu_id": "proimg",
+    "children": [
+      {
+        "label": "Providers",
+        "menu_id": "orl0",
+        "target": "pat",
+        "url": "/interface/orders/procedure_provider_list.php",
+        "children": [],
+        "requirement": 0,
+        "acl_req": [
+          "admin",
+          "super"
+        ]
+      },
+      {
+        "label": "Configuration",
+        "menu_id": "ort0",
+        "target": "pat",
+        "url": "/interface/orders/types.php",
+        "children": [],
+        "requirement": 0,
+        "acl_req": [
+          "admin",
+          "super"
+        ]
+      },
+      {
+        "label": "Load Compendium",
+        "menu_id": "orc0",
+        "target": "pat",
+        "url": "/interface/orders/load_compendium.php",
+        "children": [],
+        "requirement": 0,
+        "acl_req": [
+          "admin",
+          "super"
+        ]
+      },
+      {
+        "label": "Pending Review",
+        "menu_id": "orp1",
+        "target": "enc",
+        "url": "/interface/orders/orders_results.php?review=1",
+        "children": [],
+        "requirement": 1,
+        "acl_req": [
+          "patients",
+          "lab"
+        ]
+      },
+      {
+        "label": "Patient Results",
+        "menu_id": "orr1",
+        "target": "enc",
+        "url": "/interface/orders/orders_results.php",
+        "children": [],
+        "requirement": 1,
+        "acl_req": [
+          "patients",
+          "lab"
+        ]
+      },
+      {
+        "label": "Lab Overview",
+        "menu_id": "lda1",
+        "target": "enc",
+        "url": "/interface/patient_file/summary/labdata.php",
+        "children": [],
+        "requirement": 1,
+        "acl_req": [
+          "patients",
+          "lab"
+        ]
+      },
+      {
+        "label": "Batch Results",
+        "menu_id": "orb0",
+        "target": "pat",
+        "url": "/interface/orders/orders_results.php?batch=1",
+        "children": [],
+        "requirement": 0,
+        "acl_req": [
+          "patients",
+          "lab"
+        ]
+      },
+      {
+        "label": "Electronic Reports",
+        "menu_id": "ore0",
+        "target": "pat",
+        "url": "/interface/orders/list_reports.php",
+        "children": [],
+        "requirement": 0,
+        "acl_req": [
+          "patients",
+          "lab"
+        ]
+      },
+      {
+        "label": "Lab Documents",
+        "menu_id": "dld0",
+        "target": "pat",
+        "url": "/interface/main/display_documents.php",
+        "children": [],
+        "requirement": 0,
+        "acl_req": [
+          "patients",
+          "lab"
+        ]
+      }
+    ],
+    "requirement": 0
+  },
+  {
+    "label": "Administration",
+    "menu_id": "admimg",
+    "children": [
+      {
+        "label": "Globals",
+        "menu_id": "adm0",
+        "target": "adm",
+        "url": "/interface/super/edit_globals.php",
+        "children": [],
+        "requirement": 0,
+        "acl_req": [
+          "admin",
+          "super"
+        ]
+      },
+      {
+        "label": "Facilities",
+        "menu_id": "adm0",
+        "target": "adm",
+        "url": "/interface/usergroup/facilities.php",
+        "children": [],
+        "requirement": 0,
+        "acl_req": [
+          "admin",
+          "users"
+        ]
+      },
+      {
+        "label": "Users",
+        "menu_id": "adm0",
+        "target": "adm",
+        "url": "/interface/usergroup/usergroup_admin.php",
+        "children": [],
+        "requirement": 0,
+        "acl_req": [
+          "admin",
+          "users"
+        ]
+      },
+      {
+        "label": "Addr Book",
+        "menu_id": "adb0",
+        "target": "adm",
+        "url": "/interface/usergroup/addrbook_list.php",
+        "children": [],
+        "requirement": 0,
+        "acl_req": [
+          "admin",
+          "practice"
+        ]
+      },
+      {
+        "label": "Practice",
+        "menu_id": "adm0",
+        "target": "adm",
+        "url": "/controller.php?practice_settings&pharmacy&action=list",
+        "children": [],
+        "requirement": 0,
+        "acl_req": [
+          "admin",
+          "practice"
+        ]
+      },
+      {
+        "label": "Codes",
+        "menu_id": "sup0",
+        "target": "adm",
+        "url": "/interface/patient_file/encounter/superbill_custom_full.php",
+        "children": [],
+        "requirement": 0,
+        "acl_req": [
+          "admin",
+          "superbill"
+        ]
+      },
+      {
+        "label": "Layouts",
+        "menu_id": "adm0",
+        "target": "adm",
+        "url": "/interface/super/edit_layout.php",
+        "children": [],
+        "requirement": 0,
+        "acl_req": [
+          "admin",
+          "super"
+        ]
+      },
+      {
+        "label": "Lists",
+        "menu_id": "adm0",
+        "target": "adm",
+        "url": "/interface/super/edit_list.php",
+        "children": [],
+        "requirement": 0,
+        "acl_req": [
+          "admin",
+          "super"
+        ]
+      },
+      {
+        "label": "ACL",
+        "menu_id": "adm0",
+        "target": "adm",
+        "url": "/interface/usergroup/adminacl.php",
+        "children": [],
+        "requirement": 0,
+        "acl_req": [
+          "admin",
+          "acl"
+        ]
+      },
+      {
+        "label": "Files",
+        "menu_id": "adm0",
+        "target": "adm",
+        "url": "/interface/super/manage_site_files.php",
+        "children": [],
+        "requirement": 0,
+        "acl_req": [
+          "admin",
+          "super"
+        ]
+      },
+      {
+        "label": "Backup",
+        "menu_id": "adm0",
+        "target": "adm",
+        "url": "/interface/main/backup.php",
+        "children": [],
+        "requirement": 0,
+        "acl_req": [
+          "admin",
+          "super"
+        ]
+      },
+      {
+        "label": "Rules",
+        "menu_id": "adm0",
+        "target": "adm",
+        "url": "/interface/super/rules/index.php?action=browse!list",
+        "children": [],
+        "requirement": 0,
+        "acl_req": [
+          "admin",
+          "super"
+        ],
+        "global_req": "enable_cdr"
+      },
+      {
+        "label": "Alerts",
+        "menu_id": "adm0",
+        "target": "adm",
+        "url": "/interface/super/rules/index.php?action=alerts!listactmgr",
+        "children": [],
+        "requirement": 0,
+        "acl_req": [
+          "admin",
+          "super"
+        ],
+        "global_req": "enable_cdr"
+      },
+      {
+        "label": "Patient Reminders",
+        "menu_id": "adm0",
+        "target": "adm",
+        "url": "/interface/patient_file/reminder/patient_reminders.php?mode=admin&patient_id=",
+        "children": [],
+        "requirement": 0,
+        "acl_req": [
+          "admin",
+          "super"
+        ],
+        "global_req": "enable_cdr"
+      },
+      {
+        "label": "De Identification",
+        "menu_id": "adm0",
+        "target": "adm",
+        "url": "/interface/de_identification_forms/de_identification_screen1.php",
+        "children": [],
+        "requirement": 0,
+        "acl_req": [
+          "admin",
+          "super"
+        ],
+        "global_req": "include_de_identification"
+      },
+      {
+        "label": "Re Identification",
+        "menu_id": "adm0",
+        "target": "adm",
+        "url": "/interface/de_identification_forms/re_identification_input_screen.php",
+        "children": [],
+        "requirement": 0,
+        "acl_req": [
+          "admin",
+          "super"
+        ],
+        "global_req": "include_de_identification"
+      },
+      {
+        "label": "Export",
+        "menu_id": "adm0",
+        "target": "adm",
+        "url": "/interface/main/ippf_export.php",
+        "children": [],
+        "requirement": 0,
+        "acl_req": [
+          "admin",
+          "super"
+        ],
+        "global_req": "ippf_specific"
+      },
+      {
+        "label": "Other",
+        "icon": "fa-caret-right",
+        "children": [
+          {
+            "label": "Language",
+            "menu_id": "adm0",
+            "target": "adm",
+            "url": "/interface/language/language.php",
+            "children": [],
+            "requirement": 0,
+            "acl_req": [
+              "admin",
+              "language"
+            ]
+          },
+          {
+            "label": "Forms",
+            "menu_id": "adm0",
+            "target": "adm",
+            "url": "/interface/forms_admin/forms_admin.php",
+            "children": [],
+            "requirement": 0,
+            "acl_req": [
+              "admin",
+              "forms"
+            ]
+          },
+          {
+            "label": "Calendar",
+            "menu_id": "adm0",
+            "target": "adm",
+            "url": "/interface/main/calendar/index.php?module=PostCalendar&type=admin&func=modifyconfig",
+            "children": [],
+            "requirement": 0,
+            "acl_req": [
+              "admin",
+              "calendar"
+            ],
+            "global_req": "!disable_calendar"
+          },
+          {
+            "label": "Logs",
+            "menu_id": "adm0",
+            "target": "adm",
+            "url": "/interface/logview/logview.php",
+            "children": [],
+            "requirement": 0,
+            "acl_req": [
+              "admin",
+              "users"
+            ]
+          },
+          {
+            "label": "eRx Logs",
+            "menu_id": "adm0",
+            "target": "adm",
+            "url": "/interface/logview/erx_logview.php",
+            "children": [],
+            "requirement": 0,
+            "acl_req": [
+              "admin",
+              "super"
+            ],
+            "global_req": [
+              "erx_enable",
+              "newcrop_user_role"
+            ]
+          },
+          {
+            "label": "Certificates",
+            "menu_id": "adm0",
+            "target": "adm",
+            "url": "/interface/usergroup/ssl_certificates_admin.php",
+            "children": [],
+            "requirement": 0,
+            "acl_req": [
+              "admin",
+              "users"
+            ]
+          },
+          {
+            "label": "Native Data Loads",
+            "menu_id": "adm0",
+            "target": "adm",
+            "url": "/interface/super/load_codes.php",
+            "children": [],
+            "requirement": 0,
+            "acl_req": [
+              "admin",
+              "super"
+            ]
+          },
+          {
+            "label": "External Data Loads",
+            "menu_id": "adm0",
+            "target": "adm",
+            "url": "/interface/code_systems/dataloads_ajax.php",
+            "children": [],
+            "requirement": 0,
+            "acl_req": [
+              "admin",
+              "super"
+            ]
+          },
+          {
+            "label": "Merge Patients",
+            "menu_id": "adm0",
+            "target": "adm",
+            "url": "/interface/patient_file/merge_patients.php",
+            "children": [],
+            "requirement": 0,
+            "acl_req": [
+              "admin",
+              "super"
+            ]
+          },
+          {
+            "label": "Import Holidays",
+            "menu_id": "adm0",
+            "target": "adm",
+            "url": "/interface/main/holidays/import_holidays.php",
+            "children": [],
+            "requirement": 0,
+            "acl_req": [
+              "admin",
+              "super"
+            ]
+          },
+          {
+            "label":"Weno Management",
+            "menu_id":"adm0",
+            "target":"adm",
+            "url":"/interface/weno/admin.php",
+            "children":[],
+            "requirement":0,
+            "acl_req": [
+              "admin",
+              "super"
+            ]
+          },
+          {
+            "label": "Audit Log Tamper",
+            "menu_id": "adm0",
+            "target": "adm",
+            "url": "/interface/reports/audit_log_tamper_report.php",
+            "children": [],
+            "requirement": 0,
+            "acl_req": [
+              "admin",
+              "super"
+            ],
+            "global_req": "enable_auditlog_encryption"
+          }
+        ],
+        "requirement": 0
+      }
+    ],
+    "requirement": 0,
+    "acl_req": [
+      [
+        "admin",
+        "calendar"
+      ],
+      [
+        "admin",
+        "database"
+      ],
+      [
+        "admin",
+        "forms"
+      ],
+      [
+        "admin",
+        "practice"
+      ],
+      [
+        "admin",
+        "users"
+      ],
+      [
+        "admin",
+        "acl"
+      ],
+      [
+        "admin",
+        "super"
+      ],
+      [
+        "admin",
+        "superbill"
+      ],
+      [
+        "admin",
+        "drugs"
+      ]
+    ]
+  },
+  {
+    "label": "Reports",
+    "menu_id": "repimg",
+    "children": [
+
+	{
+		"label": "Utilization Report",
+		"menu_id": "rep0",
+		"target": "rep",
+		"url": "/interface/reports/utilization_review.php",
+		"children": [],
+		"requirement": 0,
+		"acl_req": [
+			"patients",
+			"demo"
+		]
+	}
+    ],
+    "requirement": 0
+  }
+]

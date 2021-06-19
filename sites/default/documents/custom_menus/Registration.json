@@ -1,0 +1,271 @@
+[
+  {
+    "label": "Calendar",
+    "menu_id": "cal0",
+    "target": "cal",
+    "url": "/interface/main/main_info.php",
+    "children": [],
+    "requirement": 0,
+    "acl_req": [
+      "patients",
+      "appt"
+    ],
+    "global_req_strict": [
+      "!disable_calendar",
+      "!ippf_specific"
+    ]
+  },
+  {
+    "label": "Patient/Client",
+    "menu_id": "patimg",
+    "children": [
+      {
+        "label": "Patients",
+        "menu_id": "fin0",
+        "target": "fin",
+        "url": "/interface/main/finder/dynamic_finder.php",
+        "children": [],
+        "requirement": 0,
+        "acl_req": [
+          "patients",
+          "demo"
+        ]
+      },
+      {
+        "label": "New/Search",
+        "menu_id": "new0",
+        "target": "pat",
+        "url": "/interface/new/new.php",
+        "children": [],
+        "requirement": 0,
+        "acl_req": [
+          "patients",
+          "demo",
+          "write",
+          "addonly"
+        ],
+        "global_req": "full_new_patient_form"
+      },
+      {
+        "label": "New",
+        "menu_id": "new0",
+        "target": "pat",
+        "url": "/interface/new/new.php",
+        "children": [],
+        "requirement": 0,
+        "acl_req": [
+          "patients",
+          "demo",
+          "write",
+          "addonly"
+        ],
+        "global_req": "!full_new_patient_form"
+      }
+    ],
+    "requirement": 0
+  },
+  {
+    "label": "Groups",
+    "menu_id": "groupimg",
+    "children": [
+      {
+        "label": "Groups",
+        "menu_id": "gfn0",
+        "target": "gfn",
+        "url": "/interface/therapy_groups/index.php?method=listGroups",
+        "children": [],
+        "requirement": 0,
+        "acl_req": [
+          [
+            "groups",
+            "gadd",
+            "view"
+          ],
+          [
+            "groups",
+            "gadd",
+            "write"
+          ]
+        ]
+      },
+      {
+        "label": "New",
+        "menu_id": "gng0",
+        "target": "gng",
+        "url": "/interface/therapy_groups/index.php?method=addGroup",
+        "children": [],
+        "requirement": 0,
+        "acl_req": [
+          [
+            "groups",
+            "gadd",
+            "view"
+          ],
+          [
+            "groups",
+            "gadd",
+            "write"
+          ]
+        ]
+      }
+    ],
+    "requirement": 0,
+    "global_req": "enable_group_therapy"
+  },
+  {
+    "label": "Procedures",
+    "menu_id": "proimg",
+    "children": [
+      {
+        "label": "Pending Review",
+        "menu_id": "orp1",
+        "target": "enc",
+        "url": "/interface/orders/orders_results.php?review=1",
+        "children": [],
+        "requirement": 1,
+        "acl_req": [
+          "patients",
+          "lab"
+        ]
+      },
+      {
+        "label": "Patient Results",
+        "menu_id": "orr1",
+        "target": "enc",
+        "url": "/interface/orders/orders_results.php",
+        "children": [],
+        "requirement": 1,
+        "acl_req": [
+          "patients",
+          "lab"
+        ]
+      },
+      {
+        "label": "Lab Overview",
+        "menu_id": "lda1",
+        "target": "enc",
+        "url": "/interface/patient_file/summary/labdata.php",
+        "children": [],
+        "requirement": 1,
+        "acl_req": [
+          "patients",
+          "lab"
+        ]
+      },
+      {
+        "label": "Batch Results",
+        "menu_id": "orb0",
+        "target": "pat",
+        "url": "/interface/orders/orders_results.php?batch=1",
+        "children": [],
+        "requirement": 0,
+        "acl_req": [
+          "patients",
+          "lab"
+        ]
+      },
+      {
+        "label": "Electronic Reports",
+        "menu_id": "ore0",
+        "target": "pat",
+        "url": "/interface/orders/list_reports.php",
+        "children": [],
+        "requirement": 0,
+        "acl_req": [
+          "patients",
+          "lab"
+        ]
+      },
+      {
+        "label": "Lab Documents",
+        "menu_id": "dld0",
+        "target": "pat",
+        "url": "/interface/main/display_documents.php",
+        "children": [],
+        "requirement": 0,
+        "acl_req": [
+          "patients",
+          "lab"
+        ]
+      }
+    ],
+    "requirement": 0
+  },
+  {
+    "label": "Administration",
+    "menu_id": "admimg",
+    "children": [
+      {
+            "label": "Merge Patients",
+            "menu_id": "adm0",
+            "target": "adm",
+            "url": "/interface/patient_file/merge_patients.php",
+            "children": [],
+            "requirement": 0,
+            "acl_req": [
+              "admin",
+              "super"
+            ]
+      }
+    ],
+    "requirement": 0,
+    "acl_req": [
+      [
+        "admin",
+        "calendar"
+      ],
+      [
+        "admin",
+        "database"
+      ],
+      [
+        "admin",
+        "forms"
+      ],
+      [
+        "admin",
+        "practice"
+      ],
+      [
+        "admin",
+        "users"
+      ],
+      [
+        "admin",
+        "acl"
+      ],
+      [
+        "admin",
+        "super"
+      ],
+      [
+        "admin",
+        "superbill"
+      ],
+      [
+        "admin",
+        "drugs"
+      ]
+    ]
+  },
+  {
+    "label": "Reports",
+    "menu_id": "repimg",
+    "children": [
+
+	{
+		"label": "Utilization Report",
+		"menu_id": "rep0",
+		"target": "rep",
+		"url": "/interface/reports/utilization_review.php",
+		"children": [],
+		"requirement": 0,
+		"acl_req": [
+			"patients",
+			"demo"
+		]
+	}
+    ],
+    "requirement": 0
+  }
+]

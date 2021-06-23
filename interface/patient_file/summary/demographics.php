@@ -27,6 +27,9 @@ require_once("$srcdir/clinical_rules.php");
 require_once("$srcdir/options.js.php");
 require_once("$srcdir/group.inc");
 require_once(dirname(__FILE__)."/../../../library/appointments.inc.php");
+require_once(dirname(__FILE__)."/../../../interface/forms/sji_intake_core_variables/report.php");
+require_once(dirname(__FILE__)."/../../../interface/forms/sji_intake/report.php");
+require_once(dirname(__FILE__)."/../../../interface/forms/sji_stride_intake/report.php");
 
 use OpenEMR\Common\Csrf\CsrfUtils;
 use OpenEMR\Core\Header;
@@ -611,6 +614,31 @@ while ($gfrow = sqlFetchArray($gfres)) {
     openReminderPopup();
 <?php }?>
 
+<?php
+    $sql = "select fname,lname,alert from patient_data ".
+       "left join form_sji_alert on (patient_data.pid = form_sji_alert.pid) ".
+       "left join forms on (form_sji_alert.id=forms.form_id) ".
+       "where patient_data.pid = ? ".
+       "and alert is not null ".
+       "and alert != '' ".
+       "and forms.deleted=0";
+
+    if ($query = sqlStatement($sql, array($pid))) {
+        if ($results = sqlFetchArray($query)) {
+?>
+    // show the active alert modal
+    dlgopen('', 'aleretreminder', 300, 170, '', false, {
+        allowResize: false,
+        allowDrag: true,
+        dialogId: '',
+        type: 'iframe',
+        url: $("#alert_popup").attr('href')
+    });
+<?php
+        }
+    }
+?>
+
 });
 
 // JavaScript stuff to do when a new patient is set.
@@ -728,6 +756,9 @@ $oemr_ui = new OemrUI($arrOeUiSettings);
         <a href='../reminder/active_reminder_popup.php' id='reminder_popup_link' style='display: none;' onclick='top.restoreSession()'></a>
 
         <a href='../birthday_alert/birthday_pop.php?pid=<?php echo attr_url($pid); ?>&user_id=<?php echo attr_url($_SESSION['authId']); ?>' id='birthday_popup' style='display: none;' onclick='top.restoreSession()'></a>
+	
+	<a href='../alert/alert.php?pid=<?php echo attr_url($pid); ?>&user_id=<?php echo attr_url($_SESSION['authId']); ?>' id='alert_popup' style='display: none;' onclick='top.restoreSession()'></a>
+ 
         <?php
 
         $thisauth = acl_check('patients', 'demo');
@@ -867,6 +898,182 @@ $oemr_ui = new OemrUI($arrOeUiSettings);
                                     </td>
                                 </tr>
                                 <?php } ?>
+<?php 
+// Custom demographics widget
+
+if (acl_check('patients', 'demo')) { ?>
+      <tr>
+       <td>
+<?php
+// SJI Demographics expand collapse widget
+$widgetTitle = xl("SJI Participant");
+$widgetLabel = "intakes";
+$widgetButtonLabel = '';
+$widgetButtonLink = "";
+$widgetButtonClass = "";
+$linkMethod = "html";
+$bodyClass = "";
+$widgetAuth = 0;
+$fixedWidth = true;
+expand_collapse_widget(
+    $widgetTitle,
+    $widgetLabel,
+    $widgetButtonLabel,
+    $widgetButtonLink,
+    $widgetButtonClass,
+    $linkMethod,
+    $bodyClass,
+    $widgetAuth,
+    $fixedWidth
+);
+?>
+         <div id="SJI" >
+          <ul class="tabNav">
+            <?php 
+            // display tabs for: basic participant info,
+            // and all intakes: main, CV, STRIDE
+
+            print '<li class="current"> <a href="#" id="header_tab_Who"> Who</a></li>'."\n";
+
+            // TODO: data show when it was last updated?
+
+            $query = "select count(*) as ct from form_sji_intake_core_variables where pid=?";
+            $res = sqlStatement($query, array($pid));
+            $cv_rows = sqlFetchArray($res);
+            if (isset($cv_rows['ct']) && $cv_rows['ct'] > 0 && acl_check('forms', 'intake')) {
+               print '<li class=""> <a href="#" id="header_tab_CV"> Core Variables</a> </li>'."\n";
+            }
+
+            $query = "select count(*) as ct from form_sji_intake where pid=?";
+            $res = sqlStatement($query, array($pid));
+            $intake_rows = sqlFetchArray($res);
+            if (isset($intake_rows['ct']) && $intake_rows['ct'] > 0 && acl_check('forms', 'intake')) {
+               print '<li class=""> <a href="#" id="header_tab_Intake"> Intake</a> </li>'."\n";
+            }
+
+            $query = "select count(*) as ct from form_sji_stride_intake where pid=?";
+            $res = sqlStatement($query, array($pid));
+            $stride_rows = sqlFetchArray($res);
+            if (isset($stride_rows['ct']) && $stride_rows['ct'] > 0 && acl_check('forms', 'intake')) {
+               print '<li class=""> <a href="#" id="header_tab_Stride"> STRIDE</a> </li>'."\n";
+            }
+
+            ?>
+          </ul>
+          <div class="tabContainer">
+            <div class="tab current">
+              <table border=0 cellpadding=0>
+                <tbody>
+            <?php 
+            // Get name, gender
+            $sql = 'SELECT title,fname,mname,lname,sex from patient_data where pid=? ORDER BY id DESC limit 1';
+            $res = sqlStatement($sql, array($pid));
+            $patient_data = sqlFetchArray($res);
+
+            $sql = 'SELECT title from list_options where list_id="sex" and option_id=?';
+            $res = sqlStatement($sql, array($patient_data['sex']));
+            $gender = sqlFetchArray($res);
+
+            print '<tr><td class="label_custom"        colspan=1 id="label_title">';
+            print '<span id="label_title">Name:</span></td>'.
+                  "\n<td class='text data' colspan=1 id=text_title ";
+
+            if (isset($patient_data['title'])) {
+               print '>'. $patient_data['title'] .' ';
+            }else {
+               print '>';
+            }
+
+            if (isset($patient_data['fname'])) {
+               print $patient_data['fname'] .' ';
+            }
+
+            if (isset($patient_data['mname'])) {
+               print $patient_data['mname'] .' ';
+            }
+
+            if (isset($patient_data['lname'])) {
+               print $patient_data['lname'];
+            }
+            print "</td>\n</tr>\n";
+
+            // Get aliases and pronouns
+            $sql = 'SELECT aliases,pronouns from form_sji_intake_core_variables '.
+                   'WHERE pid=? ORDER BY date DESC LIMIT 1';
+            $res = sqlStatement($sql, array($pid));
+            $patient_cv = sqlFetchArray($res);
+            if (isset($patient_cv['aliases'])) {
+               print "<tr>\n<td class='label_custom' colspan=1 id='label_aliases'>\n";
+               print "<span id='label_aliases'>". xl('Aliases') .":</span></td>\n".
+                  '<td class="text data" colspan=1 id="text_aliases">';
+               print $patient_cv['aliases'] ."\n</td>\n</tr>\n";
+            }
+
+            if (isset($patient_cv['pronouns'])) {
+               print "<tr>\n<td class='label_custom' colspan=1 id='label_pronouns'>\n";
+               print "<span id='label_pronouns'>". xl('Pronouns') .":</span></td>\n".
+                  '<td class="text data" colspan=1 id="text_pronouns">';
+               print $patient_cv['pronouns'] ."\n</td>\n</tr>\n";
+            }
+
+            if (isset($gender['title'])) {
+               print "<tr>\n<td class='label_custom' colspan=1 id='label_sex'>\n";
+               print "<span id='label_sex'>". xl('Gender') .":</span></td>\n".
+                  '<td class="text data" colspan=1 id="text_gender">';
+               print $gender['title'] ."\n</td>\n</tr>\n";
+
+            } else if (isset($patient_data['sex'])) {
+               print "<tr>\n<td class='label_custom' colspan=1 id='label_sex'>\n";
+               print "<span id='label_sex'>". xl('Gender') .":</span></td>\n".
+                  '<td class="text data" colspan=1 id="text_gender">';
+               print $patient_data['sex'] ."\n</td>\n</tr>\n";
+            }
+
+            // close of the parent table and div."tab current"
+            print "</tbody></table></div>\n";
+
+            // create tab for CV
+            if ( isset($cv_rows['ct']) && $cv_rows['ct'] > 0 && acl_check('forms', 'intake')
+           ) {
+                   print "<div class='tab'>\n";
+                   sji_intake_core_variables_report($pid, 0, 0, 0);
+                   print "</div>\n";
+            }
+
+            // create tab for Intake
+            if (isset($intake_rows['ct']) && $intake_rows['ct'] > 0 && acl_check('forms', 'intake')
+           ) {
+                   print "<div class='tab'>\n";
+                   sji_intake_report($pid, 0, 0, 0);
+                   print "</div>\n";
+            }
+
+            // create tab for STRIDE
+            if (isset($stride_rows['ct']) && $stride_rows['ct'] > 0 && acl_check('forms', 'intake')
+           ) {
+                   print "<div class='tab'>\n";
+                   sji_stride_intake_report($pid, 0, 0, 0);
+                   print "</div>\n";
+            }
+
+            //close off div.tabContainer and div#SJI
+            print "</div></div>";
+
+
+            // TODO
+            // The other tabs should populate data from the respective intake forms
+
+            // This is for LBF, we are not using it here
+            //display_layout_tabs_data('DEM', $result, $result2); 
+            ?>
+
+          </div>
+         </div>
+        </div> <!-- required for expand_collapse_widget -->
+       </td>
+      </tr>
+<?php } ?>
+
 
                         <?php if (acl_check('patients', 'demo')) { ?>
                               <tr>

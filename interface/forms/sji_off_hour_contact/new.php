@@ -128,7 +128,7 @@ echo xlt('Remind the participant the clinic isn\'t open and a clinician will ret
 ?></li>
 
 <li><?php
-echo xlt('Send an email reminder with the participants medical record number to Chuck <chuck@stjamesinfirmary.org> for STRIDE participants and to Brianna <brianna@stjamesinfirmary.org>, <brianna.singleton@ucsf.edu> for all other participants');
+echo xlt('Send an email reminder with the participants medical record number to Chuck <Chuck@stjamesinfirmary.org> for STRIDE participants and to Brianna <Brianna@stjamesinfirmary.org> for all other participants');
 ?></li></ul>
 </p>
 
@@ -258,7 +258,7 @@ if (! empty($obj['hipaa_allowemail']) && preg_match('/(?:YES|on)/', $obj['hipaa_
 <div class="col-sm-6">
 <input id="follow_up_date" type=text name="follow_up_date" class="form-control datepicker" data-placeholder="<?php echo xlt('When was the participant contacted'); ?>"
 <?php 
-if (! empty($obj['follow_up_date']) ) {
+if (! empty($obj['follow_up_date']) && !preg_match('/^0000/', $obj['follow_up_date'])) {
    echo 'value="'. $obj['follow_up_date'] .'"';
 }
 ?>>

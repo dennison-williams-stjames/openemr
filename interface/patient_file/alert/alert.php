@@ -27,6 +27,7 @@ $db = $GLOBALS['adodb']['db'];
 $sql = "SELECT form_sji_alert.date as date,form_sji_alert.alert as alert FROM form_sji_alert " .
         "LEFT JOIN forms on (form_sji_alert.id=forms.form_id) ".
         "WHERE form_sji_alert.pid = " .  $db->qstr($pid) ." ".
+	"AND forms.formdir='sji_alert' ".
         "AND forms.deleted=0";
 $result = $db->Execute($sql);
 if ($db->ErrorMsg()) {

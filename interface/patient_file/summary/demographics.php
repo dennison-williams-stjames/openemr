@@ -615,13 +615,14 @@ while ($gfrow = sqlFetchArray($gfres)) {
 <?php }?>
 
 <?php
-    $sql = "select fname,lname,alert from patient_data ".
-       "left join form_sji_alert on (patient_data.pid = form_sji_alert.pid) ".
-       "left join forms on (form_sji_alert.id=forms.form_id) ".
-       "where patient_data.pid = ? ".
-       "and alert is not null ".
-       "and alert != '' ".
-       "and forms.deleted=0";
+    $sql = "
+        select form_sji_alert.id as id,form_sji_alert.alert as alert,patient_data.fname as fname, patient_data.lname from form_sji_alert 
+        left join patient_data on (patient_data.pid=form_sji_alert.pid) 
+        left join forms on (forms.form_id = form_sji_alert.id and forms.pid = patient_data.pid) 
+        where formdir='sji_alert' 
+        and patient_data.pid=?
+        and forms.deleted=0
+    ";
 
     if ($query = sqlStatement($sql, array($pid))) {
         if ($results = sqlFetchArray($query)) {

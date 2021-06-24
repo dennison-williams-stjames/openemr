@@ -18,9 +18,7 @@
 use OpenEMR\Core\Header;
 
 require_once('../globals.php');
-require_once($GLOBALS['srcdir'].'/log.inc');
 require_once($GLOBALS['srcdir'].'/acl.inc');
-require_once($GLOBALS['srcdir'].'/sl_eob.inc.php');
 
  $encounterid = $_REQUEST['encounterid'];
 
@@ -39,7 +37,6 @@ require_once($GLOBALS['srcdir'].'/sl_eob.inc.php');
 	}
 
 	function print_labels() {
-            console.log('print_labels()');
 	    // TODO: what does this do?
 	    top.restoreSession();
 	    // Not Empty

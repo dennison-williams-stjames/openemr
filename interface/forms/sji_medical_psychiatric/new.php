@@ -167,26 +167,102 @@ if (
 
 <!-- ICD9 primary -->
 <div class="form-group row">
-<label for="icd9_primary" class="col-sm-2 control-label"><?php echo xlt('ICD9 primary:'); ?></label>
+<input type="hidden" name="icd9_primary[]" id="icd9_primary" multiple=multiple list="icd9_primary">
+<datalist id="icd9_primary">
+<?php
+if (isset ($obj['icd9_primary'])) {
+
+	if (is_array ($obj['icd9_primary'])) {
+		print "DEBUG\n";
+		foreach ($obj['icd9_primary'] as $icd9) {
+			print "<option value=\"$icd9\">\n";
+		}
+	}
+	print "</datalist>\n";
+
+	print "<label for='icd9_primary' class='col-sm-2 control-label'>". xlt('ICD9 primary:') ."</label>\n";
+
+	print "<div class='col-sm-4' id='icd9_primary'>";
+
+	if (is_array ($obj['icd9_primary'])) {
+		foreach ($obj['icd9_primary'] as $icd9) {
+			print "<b>$icd9</b> ";
+		}
+	}
+
+	print "</div>\n";
+} 
+?>
+<div class="col-sm-6"></div>
+</div> <!-- row -->
+
+<!-- ICD9 secondary -->
+<div class="form-group row">
+<input type="hidden" name="icd9_secondary[]" id="icd9_secondary" multiple=multiple list="icd9_secondary">
+<datalist id="icd9_secondary">
+<?php
+if (isset ($obj['icd9_secondary'])) {
+
+	if (is_array ($obj['icd9_secondary'])) {
+		print "DEBUG\n";
+		foreach ($obj['icd9_secondary'] as $icd9) {
+			print "<option value=\"$icd9\">\n";
+		}
+	}
+	print "</datalist>\n";
+
+	print "<label for='icd9_secondary' class='col-sm-2 control-label'>". xlt('ICD9 secondary:') ."</label>\n";
+
+	print "<div class='col-sm-4' id='icd9_secondary'>";
+
+	if (is_array ($obj['icd9_secondary'])) {
+		foreach ($obj['icd9_secondary'] as $icd9) {
+			print "<b>$icd9</b> ";
+		}
+	}
+
+	print "</div>\n";
+} 
+?>
+<div class="col-sm-6"></div>
+</div> <!-- row -->
+
+<!-- ICD10 primary -->
+<div class="form-group row">
+<label for="icd10_primary" class="col-sm-2 control-label"><?php echo xlt('ICD10 primary:'); ?></label>
 <div class="col-sm-4">
-<select name="icd9_primary[]" id="icd9_primary" multiple=multiple class="select2 form-control" data-placeholder="Select primary ICD9 codes">
-<option></option>
+<select name="icd10_primary[]" id="icd10_primary" multiple=multiple class="icd10 select2 form-control" data-placeholder="Select primary ICD10 codes">
 <?php 
-echo getICD9PrimaryOptions(); 
+
+if (is_array($obj['icd10_primary'])) {
+   foreach ($obj['icd10_primary'] as $icd10) {
+      echo "<option value='$icd10' selected='selected'>$icd10</option>\n";
+   }
+} else {
+   echo "<option></option>\n";
+}
+
 ?>
 </select>
 </div> <!-- col-sm-6 -->
 <div class="col-sm-6"></div>
 </div> <!-- row -->
 
-<!-- ICD9 secondary -->
+<!-- ICD10 secondary -->
 <div class="form-group row">
-<label for="icd9_secondary" class="col-sm-2 control-label"><?php echo xlt('ICD9 secondary:'); ?></label>
+<label for="icd10_secondary" class="col-sm-2 control-label"><?php echo xlt('ICD10 secondary:'); ?></label>
 <div class="col-sm-4">
-<select name="icd9_secondary[]" id="icd9_secondary" multiple=multiple class="select2 form-control" data-placeholder="Select secondary ICD9 codes">
-<option></option>
+<select name="icd10_secondary[]" id="icd10_secondary" multiple=multiple class="icd10 select2 form-control" data-placeholder="Select secondary ICD10 codes">
 <?php 
-echo getICD9SecondaryOptions(); 
+
+if (is_array($obj['icd10_secondary'])) {
+   foreach ($obj['icd10_secondary'] as $icd10) {
+      echo "<option value='$icd10' selected='selected'>$icd10</option>\n";
+   }
+} else {
+   echo "<option></option>\n";
+}
+
 ?>
 </select>
 </div> <!-- col-sm-6 -->
@@ -280,6 +356,22 @@ $(document).ready(function(){
     $('.select2').select2({
        tags: true,
     });
+
+    var url = "../../forms/sji_medical_psychiatric/save.php?mode=geticd10";
+    $('.icd10.select2').select2({
+       minimumInputLength: 3,
+       ajax: {
+          url: url, 
+          dataType: 'json',
+          processResults: function (data) {
+             return {
+                results: data
+             };
+          },
+          cache: true
+       }
+    });
+
 });
 
 </script>

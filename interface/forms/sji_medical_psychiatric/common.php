@@ -45,6 +45,24 @@ function sji_extendedMedicalPsychiatric_formFetch($formid) {
     }
 
     $res = sqlStatement(
+       "select icd_primary ".
+       "from form_sji_medical_psychiatric_icd10_primary ".
+       "where pid=?", array($formid));
+
+    while ($row = sqlFetchArray($res)) {
+       $return['icd10_primary'][] = $row['icd_primary'];
+    }
+
+    $res = sqlStatement(
+       "select icd_secondary ".
+       "from form_sji_medical_psychiatric_icd10_secondary ".
+       "where pid=?", array($formid));
+
+    while ($row = sqlFetchArray($res)) {
+       $return['icd10_secondary'][] = $row['icd_secondary'];
+    }
+
+    $res = sqlStatement(
        "select cpt_codes ".
        "from form_sji_medical_psychiatric_cpt_codes ".
        "where pid=?", array($formid));
@@ -97,24 +115,26 @@ function sji_extendedMedicalPsychiatric($formid, $submission) {
         }
     }
 
-    sqlStatement("delete from form_sji_medical_psychiatric_icd9_primary where pid=?", array($formid));
-    if (isset($submission['icd9_primary'])) {
-	foreach ($submission['icd9_primary'] as $key => $icd9) {
-            if (!strlen($icd9)) {
+    // There is no longer functionality for updating icd9 codes
+
+    sqlStatement("delete from form_sji_medical_psychiatric_icd10_primary where pid=?", array($formid));
+    if (isset($submission['icd10_primary'])) {
+	foreach ($submission['icd10_primary'] as $key => $icd10) {
+            if (!strlen($icd10)) {
                continue;
             }
-            $sql = "insert into form_sji_medical_psychiatric_icd9_primary(icd_primary, pid) values(?, ?)";
-            sqlInsert($sql, array($icd9, $formid));
+            $sql = "insert into form_sji_medical_psychiatric_icd10_primary(icd_primary, pid) values(?, ?)";
+            sqlInsert($sql, array($icd10, $formid));
         }
     }
 
-    sqlStatement("delete from form_sji_medical_psychiatric_icd9_secondary where pid=?", array($formid));
-    if (isset($submission['icd9_secondary'])) {
-	foreach ($submission['icd9_secondary'] as $key => $icd9) {
-            if (!strlen($icd9)) {
+    sqlStatement("delete from form_sji_medical_psychiatric_icd10_secondary where pid=?", array($formid));
+    if (isset($submission['icd10_secondary'])) {
+	foreach ($submission['icd10_secondary'] as $key => $icd10) {
+            if (!strlen($icd10)) {
                continue;
             }
-            sqlInsert("insert into form_sji_medical_psychiatric_icd9_secondary(icd_secondary, pid) values(?, ?)", array($icd9, $formid));
+            sqlInsert("insert into form_sji_medical_psychiatric_icd10_secondary(icd_secondary, pid) values(?, ?)", array($icd10, $formid));
         }
     }
 
@@ -202,6 +222,50 @@ function getICD9SecondaryOptions() {
    return $output;
 }
 
+function getICD10PrimaryOptions() {
+   global $obj;
+   $output = "";
+   $found = 0;
+   $sql = "SELECT id,code_text,code FROM codes WHERE code_type = 102";
+   $query = sqlStatement($sql);
+   $debug = array();
+   while ($icd9 = sqlFetchArray($query)) {
+      $output .= '<option value="'. $icd9['code_text'] .'" ';
+
+      if (
+          isset($obj['icd10_primary']) &&
+          array_search($icd9['code_text'], $obj['icd10_primary']) !== false
+      ) {
+         $output .= 'selected="selected" ';
+         $found = 1;
+      }
+      $output .= '>'. $icd9['code_text'] .'</option>';
+   }
+
+   return $output;
+}
+
+function getICD10SecondaryOptions() {
+   global $obj;
+   $output = "";
+   $found = 0;
+   $sql = "SELECT id,code_text,code FROM codes WHERE code_type = 102 limit 100";
+   $query = sqlStatement($sql);
+   while ($icd9 = sqlFetchArray($query)) {
+      $output .= '<option value="'. $icd9['code_text'] .'" ';
+
+      if (
+          isset($obj['icd10_secondary']) &&
+          array_search($icd9['code_text'], $obj['icd10_secondary']) !== false
+      ) {
+         $output .= 'selected="selected" ';
+         $found = 1;
+      }
+      $output .= '>'. $icd9['code_text'] .'</option>';
+   }
+   return $output;
+}
+
 function getCPTCodes2() {
    global $obj;
    $output = "";
@@ -265,3 +329,25 @@ function getRangeCodes() {
    }
    return $output;
 }
+
+function getICD10Ajax($term) {
+   global $obj;
+   $output = "";
+   $found = 0;
+   $sql = "SELECT id,code_text,code ".
+      "FROM codes ".
+      "WHERE code_type = 102 ".
+      "AND ( code like CONCAT('%', ?, '%') ".
+      "OR code_text like CONCAT('%', ?, '%') ) ".
+      "LIMIT 100";
+   $query = sqlStatement($sql, array($term, $term));
+   $return = array();
+   while ($icd10 = sqlFetchArray($query)) {
+      $ret['id'] = $icd10['code'] .': '. $icd10['code_text'];;
+      $ret['text'] = $icd10['code'] .': '. $icd10['code_text'];
+      $return[] = $ret;
+   }
+
+   return json_encode($return);
+}
+

@@ -427,7 +427,7 @@ if (isset($obj['useful_support'])) {
 <div class="form-group row">
 <label class="col-sm-6 control-label" for="clinician_narrative">Narrative for clinician</label>
 <div class="col-sm-6">
-<textarea rows=3 type=text class="sm-textarea form-control" id="clinician_narrative" name="clinician_narrative">
+<textarea rows=10 type=text class="lg-textarea form-control" id="clinician_narrative" name="clinician_narrative">
 <?php
 if (isset($obj['clinician_narrative'])) {
    echo $obj['clinician_narrative'];

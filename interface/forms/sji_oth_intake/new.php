@@ -29,6 +29,9 @@ if (!$pid) {
     $pid = $_SESSION['pid'];
 }
 
+global $obj;
+
+// TODO: BUG: This will not work if there is not already a filled out application
 // get the record from the database
 if (!empty($_GET['id'])) {
    $obj = array_merge(
@@ -142,7 +145,6 @@ if (isset($obj['aliases'])) {
 </div>
 </div>
 <!-- participant Alias -->
-
 
 <!-- TODO: is there any reason the name on the application would be different then the primary name we have for them in the EMR -->
 <!-- Participant name -->

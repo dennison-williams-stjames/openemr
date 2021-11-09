@@ -87,7 +87,7 @@ class GenericRouter implements IRouter
             $uri = RequestUtil::GetMethod() . ":" . $this->GetUri();
         }
 
-        // literal match check
+            // literal match check
         if (isset($this->routeMap [$uri])) {
             // expects mapped values to be in the form: Controller.Model
             list ( $controller, $method ) = explode(".", $this->routeMap [$uri] ["route"]);
@@ -101,15 +101,24 @@ class GenericRouter implements IRouter
                 }
             }
 
+            if (!empty($GLOBALS['bootstrap_register'])) {
+                // p_reg check
+                if ($this->routeMap[$uri]["p_reg"] !== true) {
+                    // failed p_reg check
+                    $error = 'Unauthorized';
+                    throw new Exception($error);
+                }
+            }
+
             $this->matchedRoute = array (
-                "key" => $this->routeMap [$uri],
-                "route" => $this->routeMap [$uri] ["route"],
-                "params" => isset($this->routeMap [$uri] ["params"]) ? $this->routeMap [$uri] ["params"] : array ()
+                    "key" => $this->routeMap [$uri],
+                    "route" => $this->routeMap [$uri] ["route"],
+                    "params" => isset($this->routeMap [$uri] ["params"]) ? $this->routeMap [$uri] ["params"] : array ()
             );
 
             return array (
-                $controller,
-                $method
+                    $controller,
+                    $method
             );
         }
 
@@ -127,7 +136,8 @@ class GenericRouter implements IRouter
                 if (!empty($GLOBALS['bootstrap_pid'])) {
                     // p_acl check
                     $p_acl = $this->routeMap[$unalteredKey]["p_acl"];
-                    if (($p_acl == 'p_none') ||
+                    if (
+                        ($p_acl == 'p_none') ||
                         (($p_acl == 'p_limited') && ($GLOBALS['bootstrap_uri_id'] != $match[1]))
                     ) {
                         // failed p_acl check
@@ -137,25 +147,25 @@ class GenericRouter implements IRouter
                 }
 
                 $this->matchedRoute = array (
-                    "key" => $unalteredKey,
-                    "route" => $value ["route"],
-                    "params" => isset($value ["params"]) ? $value ["params"] : array ()
+                        "key" => $unalteredKey,
+                        "route" => $value ["route"],
+                        "params" => isset($value ["params"]) ? $value ["params"] : array ()
                 );
 
                 // expects mapped values to be in the form: Controller.Model
                 list ( $controller, $method ) = explode(".", $value ["route"]);
                 return array (
-                    $controller,
-                    $method
+                        $controller,
+                        $method
                 );
             }
         }
 
         // this is a page-not-found route
         $this->matchedRoute = array (
-            "key" => '',
-            "route" => '',
-            "params" => array ()
+                "key" => '',
+                "route" => '',
+                "params" => array ()
         );
 
         // if we haven't returned by now, we've found no match:
@@ -200,7 +210,7 @@ class GenericRouter implements IRouter
             parse_str($params, $params);
         }
 
-        // The app root url is needed so we can return the fully qualified URL
+            // The app root url is needed so we can return the fully qualified URL
         $url = $this->appRootUrl ? $this->appRootUrl : RequestUtil::GetBaseURL();
 
         // normalize the url so that there are no trailing slashes

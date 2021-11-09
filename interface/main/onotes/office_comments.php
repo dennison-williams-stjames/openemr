@@ -1,4 +1,5 @@
 <?php
+
 /**
  * Viewing of office notes.
  *
@@ -33,7 +34,7 @@ $oNoteService = new ONoteService();
 <font class="title"><?php echo xlt('Office Notes'); ?></font>
 <font class="more"><?php echo text($tmore);?></font></a>
 
-<br>
+<br />
 
 <table border=0 width=100%>
 
@@ -42,20 +43,20 @@ $oNoteService = new ONoteService();
 $notes = $oNoteService->getNotes(1, 0, ($N + 1));
 
 //retrieve all active notes
-if ($notes) {
+if (!empty($notes)) {
     $notes_count = 0;//number of notes so far displayed
     foreach ($notes as $note) {
         if ($notes_count >= $N) {
             //we have more active notes to print, but we've reached our display maximum (defined at top of this file)
             $notice  = '';
             $notice .= '<div class="alert alert-info">';
-            $notice .= '  <a href=\'office_comments_full.php?active=-1\' onclick=\'top.restoreSession()\'>'.xlt("Some office notes were not displayed. Click here to view all.").'</a>';
+            $notice .= '  <a href=\'office_comments_full.php?active=-1\' onclick=\'top.restoreSession()\'>' . xlt("Some office notes were not displayed. Click here to view all.") . '</a>';
             $notice .= '</div>';
             print $notice;
             break;
         }
 
-        $date = $note->getDate()->format('Y-m-d');
+        $date = (new DateTime($note['date']))->format('Y-m-d');
 
         $todaysDate = new DateTime();
         if ($todaysDate->format('Y-m-d') == $date) {
@@ -65,12 +66,12 @@ if ($notes) {
         }
 
             $card  = '';
-            $card .= '<div class="panel panel-default">';
-            $card .= '    <div class="panel-heading">';
-            $card .= '        <h3 class="panel-title">'.text($date_string).' <strong>('.text($note->getUser()->getUsername()).')</strong></h3>';
+            $card .= '<div class="card panel-default">';
+            $card .= '    <div class="card-heading">';
+            $card .= '        <h3 class="card-title">' . text($date_string) . ' <strong>(' . text($note['user']) . ')</strong></h3>';
             $card .= '    </div>';
-            $card .= '    <div class="panel-body">';
-            $card .=          nl2br(text($note->getBody()));
+            $card .= '    <div class="card-body">';
+            $card .=          nl2br(text($note['body']));
             $card .= '    </div>';
             $card .= '</div>';
 

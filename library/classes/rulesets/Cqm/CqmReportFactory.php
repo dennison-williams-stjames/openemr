@@ -1,4 +1,5 @@
 <?php
+
 // Copyright (C) 2011 Ken Chapple <ken@mi-squared.com>
 //
 // This program is free software; you can redistribute it and/or
@@ -10,15 +11,15 @@ class CqmReportFactory extends RsReportFactoryAbstract
 {
     public function __construct()
     {
-        foreach (glob(dirname(__FILE__)."/library/*.php") as $filename) {
+        foreach (glob(dirname(__FILE__) . "/library/*.php") as $filename) {
             require_once($filename);
         }
 
-        foreach (glob(dirname(__FILE__)."/reports/*.php") as $filename) {
+        foreach (glob(dirname(__FILE__) . "/reports/*.php") as $filename) {
             require_once($filename);
         }
     }
-    
+
     public function createReport($className, $rowRule, $patientData, $dateTarget, $options)
     {
         $reportObject = null;
@@ -27,7 +28,7 @@ class CqmReportFactory extends RsReportFactoryAbstract
         } else {
             $reportObject = new NQF_Unimplemented();
         }
-        
+
         return $reportObject;
     }
 }

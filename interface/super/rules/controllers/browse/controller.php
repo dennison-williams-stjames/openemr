@@ -1,4 +1,5 @@
 <?php
+
  // Copyright (C) 2010-2011 Aron Racho <aron@mi-squred.com>
  //
  // This program is free software; you can redistribute it and/or
@@ -19,7 +20,7 @@ class Controller_browse extends BaseController
     {
         $this->set_view("list.php");
     }
-    
+
     function _action_plans_config()
     {
         $this->set_view("plans_config.php");

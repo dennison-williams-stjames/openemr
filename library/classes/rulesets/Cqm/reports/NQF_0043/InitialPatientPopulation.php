@@ -1,4 +1,5 @@
 <?php
+
 // Copyright (C) 2011 Ken Chapple <ken@mi-squared.com>
 //
 // This program is free software; you can redistribute it and/or
@@ -12,13 +13,13 @@ class NQF_0043_InitialPatientPopulation implements CqmFilterIF
     {
         return "Initial Patient Population";
     }
-    
+
     public function test(CqmPatient $patient, $beginDate, $endDate)
     {
         if ($patient->calculateAgeOnDate($beginDate) >= 65 && (Helper::checkEncounter(Encounter::ENC_OUTPATIENT, $patient, $beginDate, $endDate))) {
             return true;
         }
-        
+
         return false;
     }
 }

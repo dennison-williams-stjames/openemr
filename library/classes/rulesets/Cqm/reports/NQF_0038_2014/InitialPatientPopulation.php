@@ -1,4 +1,5 @@
 <?php
+
 /**
  *
  * CQM NQF 0038(2014) Initial Patient Population
@@ -35,7 +36,7 @@ class NQF_0038_2014_InitialPatientPopulation implements CqmFilterIF
         if ($age >= 1 && $age <= 2 &&  Helper::check(ClinicalType::ENCOUNTER, Encounter::ENC_OFF_VIS, $patient, $beginDate, $endDate, 1)) {
             return true;
         }
-        
+
         return false;
     }
 }

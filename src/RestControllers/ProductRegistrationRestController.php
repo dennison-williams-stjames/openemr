@@ -1,4 +1,5 @@
 <?php
+
 /**
  * ProductRegistrationRestController
  *
@@ -8,7 +9,6 @@
  * @copyright Copyright (c) 2018 Matthew Vita <matthewvita48@gmail.com>
  * @license   https://github.com/openemr/openemr/blob/master/LICENSE GNU General Public License 3
  */
-
 
 namespace OpenEMR\RestControllers;
 
@@ -26,7 +26,8 @@ class ProductRegistrationRestController
 
     public function getOne()
     {
-        $serviceResult = $this->productRegistrationService->getProductStatus()->getStatusAsString();
+        $serviceResult = $this->productRegistrationService->getProductStatus();
+        $serviceResult = $serviceResult['statusAsString'];
         return RestControllerHelper::responseHandler($serviceResult, array("status" => $serviceResult), 200);
     }
 }

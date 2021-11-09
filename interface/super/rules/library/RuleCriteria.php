@@ -1,4 +1,5 @@
 <?php
+
  // Copyright (C) 2010-2011 Aron Racho <aron@mi-squred.com>
  //
  // This program is free software; you can redistribute it and/or
@@ -59,7 +60,7 @@ abstract class RuleCriteria
     }
 
     abstract function getRequirements();
-    
+
     abstract function getTitle();
 
     abstract function getView();
@@ -83,7 +84,7 @@ abstract class RuleCriteria
     {
         return getLayoutLabel($value, $form_id);
     }
-    
+
     protected function decodeComparator($comparator)
     {
         switch ($comparator) {
@@ -120,7 +121,7 @@ abstract class RuleCriteria
         $dbView->optional = $this->optional;
         $dbView->interval = $this->interval;
         $dbView->intervalType = $this->intervalType->code;
-    
+
         return $dbView;
     }
 

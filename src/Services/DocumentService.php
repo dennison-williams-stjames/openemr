@@ -1,4 +1,5 @@
 <?php
+
 /**
  * DocumentService
  *
@@ -13,10 +14,9 @@
 
 namespace OpenEMR\Services;
 
-require_once(dirname(__FILE__)."/../../controllers/C_Document.class.php");
+require_once(dirname(__FILE__) . "/../../controllers/C_Document.class.php");
 
 use Document;
-use Particle\Validator\Validator;
 
 class DocumentService
 {
@@ -79,7 +79,7 @@ class DocumentService
         $documentsSql  = " SELECT doc.url, doc.id, doc.mimetype, doc.docdate";
         $documentsSql .= " FROM documents doc";
         $documentsSql .= " JOIN categories_to_documents ctd on ctd.document_id = doc.id";
-        $documentsSql .= " WHERE ctd.category_id = ? and doc.foreign_id = ?";
+        $documentsSql .= " WHERE ctd.category_id = ? and doc.foreign_id = ? and doc.deleted = 0";
 
         $documentResults = sqlStatement($documentsSql, array($categoryId, $pid));
 
@@ -132,7 +132,7 @@ class DocumentService
 
     public function getFile($pid, $did)
     {
-        $filenameSql = sqlQuery("SELECT `url`, `mimetype` FROM `documents` WHERE `id` = ? AND `foreign_id` = ?", [$did, $pid]);
+        $filenameSql = sqlQuery("SELECT `url`, `mimetype` FROM `documents` WHERE `id` = ? AND `foreign_id` = ? AND `deleted` = 0", [$did, $pid]);
 
         if (empty(basename($filenameSql['url']))) {
             $filename = "unknownName";
@@ -147,6 +147,6 @@ class DocumentService
             return false;
         }
 
-        return ['filename'=>$filename, 'mimetype'=>$filenameSql['mimetype'], 'file'=>$document];
+        return ['filename' => $filename, 'mimetype' => $filenameSql['mimetype'], 'file' => $document];
     }
 }

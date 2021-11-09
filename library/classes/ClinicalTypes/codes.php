@@ -1,4 +1,5 @@
 <?php
+
 // Copyright (C) 2011 Ken Chapple <ken@mi-squared.com>
 //
 // This program is free software; you can redistribute it and/or
@@ -18,13 +19,13 @@ class Codes
             if (isset(self::$_codes[$clinicalType][$codeType])) {
                 return self::$_codes[$clinicalType][$codeType];
             }
-        } else if (isset(self::$_codes[$clinicalType])) {
+        } elseif (isset(self::$_codes[$clinicalType])) {
             return self::$_codes[$clinicalType];
         }
-         
+
         return array();
     }
-    
+
     protected static $_codes = array(
         Allergy::EGGS => array(
             'ICD9' => array( 'V15.03' )
@@ -217,6 +218,6 @@ class Codes
         Procedure::PNEUMOCOCCAL_VACCINE => array(
             'SNOMED' => array(12866006, 394678003)
         ),
-        
+
     );
 }

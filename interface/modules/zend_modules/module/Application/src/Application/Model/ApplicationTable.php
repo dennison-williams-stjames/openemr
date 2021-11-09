@@ -1,4 +1,5 @@
 <?php
+
 /**
  * interface/modules/zend_modules/module/Application/src/Application/Model/ApplicationTable.php
  *
@@ -11,8 +12,8 @@
 
 namespace Application\Model;
 
-use Zend\Db\TableGateway\AbstractTableGateway;
-use Zend\Db\ResultSet\ResultSet;
+use Laminas\Db\TableGateway\AbstractTableGateway;
+use Laminas\Db\ResultSet\ResultSet;
 use OpenEMR\Common\Logging\EventAuditLogger;
 
 class ApplicationTable extends AbstractTableGateway
@@ -22,12 +23,12 @@ class ApplicationTable extends AbstractTableGateway
 
     /**
      *
-     * @param \Zend\Db\Adapter\Adapter $adapter
+     * @param \Laminas\Db\Adapter\Adapter $adapter
      */
     public function __construct()
     {
         // TODO: I can't find any reason why we grab the static adapter instead of injecting a regular DB adapter here...
-        $adapter = \Zend\Db\TableGateway\Feature\GlobalAdapterFeature::getStaticAdapter();
+        $adapter = \Laminas\Db\TableGateway\Feature\GlobalAdapterFeature::getStaticAdapter();
         $this->adapter = $adapter;
         $this->resultSetPrototype = new ResultSet();
         $this->resultSetPrototype->setArrayObjectPrototype(new Application());
@@ -49,7 +50,7 @@ class ApplicationTable extends AbstractTableGateway
         $return = false;
         $result = false;
 
-        if ($GLOBALS['debug_ssl_mysql_connection']) {
+        if (!empty($GLOBALS['debug_ssl_mysql_connection'])) {
             $temp_return = $this->adapter->query("SHOW STATUS LIKE 'Ssl_cipher';")->execute();
             foreach ($temp_return as $temp_row) {
                 error_log("CHECK SSL CIPHER IN ZEND: " . errorLogEscape(print_r($temp_row, true)));
@@ -60,7 +61,7 @@ class ApplicationTable extends AbstractTableGateway
             $statement  = $this->adapter->query($sql);
             $return     = $statement->execute($params);
             $result     = true;
-        } catch (\Zend\Db\Adapter\ExceptionInterface $e) {
+        } catch (\Laminas\Db\Adapter\ExceptionInterface $e) {
             if ($error) {
                 $this->errorHandler($e, $sql, $params);
             }
@@ -98,7 +99,7 @@ class ApplicationTable extends AbstractTableGateway
      */
     public function errorHandler($e, $sql, $binds = '')
     {
-        $escaper = new \Zend\Escaper\Escaper('utf-8');
+        $escaper = new \Laminas\Escaper\Escaper('utf-8');
         $trace  = $e->getTraceAsString();
         $nLast = strpos($trace, '[internal function]');
         $trace = substr($trace, 0, ($nLast - 3));
@@ -153,12 +154,12 @@ class ApplicationTable extends AbstractTableGateway
 
     /**
      * Function zAclCheck
-     * Check ACL in Zend
+     * Check ACL in Laminas
      *
      * Same Functionality in the OpemEMR
      * for Left Nav ACL Check
-     * Path openemr/library/acl.inc
-     * Function Name zh_acl_check
+     * Path openemr/src/Common/Acl/AclMain.php
+     * Function Name zhAclCheck
      *
      * @param int     $user_id Auth user Id
      * $param String  $section_identifier ACL Section id
@@ -166,31 +167,31 @@ class ApplicationTable extends AbstractTableGateway
      */
     public function zAclCheck($user_id, $section_identifier)
     {
-        $sql_user_acl   = " SELECT 
-                                COUNT(allowed) AS count 
+        $sql_user_acl   = " SELECT
+                                COUNT(allowed) AS count
                             FROM
-                                module_acl_user_settings AS usr_settings 
-                                LEFT JOIN module_acl_sections AS acl_sections 
-                                    ON usr_settings.section_id = acl_sections.`section_id` 
-                            WHERE 
+                                module_acl_user_settings AS usr_settings
+                                LEFT JOIN module_acl_sections AS acl_sections
+                                    ON usr_settings.section_id = acl_sections.`section_id`
+                            WHERE
                                 acl_sections.section_identifier = ? AND usr_settings.user_id = ? AND usr_settings.allowed = ?";
-        $sql_group_acl  = " SELECT 
-                                COUNT(allowed) AS count 
+        $sql_group_acl  = " SELECT
+                                COUNT(allowed) AS count
                             FROM
-                                module_acl_group_settings AS group_settings 
+                                module_acl_group_settings AS group_settings
                                 LEFT JOIN module_acl_sections AS  acl_sections
                                   ON group_settings.section_id = acl_sections.section_id
                             WHERE
                                 acl_sections.`section_identifier` = ? AND group_settings.group_id IN (?) AND group_settings.allowed = ?";
-        $sql_user_group = " SELECT 
+        $sql_user_group = " SELECT
                                 gagp.id AS group_id
                             FROM
-                                gacl_aro AS garo 
-                                LEFT JOIN `gacl_groups_aro_map` AS gamp 
-                                    ON garo.id = gamp.aro_id 
+                                gacl_aro AS garo
+                                LEFT JOIN `gacl_groups_aro_map` AS gamp
+                                    ON garo.id = gamp.aro_id
                                 LEFT JOIN `gacl_aro_groups` AS gagp
                                     ON gagp.id = gamp.group_id
-                                RIGHT JOIN `users_secure` usr 
+                                RIGHT JOIN `users_secure` usr
                                     ON usr. username =  garo.value
                             WHERE
                                 garo.section_value = ? AND usr. id = ?";
@@ -286,13 +287,13 @@ class ApplicationTable extends AbstractTableGateway
 
         $keyword = $leading . $queryString . $trailing;
         if (strtolower($searchType) == 'patient') {
-            $sql = "SELECT fname, mname, lname, pid, DOB FROM patient_data 
-                WHERE pid LIKE ? 
-                OR  CONCAT(fname, ' ', lname) LIKE ?  
-                OR  CONCAT(lname, ' ', fname) LIKE ? 
-                OR DATE_FORMAT(DOB,'%m-%d-%Y') LIKE ?  
-                OR DATE_FORMAT(DOB,'%d-%m-%Y') LIKE ?  
-                OR DATE_FORMAT(DOB,'%Y-%m-%d') LIKE ?  
+            $sql = "SELECT fname, mname, lname, pid, DOB FROM patient_data
+                WHERE pid LIKE ?
+                OR  CONCAT(fname, ' ', lname) LIKE ?
+                OR  CONCAT(lname, ' ', fname) LIKE ?
+                OR DATE_FORMAT(DOB,'%m-%d-%Y') LIKE ?
+                OR DATE_FORMAT(DOB,'%d-%m-%Y') LIKE ?
+                OR DATE_FORMAT(DOB,'%Y-%m-%d') LIKE ?
                 ORDER BY fname ";
             $result = $this->zQuery($sql, array(
                                           $keyword,
@@ -314,11 +315,11 @@ class ApplicationTable extends AbstractTableGateway
 
                                       ));
         } elseif (strtolower($searchType) == 'emrdirect') {
-            $sql = "SELECT fname, mname, lname,email,id FROM users 
-                WHERE (CONCAT(fname, ' ', lname) LIKE ?  
-                OR  CONCAT(lname, ' ', fname) LIKE ? 
-                OR email LIKE ?)   
-                AND abook_type = 'emr_direct' 
+            $sql = "SELECT fname, mname, lname,email,id FROM users
+                WHERE (CONCAT(fname, ' ', lname) LIKE ?
+                OR  CONCAT(lname, ' ', fname) LIKE ?
+                OR email LIKE ?)
+                AND abook_type = 'emr_direct'
                 AND active = 1
                 ORDER BY fname ";
             $result = $this->zQuery($sql, array(
@@ -353,7 +354,7 @@ class ApplicationTable extends AbstractTableGateway
     * @param    Date format set in GLOBALS
     * @return   Date format in PHP
     **/
-    public function dateFormat($format = null)
+    public static function dateFormat($format = null)
     {
         if ($format == "0") {
             $date_format = 'yyyy/mm/dd';
@@ -405,7 +406,7 @@ class ApplicationTable extends AbstractTableGateway
 
         $output_date = implode($seperator_output, $output_date_arr);
 
-        $output_date = $temp[1] ? $output_date." ".$temp[1] : $output_date; //append the time, if exists, with the new formatted date
+        $output_date = $temp[1] ? $output_date . " " . $temp[1] : $output_date; //append the time, if exists, with the new formatted date
         return $output_date;
     }
 

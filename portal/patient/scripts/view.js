@@ -78,7 +78,7 @@ var view = {
 			this.listenTo(this.collection,'sync', this.handleCollectionSync);
 
 			// if a model inside the collection changes this will fire
-            // annoying event rethinking if needed
+            // patched out sjp
 			//this.listenTo(this.collection,'change', this.handleModelChange);
 
 			// allow the custom options to be initialized at construction

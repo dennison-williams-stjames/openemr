@@ -1,4 +1,5 @@
 <?php
+
 /**
  * @package Patient
  *
@@ -14,6 +15,7 @@
  * @license http://www.gnu.org/copyleft/lesser.html LGPL
  *
  */
+
 /* */
 
 // Will start the (patient) portal OpenEMR session/cookie.
@@ -22,7 +24,7 @@ OpenEMR\Common\Session\SessionUtil::portalSessionStart();
 
 if (isset($_SESSION['pid']) && (isset($_SESSION['patient_portal_onsite_two']) || $_SESSION['register'] === true)) {
     $pid = $_SESSION['pid'];
-    $ignoreAuth = true;
+    $ignoreAuth_onsite_portal = true;
     GlobalConfig::$PORTAL = 1;
     require_once(dirname(__FILE__) . "/../../interface/globals.php");
 } else {
@@ -50,7 +52,11 @@ GlobalConfig::$CONNECTION_SETTING->Username = $GLOBALS['login'];
 GlobalConfig::$CONNECTION_SETTING->Password = $GLOBALS['pass'];
 GlobalConfig::$CONNECTION_SETTING->Type = "MySQLi";
 if (!$disable_utf8_flag) {
-    GlobalConfig::$CONNECTION_SETTING->Charset = "utf8";
+    if (!empty($sqlconf["db_encoding"]) && ($sqlconf["db_encoding"] == "utf8mb4")) {
+        GlobalConfig::$CONNECTION_SETTING->Charset = "utf8mb4";
+    } else {
+        GlobalConfig::$CONNECTION_SETTING->Charset = "utf8";
+    }
 }
 
 GlobalConfig::$CONNECTION_SETTING->Multibyte = true;

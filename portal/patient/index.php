@@ -24,6 +24,12 @@ require_once("verysimple/Phreeze/Dispatcher.php");
 $gc = GlobalConfig::GetInstance();
 
 try {
+    if (!empty($_SESSION['register'])) {
+        // Need to bootstrap for registration
+        $GLOBALS['bootstrap_register'] = true;
+    } else {
+        $GLOBALS['bootstrap_register'] = false;
+    }
     if (isset($_SESSION['pid']) && (isset($_SESSION['patient_portal_onsite_two']))) {
         // Need to bootstrap all requests to only allow the pid in $_SESSION['pid']
         //  and to only allow access to api calls applicable to that pid (or patientId).
@@ -32,7 +38,8 @@ try {
         $GLOBALS['bootstrap_pid'] = $_SESSION['pid'];
         $sqlCollectPatientId = sqlQuery("SELECT `id` FROM `patient_data` WHERE `pid` = ?", [$GLOBALS['bootstrap_pid']]);
         $GLOBALS['bootstrap_uri_id'] = $sqlCollectPatientId['id'];
-        if ((!empty($_POST['pid']) && ($_POST['pid'] != $GLOBALS['bootstrap_pid'])) ||
+        if (
+            (!empty($_POST['pid']) && ($_POST['pid'] != $GLOBALS['bootstrap_pid'])) ||
             (!empty($_GET['pid']) && ($_GET['pid'] != $GLOBALS['bootstrap_pid'])) ||
             (!empty($_REQUEST['pid']) && ($_REQUEST['pid'] != $GLOBALS['bootstrap_pid'])) ||
             (!empty($_POST['patientId']) && ($_POST['patientId'] != $GLOBALS['bootstrap_pid'])) ||

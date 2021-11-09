@@ -19,6 +19,8 @@ require_once(dirname(__FILE__) . "/forms.inc");
 require_once(dirname(__FILE__) . "/options.inc.php");
 require_once(dirname(__FILE__) . "/report_database.inc");
 
+use OpenEMR\Common\Acl\AclMain;
+
 /**
  * Return listing of CDR reminders in log.
  *
@@ -508,7 +510,8 @@ function test_rules_clinic_batch_method($provider = '', $type = '', $dateTarget 
     setTotalItemsReportDatabase($report_id, $totalNumPatients);
 
   // Set ability to itemize report if this feature is turned on
-    if (( ($type == "active_alert" || $type == "passive_alert")          && ($GLOBALS['report_itemizing_standard']) ) ||
+    if (
+        ( ($type == "active_alert" || $type == "passive_alert")          && ($GLOBALS['report_itemizing_standard']) ) ||
         ( ($type == "cqm" || $type == "cqm_2011" || $type == "cqm_2014") && ($GLOBALS['report_itemizing_cqm'])      ) ||
         ( ($type == "amc" || $type == "amc_2011" || $type == "amc_2014" || $type == "amc_2014_stage1" || $type == "amc_2014_stage2") && ($GLOBALS['report_itemizing_amc'])      )
     ) {
@@ -552,12 +555,16 @@ function test_rules_clinic_batch_method($provider = '', $type = '', $dateTarget 
         }
 
         //Update database to track results
-        updateReportDatabase($report_id, $total_patients);
+        updateReportDatabase($report_id, ($total_patients ?? null));
     }
 
   // Record results in database and send to screen, if applicable.
-    finishReportDatabase($report_id, json_encode($dataSheet));
-    return $dataSheet;
+    if (!empty($dataSheet)) {
+        finishReportDatabase($report_id, json_encode($dataSheet));
+        return $dataSheet;
+    } else {
+        return [];
+    }
 }
 
 /**
@@ -811,7 +818,7 @@ function test_rules_clinic($provider = '', $type = '', $dateTarget = '', $mode =
                         // increment pass filter counter
                         $pass_filter++;
                         // If report itemization is turned on, trigger flag.
-                        if ($GLOBALS['report_itemizing_temp_flag_and_id']) {
+                        if (!empty($GLOBALS['report_itemizing_temp_flag_and_id'])) {
                             $temp_track_pass = 0;
                         }
                     } else {
@@ -825,7 +832,7 @@ function test_rules_clinic($provider = '', $type = '', $dateTarget = '', $mode =
                         // increment pass target counter
                         $pass_target++;
                         // If report itemization is turned on, then record the "passed" item and set the flag
-                        if ($GLOBALS['report_itemizing_temp_flag_and_id']) {
+                        if (!empty($GLOBALS['report_itemizing_temp_flag_and_id'])) {
                             insertItemReportTracker($GLOBALS['report_itemizing_temp_flag_and_id'], $GLOBALS['report_itemized_test_id_iterator'], 1, $rowPatient['pid']);
                             $temp_track_pass = 1;
                         }
@@ -887,7 +894,7 @@ function test_rules_clinic($provider = '', $type = '', $dateTarget = '', $mode =
         if (count($targetGroups) > 1) {
             foreach ($targetGroups as $i) {
                 // If report itemization is turned on, then iterate the rule id iterator
-                if ($GLOBALS['report_itemizing_temp_flag_and_id']) {
+                if (!empty($GLOBALS['report_itemizing_temp_flag_and_id'])) {
                     $GLOBALS['report_itemized_test_id_iterator']++;
                 }
 
@@ -906,7 +913,7 @@ function test_rules_clinic($provider = '', $type = '', $dateTarget = '', $mode =
 
                     $dateCounter = 1; // for reminder mode to keep track of which date checking
                     // If report itemization is turned on, reset flag.
-                    if ($GLOBALS['report_itemizing_temp_flag_and_id']) {
+                    if (!empty($GLOBALS['report_itemizing_temp_flag_and_id'])) {
                         $temp_track_pass = 1;
                     }
 
@@ -937,7 +944,7 @@ function test_rules_clinic($provider = '', $type = '', $dateTarget = '', $mode =
                             continue;
                         } else {
                             // If report itemization is turned on, trigger flag.
-                            if ($GLOBALS['report_itemizing_temp_flag_and_id']) {
+                            if (!empty($GLOBALS['report_itemizing_temp_flag_and_id'])) {
                                 $temp_track_pass = 0;
                             }
                         }
@@ -986,7 +993,7 @@ function test_rules_clinic($provider = '', $type = '', $dateTarget = '', $mode =
                     }
 
                     // If report itemization is turned on, then record the "failed" item if it did not pass
-                    if ($GLOBALS['report_itemizing_temp_flag_and_id'] && !($temp_track_pass)) {
+                    if (!empty($GLOBALS['report_itemizing_temp_flag_and_id']) && !($temp_track_pass)) {
                         insertItemReportTracker($GLOBALS['report_itemizing_temp_flag_and_id'], $GLOBALS['report_itemized_test_id_iterator'], 0, $rowPatient['pid']);
                     }
                 }
@@ -1322,7 +1329,8 @@ function resolve_plans_sql($type = '', $patient_id = '0', $configurableOnly = fa
                 $newReturnArray[] = $goPlan;
             }
         } else {
-            if ($goPlan['normal_flag'] == 1 ||
+            if (
+                $goPlan['normal_flag'] == 1 ||
                 $goPlan['cqm_flag'] == 1
             ) {
                 // active, so use the plan
@@ -1441,13 +1449,13 @@ function resolve_rules_sql($type = '', $patient_id = '0', $configurableOnly = fa
             $access_control = explode(':', $rule['access_control']);
             if (!empty($access_control[0]) && !empty($access_control[1])) {
                 // Section and ACO filters are not empty, so do the test for access.
-                if (!acl_check($access_control[0], $access_control[1], $user)) {
+                if (!AclMain::aclCheckCore($access_control[0], $access_control[1], $user)) {
                     // User does not have access to this rule, so skip the rule.
                     continue;
                 }
             } else {
                 // Section or ACO filters are empty, so use default patients:med aco
-                if (!acl_check('patients', 'med', $user)) {
+                if (!AclMain::aclCheckCore('patients', 'med', $user)) {
                     // User does not have access to this rule, so skip the rule.
                     continue;
                 }
@@ -2121,13 +2129,13 @@ function exist_lifestyle_item($patient_id, $lifestyle, $status, $dateTarget)
     $history = getHistoryData($patient_id, $lifestyle, '', $dateTarget);
 
   // See if match
-    $stringFlag = strstr($history[$lifestyle], "|" . $status);
+    $stringFlag = strstr(($history[$lifestyle] ?? ''), "|" . $status);
     if (empty($status)) {
         // Only ensuring any data has been entered into the field
         $stringFlag = true;
     }
 
-    return $history[$lifestyle] &&
+    return !empty($history[$lifestyle]) &&
         $history[$lifestyle] != '|0|' &&
         $stringFlag;
 }
@@ -2400,7 +2408,8 @@ function collect_database_label($label, $table)
 function is_duplicate_action($actions, $action)
 {
     foreach ($actions as $row) {
-        if ($row['category'] == $action['category'] &&
+        if (
+            $row['category'] == $action['category'] &&
             $row['item'] == $action['item'] &&
             $row['value'] == $action['value']
         ) {
@@ -2518,7 +2527,8 @@ function reminder_results_integrate($reminderOldArray, $reminderNew)
   // If duplicate reminder, then replace the old one
     $duplicate = false;
     foreach ($reminderOldArray as $reminderOld) {
-        if ($reminderOld['pid'] == $reminderNew['pid'] &&
+        if (
+            $reminderOld['pid'] == $reminderNew['pid'] &&
             $reminderOld['category'] == $reminderNew['category'] &&
             $reminderOld['item'] == $reminderNew['item']
         ) {

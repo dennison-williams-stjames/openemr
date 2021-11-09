@@ -1,4 +1,5 @@
 <?php
+
 /**
  *
  * CQM NQF 0028(2014) Population Criteria
@@ -27,27 +28,27 @@ class NQF_0028_2014_PopulationCriteria implements CqmPopulationCrtiteriaFactory
     {
         return "Population Criteria";
     }
-    
+
     public function createInitialPatientPopulation()
     {
         return new NQF_0028_2014_InitialPatientPopulation();
     }
-    
+
     public function createNumerators()
     {
         return new NQF_0028_2014_Numerator();
     }
-    
+
     public function createDenominator()
     {
         return new NQF_0028_2014_Denominator();
     }
-    
+
     public function createExclusion()
     {
         return new ExclusionsNone();
     }
-    
+
     public function createDenominatorException()
     {
         return new NQF_0028_2014_DenominatorException();

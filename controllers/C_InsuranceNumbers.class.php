@@ -1,4 +1,5 @@
 <?php
+
 /**
  * C_InsuranceNumbers class
  *
@@ -23,8 +24,8 @@ class C_InsuranceNumbers extends Controller
         $this->providers = array();
         $this->insurance_numbers = array();
         $this->template_mod = $template_mod;
-        $this->assign("FORM_ACTION", $GLOBALS['webroot']."/controller.php?" . attr($_SERVER['QUERY_STRING']));
-        $this->assign("CURRENT_ACTION", $GLOBALS['webroot']."/controller.php?" . "practice_settings&insurance_numbers&");
+        $this->assign("FORM_ACTION", $GLOBALS['webroot'] . "/controller.php?" . attr($_SERVER['QUERY_STRING']));
+        $this->assign("CURRENT_ACTION", $GLOBALS['webroot'] . "/controller.php?" . "practice_settings&insurance_numbers&");
         $this->assign("STYLE", $GLOBALS['style']);
     }
 
@@ -37,12 +38,12 @@ class C_InsuranceNumbers extends Controller
     {
 
         //case where a direct id is provided, doesn't matter if a provider id is available get it from the insurance_numbers record
-        if ((!is_object($this->insurance_numbers[0]) || get_class($this->insurance_numbers[0]) != "insurancenumbers") && is_numeric($id)) {
+        if ((empty($this->insurance_numbers[0]) || !is_object($this->insurance_numbers[0]) || get_class($this->insurance_numbers[0]) != "insurancenumbers") && is_numeric($id)) {
             $this->insurance_numbers[0] = new InsuranceNumbers($id);
             $this->providers[0] = new Provider($this->insurance_numbers[0]->get_provider_id());
         } elseif (is_numeric($provider_id)) {
             $this->providers[0] = new Provider($provider_id);
-            if (!is_object($this->insurance_numbers[0]) || get_class($this->insurance_numbers[0]) != "insurancenumbers") {
+            if (empty($this->insurance_numbers[0]) || !is_object($this->insurance_numbers[0]) || get_class($this->insurance_numbers[0]) != "insurancenumbers") {
                 if ($id == "default") {
                     $this->insurance_numbers[0] = $this->providers[0]->get_insurance_numbers_default();
                     if (!is_object($this->insurance_numbers[0])) {
@@ -93,7 +94,7 @@ class C_InsuranceNumbers extends Controller
         $this->assign("provider", $this->providers[0]);
         $this->assign("ins", $this->insurance_numbers[0]);
 
-        if ($_GET['showform'] == "true") {
+        if (!empty($_GET['showform']) && ($_GET['showform'] == "true")) {
             $this->assign("show_edit_gui", true);
         } else {
             $this->assign("show_edit_gui", false);
@@ -134,7 +135,7 @@ class C_InsuranceNumbers extends Controller
         $_POST['process'] = "";
 
         if (!is_numeric($_POST['id'])) {//Z&H
-            header('Location:'.$GLOBALS['webroot']."/controller.php?" . "practice_settings&insurance_numbers&action=list");//Z&H
+            header('Location:' . $GLOBALS['webroot'] . "/controller.php?" . "practice_settings&insurance_numbers&action=list");//Z&H
         }//Z&H
     }
 }

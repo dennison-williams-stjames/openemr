@@ -1,4 +1,5 @@
 <?php
+
 /**
  * Pending orders.
  *
@@ -11,12 +12,11 @@
  * @license   https://github.com/openemr/openemr/blob/master/LICENSE GNU General Public License 3
  */
 
-
 require_once("../globals.php");
 require_once("$srcdir/patient.inc");
-require_once("$srcdir/acl.inc");
 require_once "$srcdir/options.inc.php";
 
+use OpenEMR\Common\Acl\AclMain;
 use OpenEMR\Common\Csrf\CsrfUtils;
 use OpenEMR\Core\Header;
 
@@ -53,15 +53,15 @@ function thisLineItem($row)
     } // End not csv export
 }
 
-if (! acl_check('acct', 'rep')) {
+if (!AclMain::aclCheckCore('acct', 'rep')) {
     die(xlt("Unauthorized access."));
 }
 
 $form_from_date = isset($_POST['form_from_date']) ? DateToYYYYMMDD($_POST['form_from_date']) : date('Y-m-d');
 $form_to_date   = isset($_POST['form_to_date']) ? DateToYYYYMMDD($_POST['form_to_date']) : date('Y-m-d');
-$form_facility  = $_POST['form_facility'];
+$form_facility  = $_POST['form_facility'] ?? null;
 
-if ($_POST['form_csvexport']) {
+if (!empty($_POST['form_csvexport'])) {
     if (!CsrfUtils::verifyCsrfToken($_POST["csrf_token_form"])) {
         CsrfUtils::csrfNotVerified();
     }
@@ -89,9 +89,9 @@ if ($_POST['form_csvexport']) {
 
     <?php Header::setupHeader('datetime-picker'); ?>
 
-    <script language="JavaScript">
+    <script>
 
-        $(function() {
+        $(function () {
             var win = top.printLogSetup ? top : opener.top;
             win.printLogSetup(document.getElementById('printbutton'));
 
@@ -106,7 +106,7 @@ if ($_POST['form_csvexport']) {
     </script>
 </head>
 
-<body leftmargin='0' topmargin='0' marginwidth='0' marginheight='0'>
+<body class='m-0'>
 <center>
 
 <h2><?php echo xlt('Pending Orders')?></h2>
@@ -114,20 +114,20 @@ if ($_POST['form_csvexport']) {
 <form method='post' action='pending_orders.php' onsubmit='return top.restoreSession()'>
 <input type="hidden" name="csrf_token_form" value="<?php echo attr(CsrfUtils::collectCsrfToken()); ?>" />
 
-<table border='0' cellpadding='3'>
+<table class='border-0' cellpadding='3'>
 
  <tr>
   <td>
     <?php dropdown_facility($form_facility, 'form_facility', false); ?>
   </td>
-  <td class='control-label'>
+  <td class='col-form-label'>
    &nbsp;<?php echo xlt('From')?>:
   </td>
   <td>
    <input type='text' class='datepicker form-control' name='form_from_date' id="form_from_date" size='10' value='<?php echo attr(oeFormatShortDate($form_from_date)); ?>'>
   </td>
-  <td class='control-label'>
-   &nbsp;<?php echo xlt('To')?>:
+  <td class='col-form-label'>
+   &nbsp;<?php echo xlt('To{{Range}}')?>:
   </td>
   <td>
    <input type='text' class='datepicker form-control' name='form_to_date' id="form_to_date" size='10' value='<?php echo attr(oeFormatShortDate($form_to_date)); ?>'>
@@ -136,9 +136,9 @@ if ($_POST['form_csvexport']) {
  <tr>
   <td>
    <div class="btn-group" role="group">
-    <button type='submit' class='btn btn-default btn-refresh' name='form_refresh'><?php echo xlt('Refresh'); ?></button>
-    <button type='submit' class='btn btn-default btn-transmit' name='form_csvexport'><?php echo xlt('Export to CSV'); ?></button>
-    <button type='button' class='btn btn-default btn-print' id='printbutton'><?php echo xlt('Print'); ?></button>
+    <button type='submit' class='btn btn-secondary btn-refresh' name='form_refresh'><?php echo xlt('Refresh'); ?></button>
+    <button type='submit' class='btn btn-secondary btn-transmit' name='form_csvexport'><?php echo xlt('Export to CSV'); ?></button>
+    <button type='button' class='btn btn-secondary btn-print' id='printbutton'><?php echo xlt('Print'); ?></button>
    </div>
   </td>
  </tr>
@@ -150,22 +150,24 @@ if ($_POST['form_csvexport']) {
 
 </table>
 
-<table border='0' cellpadding='1' cellspacing='2' width='98%'>
- <tr bgcolor="#dddddd">
-  <td class="dehead"><?php echo xlt('Patient'); ?></td>
-  <td class="dehead"><?php echo xlt('ID'); ?></td>
-  <td class="dehead"><?php echo xlt('Ordered'); ?></td>
-  <td class="dehead"><?php echo xlt('From'); ?></td>
-  <td class="dehead"><?php echo xlt('Provider'); ?></td>
-  <td class="dehead"><?php echo xlt('Priority'); ?></td>
-  <td class="dehead"><?php echo xlt('Status'); ?></td>
+<table class='table border-0' cellpadding='1' cellspacing='2' width='98%'>
+<thead class='thead-light'>
+ <tr>
+  <th class="dehead"><?php echo xlt('Patient'); ?></th>
+  <th class="dehead"><?php echo xlt('ID'); ?></th>
+  <th class="dehead"><?php echo xlt('Ordered'); ?></th>
+  <th class="dehead"><?php echo xlt('From'); ?></th>
+  <th class="dehead"><?php echo xlt('Provider'); ?></th>
+  <th class="dehead"><?php echo xlt('Priority'); ?></th>
+  <th class="dehead"><?php echo xlt('Status'); ?></th>
  </tr>
+</thead>
     <?php
 } // end not export
 
 // If generating a report.
 //
-if ($_POST['form_refresh'] || $_POST['form_csvexport']) {
+if (!empty($_POST['form_refresh']) || !empty($_POST['form_csvexport'])) {
     if (!CsrfUtils::verifyCsrfToken($_POST["csrf_token_form"])) {
         CsrfUtils::csrfNotVerified();
     }
@@ -208,7 +210,7 @@ if ($_POST['form_refresh'] || $_POST['form_csvexport']) {
     }
 } // end report generation
 
-if (! $_POST['form_csvexport']) {
+if (empty($_POST['form_csvexport'])) {
     ?>
 
 </table>

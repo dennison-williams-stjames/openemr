@@ -1,4 +1,5 @@
 <?php
+
 // Copyright (C) 2011 Ken Chapple <ken@mi-squared.com>
 //
 // This program is free software; you can redistribute it and/or
@@ -10,10 +11,10 @@ class Range
 {
     const NEG_INF = -999999;
     const POS_INF = 999999;
-    
+
     public $lowerBound;
     public $upperBound;
-    
+
     public function __construct($lowerBound, $upperBound)
     {
         $this->lowerBound = $lowerBound;
@@ -22,11 +23,13 @@ class Range
 
     public function test($val)
     {
-        if ($val > $this->lowerBound &&
-            $val < $this->upperBound ) {
+        if (
+            $val > $this->lowerBound &&
+            $val < $this->upperBound
+        ) {
             return true;
         }
-        
+
         return false;
     }
 }

@@ -1,4 +1,5 @@
 <?php
+
  // Copyright (C) 2010-2011 Aron Racho <aron@mi-squred.com>
  //
  // This program is free software; you can redistribute it and/or
@@ -15,29 +16,29 @@ class RuleTargetActionGroup
 {
 
     var $groupId;
-    
+
     /**
      * @var RuleActions
      */
     var $ruleTargets;
-    
+
     /**
      * @var RuleTargets
      */
     var $ruleActions;
-    
+
     public function __construct($groupId = null)
     {
         $this->groupId = $groupId;
         $this->ruleActions = new RuleActions();
         $this->ruleTargets = new RuleTargets();
     }
-    
+
     public function setRuleTargets(RuleTargets $ruleTargets)
     {
         $this->ruleTargets = $ruleTargets;
     }
-    
+
     public function setRuleActions(RuleActions $ruleActions)
     {
         $this->ruleActions = $ruleActions;

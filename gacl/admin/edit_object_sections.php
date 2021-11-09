@@ -1,15 +1,19 @@
 <?php
 //First make sure user has access
 require_once("../../interface/globals.php");
-require_once("$srcdir/acl.inc");
-//ensure user has proper access
-if (!acl_check('admin', 'acl')) {
-            echo xlt('ACL Administration Not Authorized');
-            exit;
+
+use OpenEMR\Common\Acl\AclMain;
+use OpenEMR\Common\Csrf\CsrfUtils;
+
+if (!empty($_POST)) {
+    if (!CsrfUtils::verifyCsrfToken($_POST["csrf_token_form"])) {
+        CsrfUtils::csrfNotVerified();
+    }
 }
-//ensure php is installed
-if (!isset($phpgacl_location)) {
-            echo xlt('php-GACL access controls are turned off');
+
+//ensure user has proper access
+if (!AclMain::aclCheckCore('admin', 'acl')) {
+            echo xlt('ACL Administration Not Authorized');
             exit;
 }
 
@@ -40,12 +44,13 @@ switch(strtolower(trim($object_type))) {
 		$object_sections_table = $gacl_api->_db_table_prefix . 'acl_sections';
         break;
     default:
-        echo "ERROR: Must select an object type<br>\n";
+        echo "ERROR: Must select an object type<br />\n";
         exit();
         break;
 }
 
-switch ($_POST['action']) {
+$postAction = $_POST['action'] ?? null;
+switch ($postAction) {
     case 'Delete':
 
         if (count($_POST['delete_sections']) > 0) {
@@ -62,7 +67,7 @@ switch ($_POST['action']) {
         $gacl_api->debug_text("Submit!!");
 
         //Update sections
-        while (list(,$row) = @each($_POST['sections'])) {
+        foreach ($_POST['sections'] as $row) {
             list($id, $value, $order, $name) = $row;
             $gacl_api->edit_object_section($id, $name, $value, $order,0,$object_type );
         }
@@ -72,7 +77,7 @@ switch ($_POST['action']) {
         unset($name);
 
         //Insert new sections
-        while (list(,$row) = @each($_POST['new_sections'])) {
+        foreach ($_POST['new_sections'] as $row) {
             list($value, $order, $name) = $row;
 
             if (!empty($value) AND !empty($order) AND !empty($name)) {
@@ -88,12 +93,12 @@ switch ($_POST['action']) {
     default:
         $query = "select id,value,order_value,name from $object_sections_table order by order_value";
 
-        $rs = $db->pageexecute($query, $gacl_api->_items_per_page, $_GET['page']);
+        $rs = $db->pageexecute($query, $gacl_api->_items_per_page, ($_GET['page'] ?? null));
         $rows = $rs->GetRows();
 
         $sections = array();
 
-        while (list(,$row) = @each($rows)) {
+        foreach ($rows as $row) {
             list($id, $value, $order_value, $name) = $row;
 
                 $sections[] = array(
@@ -133,6 +138,8 @@ $smarty->assign('page_title', 'Edit '. strtoupper($object_type) .' Sections');
 
 $smarty->assign("phpgacl_version", $gacl_api->get_version() );
 $smarty->assign("phpgacl_schema_version", $gacl_api->get_schema_version() );
+
+$smarty->assign("CSRF_TOKEN_FORM", CsrfUtils::collectCsrfToken());
 
 $smarty->display('phpgacl/edit_object_sections.tpl');
 ?>

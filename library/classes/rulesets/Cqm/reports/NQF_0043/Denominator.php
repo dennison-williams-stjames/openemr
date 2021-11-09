@@ -1,4 +1,5 @@
 <?php
+
 // Copyright (C) 2011 Ken Chapple <ken@mi-squared.com>
 //
 // This program is free software; you can redistribute it and/or
@@ -12,14 +13,14 @@ class NQF_0043_Denominator implements CqmFilterIF
     {
         return "Denominator";
     }
-    
+
     public function test(CqmPatient $patient, $beginDate, $endDate)
     {
         $endMinus1Year = date('Y-m-d 00:00:00', strtotime('-1 year', strtotime($endDate)));
         if (Helper::checkEncounter(Encounter::ENC_OUTPATIENT, $patient, $endMinus1Year, $endDate)) {
             return true;
         }
-        
+
         return false;
     }
 }

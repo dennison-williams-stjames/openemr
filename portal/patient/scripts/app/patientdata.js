@@ -157,7 +157,7 @@ var page = {
                                     if (($("input[name=" + key + "]").attr('type') == 'radio' || $('#' + key).is('select')) && value == "")
                                         value = 'Unassigned';
                                     $('#' + key + 'InputContainer span.help-inline').html(
-                                        '<a class="editval" style="color:blue" onclick="page.toggleVal(this); return false;" data-tstate=new data-id="' + key + '">' + value + '</a>');
+									'<a class="editval text-primary" onclick="page.toggleVal(this); return false;" data-tstate=new data-id="'+key+'">'+value+'</a>');
                                     $('#' + key + 'InputContainer span.help-inline').show();
                                 }
                             });
@@ -250,31 +250,33 @@ var page = {
     replaceVal: function (el) {
         var a = $(el).data('id');
         if (!document.getElementById(a)) {
-            $('input[name=' + a + '][value="' + _.escape(page.portalpatient.get(a)) + '"' + ']').prop('checked', true).closest('label').css({"color": "blue"});
-        } else {
+			$('input[name='+a+'][value="' +  _.escape(page.portalpatient.get(a)) + '"'+']').prop('checked', true).closest('label').css({"class":"text-primary"});
+		}
+		else{
             $('#' + a).prop('value', page.portalpatient.get(a))
-            $('#' + a).css({"color": "blue", "font-weight": "normal"});
+				$('#'+a).css({"class":"text-primary","font-weight":"normal"});
         }
         var v = _.escape(page.patient.get(a));
         if (($("input[name=" + a + "]").attr('type') == 'radio' || $('#' + a).is('select')) && v == "")
             v = 'Unassigned';
         $('#' + a + 'InputContainer span.help-inline').html('');
-        $('#' + a + 'InputContainer span.help-inline').html('<a class="editval" style="color:red;font-size:16px" onclick="page.revertVal(this); return false;" data-tstate=chart data-id="' + a + '">' + v + '</a>');
+		$('#'+a+'InputContainer span.help-inline').html( '<a class="editval text-danger" style="font-size: 16px" onclick="page.revertVal(this); return false;" data-tstate=chart data-id="'+a+'">'+v+'</a>');
         $('#' + a + 'InputContainer span.help-inline').show();
     },
     revertVal: function (el) {
         var a = $(el).data('id');
         if (!document.getElementById(a)) {
-            $('input[name=' + a + '][value="' + _.escape(page.patient.get(a)) + '"' + ']').prop('checked', true).closest('label').css({"color": "red"});
-        } else {
+			$('input[name='+a+'][value="' +  _.escape(page.patient.get(a)) + '"'+']').prop('checked', true).closest('label').css({"class":"text-danger"});
+		}
+		else{
             $('#' + a).prop('value', page.patient.get(a))
-            $('#' + a).css({"color": "red", "font-weight": "normal"});
+				$('#'+a).css({"class":"text-danger","font-weight":"normal"});
         }
         var v = _.escape(page.portalpatient.get(a));
         if (($("input[name=" + a + "]").attr('type') == 'radio' || $('#' + a).is('select')) && v == "")
             v = 'Unassigned';
         $('#' + a + 'InputContainer span.help-inline').html('');
-        $('#' + a + 'InputContainer span.help-inline').html('<a class="editval" style="color:blue;font-size:16px" onclick="page.replaceVal(this); return false;" data-tstate=new data-id="' + a + '">' + v + '</a>');
+		$('#'+a+'InputContainer span.help-inline').html( '<a class="editval text-primary" style="font-size: 16px" onclick="page.replaceVal(this); return false;" data-tstate="new" data-id="'+a+'">'+v+'</a>');
         $('#' + a + 'InputContainer span.help-inline').show();
         if (!$("#donePatientButton").is(":visible")) {
             $("#donePatientButton").show();
@@ -481,7 +483,7 @@ var page = {
             wait: true,
             success: function () {
                 if (live !== 1) {
-                    setTimeout("app.appendAlert('Patient was sucessfully " + (isNew ? "inserted" : "updated") + "','alert-success',2000,'collectionAlert')", 200);
+                    setTimeout("app.appendAlert('Patient was successfully " + (isNew ? "inserted" : "updated") + "','alert-success',2000,'collectionAlert')", 200);
                     setTimeout("window.location.href ='" + webRoot + "/portal/home.php'", 2500);
                 } else if (live === 1 && register !== '0') { // for testing
                     //alert('Save Success');

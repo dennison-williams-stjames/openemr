@@ -1,4 +1,5 @@
 <?php
+
 /**
  * Audit Log Tamper Report.
  *
@@ -11,12 +12,12 @@
  * @license https://github.com/openemr/openemr/blob/master/LICENSE GNU General Public License 3
  */
 
-
 require_once("../globals.php");
 
 use OpenEMR\Common\Crypto\CryptoGen;
 use OpenEMR\Common\Csrf\CsrfUtils;
 use OpenEMR\Common\Logging\EventAuditLogger;
+use OpenEMR\Core\Header;
 
 if (!empty($_GET)) {
     if (!CsrfUtils::verifyCsrfToken($_GET["csrf_token_form"])) {
@@ -30,12 +31,7 @@ if (!empty($_GET)) {
 
 <title><?php echo xlt("Audit Log Tamper Report"); ?></title>
 
-<link rel="stylesheet" href="<?php echo $css_header;?>" type="text/css">
-<link rel="stylesheet" href="<?php echo $GLOBALS['assets_static_relative']; ?>/jquery-datetimepicker/build/jquery.datetimepicker.min.css">
-
-<script type="text/javascript" src="<?php echo $GLOBALS['assets_static_relative']; ?>/jquery/dist/jquery.min.js"></script>
-<script type="text/javascript" src="<?php echo $GLOBALS['webroot'] ?>/library/dialog.js?v=<?php echo $v_js_includes; ?>"></script>
-<script type="text/javascript" src="<?php echo $GLOBALS['assets_static_relative']; ?>/jquery-datetimepicker/build/jquery.datetimepicker.full.min.js"></script>
+<?php Header::setupHeader('datetime-picker'); ?>
 
 <style>
 #logview {
@@ -54,7 +50,7 @@ if (!empty($_GET)) {
 }
 
 #logview td {
-    background-color: #ffffff;
+    background-color: var(--white);
     border-bottom: 1px solid #808080;
     cursor: default;
     padding: 5px 5px;
@@ -96,9 +92,9 @@ function eventTypeChange(eventname)
 </head>
 <body class="body_top">
 <font class="title"><?php echo xlt('Audit Log Tamper Report'); ?></font>
-<br>
+<br />
 <?php
-$err_message=0;
+$err_message = 0;
 
 $start_date = (!empty($_GET["start_date"])) ? DateTimeToYYYYMMDDHHMMSS($_GET["start_date"]) : date("Y-m-d") . " 00:00:00";
 $end_date = (!empty($_GET["end_date"])) ? DateTimeToYYYYMMDDHHMMSS($_GET["end_date"]) : date("Y-m-d") . " 23:59:59";
@@ -109,28 +105,28 @@ if ($start_date > $end_date) {
     echo "<table><tr class='alert'><td colspan=7>";
     echo xlt('Start Date should not be greater than End Date');
     echo "</td></tr></table>";
-    $err_message=1;
+    $err_message = 1;
 }
 
-if ($_GET["form_patient"]) {
+if (!empty($_GET["form_patient"])) {
     $form_patient = $_GET['form_patient'];
 }
 
 ?>
 <?php
-$form_user = $_GET['form_user'];
-$form_pid = $_GET['form_pid'];
-if ($form_patient == '') {
-    $form_pid = '';
+$form_user = $_GET['form_user'] ?? null;
+$form_pid = $_GET['form_pid'] ?? null;
+if (empty($form_patient)) {
+    $form_pid = null;
 }
 
 ?>
-<br>
+<br />
 <FORM METHOD="GET" name="theform" id="theform" onSubmit='top.restoreSession()'>
 <input type="hidden" name="csrf_token_form" value="<?php echo attr(CsrfUtils::collectCsrfToken()); ?>" />
 <?php
 
-$sortby = $_GET['sortby'];
+$sortby = $_GET['sortby'] ?? null;
 ?>
 <input type="hidden" name="sortby" id="sortby" value="<?php echo attr($sortby); ?>">
 <input type=hidden name=csum value="">
@@ -150,7 +146,7 @@ $sortby = $_GET['sortby'];
 &nbsp;&nbsp;<span class='text'><?php echo xlt('Patient'); ?>: </span>
 </td>
 <td>
-<input type='text' size='20' name='form_patient' style='width:100%;cursor:pointer;cursor:hand' value='<?php echo ($form_patient) ? attr($form_patient) : xla('Click To Select'); ?>' onclick='sel_patient()' title='<?php echo xla('Click to select patient'); ?>' />
+<input type='text' size='20' name='form_patient' style='width:100%;cursor:pointer;cursor:hand' value='<?php echo (!empty($form_patient)) ? attr($form_patient) : '' ?>' placeholder= '<?php echo xla('Click To Select'); ?>' onclick='sel_patient()' title='<?php echo xla('Click to select patient'); ?>' />
 <input type='hidden' name='form_pid' value='<?php echo attr($form_pid); ?>' />
 </td>
 </tr>
@@ -165,7 +161,7 @@ $check_sum = isset($_GET['check_sum']);
 <input type="checkbox" name="check_sum" <?php echo ($check_sum) ? "checked" : ""; ?>>
 </td>
 <td>
-<input type=hidden name="event" value=<?php echo attr($event) ; ?>>
+<input type=hidden name="event" value="<?php echo attr($event ?? '') ; ?>">
 <a href="javascript:document.theform.submit();" class='link_submit'>[<?php echo xlt('Refresh'); ?>]</a>
 </td>
 </tr>
@@ -173,12 +169,14 @@ $check_sum = isset($_GET['check_sum']);
 </FORM>
 
 
-<?php if ($start_date && $end_date && $err_message!=1) { ?>
+<?php if ($start_date && $end_date && $err_message != 1) { ?>
 <div id="logview">
 <span class="text" id="display_tamper" style="display:none;"><?php echo xlt('Following rows in the audit log have been tampered'); ?></span>
 <table>
  <tr>
-  <th id="sortby_date" class="text" title="<?php echo xla('Sort by Tamper date/time'); ?>"><?php echo xlt('Tamper Date'); ?></th>
+  <th id="sortby_date" class="text" title="<?php echo xla('Sort by date/time'); ?>"><?php echo xlt('Log Types'); ?></th>
+  <th id="sortby_date" class="text" title="<?php echo xla('Sort by date/time'); ?>"><?php echo xlt('ID'); ?></th>
+  <th id="sortby_date" class="text" title="<?php echo xla('Sort by date/time'); ?>"><?php echo xlt('Date'); ?></th>
   <th id="sortby_user" class="text" title="<?php echo xla('Sort by User'); ?>"><?php echo xlt('User'); ?></th>
   <th id="sortby_pid" class="text" title="<?php echo xla('Sort by PatientID'); ?>"><?php echo xlt('PatientID'); ?></th>
   <th id="sortby_comments" class="text" title="<?php echo xla('Sort by Comments'); ?>"><?php echo xlt('Comments'); ?></th>
@@ -189,23 +187,23 @@ $check_sum = isset($_GET['check_sum']);
  </tr>
     <?php
 
-    $eventname = $_GET['eventname'];
-    $type_event = $_GET['type_event'];
+    $eventname = $_GET['eventname'] ?? null;
+    $type_event = $_GET['type_event'] ?? null;
     ?>
-<input type="hidden" name="event" value="<?php echo attr($eventname)."-".attr($type_event) ?>">
+<input type="hidden" name="event" value="<?php echo attr($eventname) . "-" . attr($type_event) ?>">
     <?php
-    $type_event = "update";
-    $tevent="";
-    $gev="";
+    $type_event = "";
+    $tevent = "";
+    $gev = "";
     if ($eventname != "" && $type_event != "") {
-        $getevent=$eventname."-".$type_event;
+        $getevent = $eventname . "-" . $type_event;
     }
 
     if (($eventname == "") && ($type_event != "")) {
-        $tevent=$type_event;
-    } else if ($type_event =="" && $eventname != "") {
-        $gev=$eventname;
-    } else if ($eventname == "") {
+        $tevent = $type_event;
+    } elseif ($type_event == "" && $eventname != "") {
+        $gev = $eventname;
+    } elseif ($eventname == "") {
         $gev = "";
     } else {
         $gev = $getevent;
@@ -213,40 +211,74 @@ $check_sum = isset($_GET['check_sum']);
 
     $dispArr = array();
     $icnt = 1;
-    if ($ret = EventAuditLogger::instance()->getEvents(array('sdate' => $start_date,'edate' => $end_date, 'user' => $form_user, 'patient' => $form_pid, 'sortby' => $_GET['sortby'], 'levent' =>$gev, 'tevent' =>$tevent))) {
+    if ($ret = EventAuditLogger::instance()->getEvents(array('sdate' => $start_date,'edate' => $end_date, 'user' => $form_user, 'patient' => $form_pid, 'sortby' => ($_GET['sortby'] ?? null), 'levent' => $gev, 'tevent' => $tevent))) {
         // Set up crypto object (object will increase performance since caches used keys)
         $cryptoGen = new CryptoGen();
 
-        foreach ($ret as $iter) {
+        while ($iter = sqlFetchArray($ret)) {
+            if (empty($iter["id"])) {
+                // Log item is missing; it has been deleted.
+                echo "<tr><td colspan='6' class='text tamperColor''>" . xlt("The log entry with following id has been deleted") . ": " . $iter['log_id_hash'] . "</td></tr>";
+                continue;
+            }
+
             //translate comments
             $patterns = array ('/^success/','/^failure/','/ encounter/');
             $replace = array ( xl('success'), xl('failure'), xl('encounter', '', ' '));
 
-            $dispCheck = false;
-            $log_id = $iter['id'];
-            $commentEncrStatus = "No";
-            $encryptVersion = 0;
-            $logEncryptData = EventAuditLogger::instance()->logCommentEncryptData($log_id);
-
-            if (count($logEncryptData) > 0) {
-                $commentEncrStatus = $logEncryptData['encrypt'];
-                $checkSumOld = $logEncryptData['checksum'];
-                $encryptVersion = $logEncryptData['version'];
-                $concatLogColumns = $iter['date'].$iter['event'].$iter['user'].$iter['groupname'].$iter['comments'].$iter['patient_id'].$iter['success'].$iter['checksum'].$iter['crt_user'];
-                $checkSumNew = sha1($concatLogColumns);
-
-                if ($checkSumOld != $checkSumNew) {
-                    $dispCheck = true;
-                } else {
-                    $dispCheck = false;
-                    continue;
-                }
+            $checkSumOld = $iter['checksum'];
+            if (empty($checkSumOld)) {
+                // no checksum, so skip
+                continue;
+            } elseif (strlen($checkSumOld) < 50) {
+                // for backward compatibility (for log checksums created in the sha1 days)
+                $checkSumNew = sha1($iter['date'] . $iter['event'] . $iter['user'] . $iter['groupname'] . $iter['comments'] . $iter['patient_id'] . $iter['success'] . $iter['checksum'] . $iter['crt_user']);
             } else {
+                $checkSumNew = hash('sha3-512', $iter['date'] . $iter['event'] . $iter['category'] . $iter['user'] . $iter['groupname'] . $iter['comments'] . $iter['user_notes'] . $iter['patient_id'] . $iter['success'] . $iter['crt_user'] . $iter['log_from'] . $iter['menu_item_id'] . $iter['ccda_doc_id']);
+            }
+
+            $checkSumOldApi = $iter['checksum_api'];
+            if (!empty($checkSumOldApi)) {
+                $checkSumNewApi = hash('sha3-512', $iter['log_id_api'] . $iter['user_id'] . $iter['patient_id_api'] . $iter['ip_address'] . $iter['method'] . $iter['request'] . $iter['request_url'] . $iter['request_body'] . $iter['response'] . $iter['created_time']);
+            }
+
+            $dispCheck = false;
+            $mainFail = false;
+            $apiFail = false;
+            if ($checkSumOld != $checkSumNew) {
+                $dispCheck = true;
+                $mainFail = true;
+            }
+            if (!empty($checkSumOldApi) && ($checkSumOldApi != $checkSumNewApi)) {
+                $dispCheck = true;
+                $apiFail = true;
+            }
+            if (!$dispCheck) {
                 continue;
             }
 
+            $logType = '';
+            if (!empty($mainFail) && !empty($apiFail)) {
+                $logType = xl('Main and API');
+            } elseif (!empty($mainFail)) {
+                $logType = xl('Main');
+            } else { // !empty($apiFail)
+                $logType = xl('API');
+            }
+
+            if (!empty($iter['encrypt'])) {
+                $commentEncrStatus = $iter['encrypt'];
+            } else {
+                $commentEncrStatus = "No";
+            }
+            if (!empty($iter['version'])) {
+                $encryptVersion = $iter['version'];
+            } else {
+                $encryptVersion = 0;
+            }
+
             if ($commentEncrStatus == "Yes") {
-                if ($encryptVersion == 3) {
+                if ($encryptVersion >= 3) {
                     // Use new openssl method
                     if (extension_loaded('openssl')) {
                         $trans_comments = $cryptoGen->decryptStandard($iter["comments"]);
@@ -258,7 +290,7 @@ $check_sum = isset($_GET['check_sum']);
                     } else {
                         $trans_comments = xl("Unable to decrypt these comments since the PHP openssl module is not installed.");
                     }
-                } else if ($encryptVersion == 2) {
+                } elseif ($encryptVersion == 2) {
                     // Use new openssl method
                     if (extension_loaded('openssl')) {
                         $trans_comments = $cryptoGen->aes256DecryptTwo($iter["comments"]);
@@ -270,7 +302,7 @@ $check_sum = isset($_GET['check_sum']);
                     } else {
                         $trans_comments = xl("Unable to decrypt these comments since the PHP openssl module is not installed.");
                     }
-                } else if ($encryptVersion == 1) {
+                } elseif ($encryptVersion == 1) {
                     // Use new openssl method
                     if (extension_loaded('openssl')) {
                         $trans_comments = preg_replace($patterns, $replace, trim($cryptoGen->aes256DecryptOne($iter["comments"])));
@@ -286,6 +318,11 @@ $check_sum = isset($_GET['check_sum']);
                     }
                 }
             } else {
+                // base64 decode if applicable (note the $encryptVersion is a misnomer here, we have added in base64 encoding
+                //  of comments in OpenEMR 6.0.0 and greater when the comments are not encrypted since they hold binary (uuid) elements)
+                if ($encryptVersion >= 4) {
+                    $iter["comments"] = base64_decode($iter["comments"]);
+                }
                 $trans_comments = preg_replace($patterns, $replace, trim($iter["comments"]));
             }
 
@@ -294,14 +331,27 @@ $check_sum = isset($_GET['check_sum']);
                 $dispArr[] = $icnt++;
                 ?>
      <TR class="oneresult">
+          <TD class="text tamperColor"><?php echo text($logType); ?></TD>
+          <TD class="text tamperColor"><?php echo text($iter["id"]); ?></TD>
           <TD class="text tamperColor"><?php echo text(oeFormatDateTime($iter["date"], "global", true)); ?></TD>
           <TD class="text tamperColor"><?php echo text($iter["user"]); ?></TD>
           <TD class="text tamperColor"><?php echo text($iter["patient_id"]);?></TD>
-          <TD class="text tamperColor"><?php echo text($trans_comments);?></TD>
-                <?php  if ($check_sum) { ?>
-          <TD class="text tamperColor"><?php echo text($checkSumNew);?></TD>
-          <TD class="text tamperColor"><?php echo text($checkSumOld);?></TD>
-            <?php } ?>
+                <?php // Using mb_convert_encoding to change binary stuff (uuid) to just be '?' characters ?>
+          <TD class="text tamperColor"><?php echo text(mb_convert_encoding($trans_comments, 'UTF-8', 'UTF-8'));?></TD>
+                <?php
+                if ($check_sum) {
+                    if (!empty($mainFail) && !empty($apiFail)) {
+                        echo '<TD class="text tamperColor">' . text($checkSumNew) . '<br>' . text($checkSumNewApi) . '</TD>';
+                        echo '<TD class="text tamperColor">' . text($checkSumOld) . '<br>' . text($checkSumOldApi) . '</TD>';
+                    } elseif (!empty($mainFail)) {
+                        echo '<TD class="text tamperColor">' . text($checkSumNew) . '</TD>';
+                        echo '<TD class="text tamperColor">' . text($checkSumOld) . '</TD>';
+                    } else { // !empty($apiFail)
+                        echo '<TD class="text tamperColor">' . text($checkSumNewApi) . '</TD>';
+                        echo '<TD class="text tamperColor">' . text($checkSumOldApi) . '</TD>';
+                    }
+                }
+                ?>
      </TR>
                 <?php
             }
@@ -313,14 +363,14 @@ $check_sum = isset($_GET['check_sum']);
                 <?php
                 $colspan = 4;
                 if ($check_sum) {
-                    $colspan=6;
+                    $colspan = 6;
                 }
                 ?>
         <TD class="text" colspan="<?php echo attr($colspan);?>" align="center"><?php echo xlt('No audit log tampering detected in the selected date range.'); ?></TD>
      </TR>
         <?php
     } else {?>
-    <script type="text/javascript">$('#display_tamper').css('display', 'block');</script>
+    <script>$('#display_tamper').css('display', 'block');</script>
         <?php
     }
 
@@ -329,10 +379,10 @@ $check_sum = isset($_GET['check_sum']);
 </div>
 <?php } ?>
 </body>
-<script language="javascript">
+<script>
 
 // jQuery stuff to make the page a little easier to use
-$(function(){
+$(function () {
     // funny thing here... good learning experience
     // the TR has TD children which have their own background and text color
     // toggling the TR color doesn't change the TD color

@@ -244,17 +244,3 @@ function getLanguageDir($lang_id)
 
     return !empty($row['lang_is_rtl']) ? 'rtl' : 'ltr';
 }
-
-/**
- * HEADER HTML
- * As of v5.0.2 this function is removed throughout codebase.
- * THIS FUNCTION WILL BE REMOVED IN v5.0.3
- * This is left for legacy contrib forms that were implemented
- * in prior versions. Just dummy function for now.
- * @param none
- * @return void
- */
-function html_header_show()
-{
-    // Keeping this function, for legacy contrib forms. THIS FUNCTION WILL BE REMOVED IN v5.0.3
-}

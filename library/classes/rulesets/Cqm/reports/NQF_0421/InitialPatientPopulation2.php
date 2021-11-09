@@ -1,4 +1,5 @@
 <?php
+
 // Copyright (C) 2011 Ken Chapple <ken@mi-squared.com>
 //
 // This program is free software; you can redistribute it and/or
@@ -12,7 +13,7 @@ class NQF_0421_InitialPatientPopulation2 implements CqmFilterIF
     {
         return "Initial Patient Population 2";
     }
-    
+
     public function test(CqmPatient $patient, $beginDate, $endDate)
     {
         $age = intval($patient->calculateAgeOnDate($beginDate));
@@ -22,7 +23,7 @@ class NQF_0421_InitialPatientPopulation2 implements CqmFilterIF
                 return true;
             }
         }
-        
+
         return false;
     }
 }

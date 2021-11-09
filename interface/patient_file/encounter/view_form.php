@@ -1,4 +1,5 @@
 <?php
+
 /**
  * view_form.php
  *
@@ -11,7 +12,7 @@
  * @license   https://github.com/openemr/openemr/blob/master/LICENSE GNU General Public License 3
  */
 
-require_once(__DIR__ . "/../../globals.php");
+require_once("../../globals.php");
 
 $clean_id = sanitizeNumber($_GET["id"]);
 
@@ -28,5 +29,5 @@ if (substr($_GET["formname"], 0, 3) === 'LBF') {
 $id = $clean_id;
 
 if (!empty($GLOBALS['text_templates_enabled'])) { ?>
-    <script type="text/javascript" src="<?php echo $GLOBALS['web_root'] ?>/library/js/CustomTemplateLoader.js"></script>
+    <script src="<?php echo $GLOBALS['web_root'] ?>/library/js/CustomTemplateLoader.js"></script>
 <?php } ?>

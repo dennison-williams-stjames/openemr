@@ -1,4 +1,5 @@
 <?php
+
 // Copyright (C) 2011 Ken Chapple <ken@mi-squared.com>
 //
 // This program is free software; you can redistribute it and/or
@@ -12,12 +13,13 @@ class NQF_0041_InitialPatientPopulation implements CqmFilterIF
     {
         return "NQF 0041 Initial Patient Population";
     }
-    
+
     public function test(CqmPatient $patient, $beginDate, $endDate)
     {
         $oneEncounter = array( Encounter::OPTION_ENCOUNTER_COUNT => 1 );
         $twoEncounters = array( Encounter::OPTION_ENCOUNTER_COUNT => 2 );
-        if ($patient->calculateAgeOnDate($beginDate) >= 0.6 &&
+        if (
+            $patient->calculateAgeOnDate($beginDate) >= 0.6 &&
             ( Helper::check(ClinicalType::ENCOUNTER, Encounter::ENC_OFF_VIS, $patient, $beginDate, $endDate, $twoEncounters) ||
                Helper::check(ClinicalType::ENCOUNTER, Encounter::ENC_HEA_AND_BEH, $patient, $beginDate, $endDate, $twoEncounters) ||
                Helper::check(ClinicalType::ENCOUNTER, Encounter::ENC_OCC_THER, $patient, $beginDate, $endDate, $twoEncounters) ||
@@ -26,10 +28,11 @@ class NQF_0041_InitialPatientPopulation implements CqmFilterIF
                Helper::check(ClinicalType::ENCOUNTER, Encounter::ENC_PRE_IND_COUNSEL, $patient, $beginDate, $endDate, $oneEncounter) ||
                Helper::check(ClinicalType::ENCOUNTER, Encounter::ENC_PRE_MED_GROUP_COUNSEL, $patient, $beginDate, $endDate, $oneEncounter) ||
                Helper::check(ClinicalType::ENCOUNTER, Encounter::ENC_PRE_MED_OTHER_SERV, $patient, $beginDate, $endDate, $oneEncounter)
-             ) ) {
+             )
+        ) {
             return true;
         }
-        
+
         return false;
     }
 }

@@ -1,4 +1,5 @@
 <?php
+
 // Copyright (C) 2011 Ken Chapple <ken@mi-squared.com>
 //
 // This program is free software; you can redistribute it and/or
@@ -14,7 +15,7 @@ class NQF_Unimplemented extends AbstractCqmReport implements RsUnimplementedIF
     {
         parent::__construct(array(), array(), null);
     }
-    
+
     public function createPopulationCriteria()
     {
          return null;

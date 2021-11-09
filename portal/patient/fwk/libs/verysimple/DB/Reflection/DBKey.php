@@ -1,4 +1,5 @@
 <?php
+
 /** @package    verysimple::DB::Reflection */
 
 /**
@@ -18,7 +19,7 @@ class DBKey
     public $GetterName;
     public $KeyColumn;
     public $KeyComment;
-    
+
     /**
      * Instantiate new DBSet
      *
@@ -34,7 +35,7 @@ class DBKey
         $this->Name = $keyname;
         $this->KeyColumn = str_replace("`", "", $columnname);
         $this->KeyComment = $this->Table->Columns [$this->KeyColumn]->Comment;
-        
+
         $this->NameNoPrefix = $this->Table->RemovePrefix($this->Name);
         $this->GetterName = $this->NameNoPrefix;
     }

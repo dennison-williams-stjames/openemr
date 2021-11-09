@@ -1,5 +1,7 @@
 <?php
+
 /** @package    verysimple::Phreeze */
+
 require_once("verysimple/HTTP/RequestUtil.php");
 require_once("verysimple/Util/UrlWriterMode.php");
 require_once("verysimple/Phreeze/IRouter.php");
@@ -21,7 +23,7 @@ class ActionRouter implements IRouter
     protected $stripApi = true;
     protected $delim = '&';
     protected static $_format;
-    
+
     /**
      * Constructor allows a rewriting pattern to be specified
      *
@@ -35,7 +37,7 @@ class ActionRouter implements IRouter
         $this->_appRoot = $appRoot;
         $this->_defaultRoute = $defaultRoute;
     }
-    
+
     /**
      * @inheritdocs
      */
@@ -43,7 +45,7 @@ class ActionRouter implements IRouter
     {
         return implode('/', RequestUtil::GetUrlParts($this->_appRoot));
     }
-    
+
     /**
      * @inheritdocs
      */
@@ -51,7 +53,7 @@ class ActionRouter implements IRouter
     {
         return $_REQUEST;
     }
-    
+
     /**
      * @inheritdocs
      */
@@ -60,14 +62,14 @@ class ActionRouter implements IRouter
         // make the route params case insensitive
         return RequestUtil::Get($key, $default, false, true);
     }
-    
+
     /**
      * @inheritdocs
      */
     public function GetUrl($controller, $method, $params = '', $requestMethod = '')
     {
         $format = str_replace("{delim}", $this->delim, self::$_format);
-        
+
         $qs = "";
         $d = "";
         if (is_array($params)) {
@@ -79,21 +81,21 @@ class ActionRouter implements IRouter
         } else {
             $qs = $params;
         }
-        
+
         $url = sprintf($format, $controller, $method, $qs);
-        
+
         // strip off trailing delimiters from the url
         $url = (substr($url, - 5) == "&amp;") ? substr($url, 0, strlen($url) - 5) : $url;
         $url = (substr($url, - 1) == "&" || substr($url, - 1) == "?") ? substr($url, 0, strlen($url) - 1) : $url;
-        
+
         $api_check = explode("/api/", RequestUtil::GetCurrentUrl());
         if ($this->stripApi && count($api_check) > 1) {
             $url = $api_check [0] . "/" . $url;
         }
-        
+
         return $url;
     }
-    
+
     /**
      * @inheritdocs
      */
@@ -107,7 +109,7 @@ class ActionRouter implements IRouter
 
             $uri = $action ? $action : RequestUtil::GetCurrentURL();
         }
-        
+
         // get the action requested
         $params = explode(".", str_replace("/", ".", $uri));
         $controller_param = isset($params [0]) && $params [0] ? $params [0] : "";
@@ -120,22 +122,22 @@ class ActionRouter implements IRouter
                 "",
                 ""
         ), $controller_param);
-        
+
         if (! $controller_param) {
             throw new Exception("Invalid or missing Controller parameter");
         }
-        
+
         $method_param = isset($params [1]) && $params [1] ? $params [1] : "";
         if (! $method_param) {
             $method_param = "DefaultAction";
         }
-        
+
         return array (
                 $controller_param,
                 $method_param
         );
     }
-    
+
     /**
      * Returns true or false based on the $value passed in as to whether or not the
      * URL Writer is currently in that mode.
@@ -152,7 +154,7 @@ class ActionRouter implements IRouter
             return false;
         }
     }
-    
+
     /**
      * Returns how the Dispatcher plucks it's controller and method from the URL.
      *

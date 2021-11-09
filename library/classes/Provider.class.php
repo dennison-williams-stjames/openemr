@@ -1,4 +1,5 @@
 <?php
+
 /************************************************************************
                         prescription.php - Copyright duhlman
 
@@ -12,6 +13,9 @@ The original location of this file is /home/duhlman/uml-generated-code/prescript
  * class Provider
  *
  */
+
+use OpenEMR\Common\ORDataObject\ORDataObject;
+
 class Provider extends ORDataObject
 {
 
@@ -117,7 +121,7 @@ class Provider extends ORDataObject
 
     function get_insurance_numbers_default()
     {
-        return $this->insurance_numbers[0];
+        return ($this->insurance_numbers[0] ?? null);
     }
 
     function get_group_number_default()

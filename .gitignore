@@ -18,9 +18,12 @@ ccdaservice/node_modules
 
 # dev editor configs
 /.idea/*
+/.vscode/*
 /nbproject/*
+.DS_Store
+.buildpath
+.project
+.settings
 
-# deployment pii
-/sites/*/documents/[0-9]*
-/sites/*/documents/smarty
-/sites/*/documents/procedure_results
+# testing
+.phpunit.result.cache

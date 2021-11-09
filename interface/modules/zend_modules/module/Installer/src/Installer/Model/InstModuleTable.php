@@ -1,4 +1,5 @@
 <?php
+
 /**
  * interface/modules/zend_modules/module/Installer/src/Installer/Model/InstModuleTable.php
  *
@@ -7,16 +8,18 @@
  * @author    Jacob T.Paul <jacob@zhservices.com>
  * @author    Vipin Kumar <vipink@zhservices.com>
  * @author    Remesh Babu S <remesh@zhservices.com>
+ * @author    Jerry Padgett <sjpadgett@gmail.com>
+ * @copyright Copyright (c) 2020 Jerry Padgett <sjpadgett@gmail.com>
  * @copyright Copyright (c) 2013 Z&H Consultancy Services Private Limited <sam@zhservices.com>
  * @license   https://github.com/openemr/openemr/blob/master/LICENSE GNU General Public License 3
  */
 
 namespace Installer\Model;
 
-use Zend\Db\TableGateway\TableGateway;
-use Zend\Config\Reader\Ini;
-use Zend\Db\ResultSet\ResultSet;
-use \Application\Model\ApplicationTable;
+use Laminas\Db\TableGateway\TableGateway;
+use Laminas\Config\Reader\Ini;
+use Laminas\Db\ResultSet\ResultSet;
+use Application\Model\ApplicationTable;
 use Interop\Container\ContainerInterface;
 
 class InstModuleTable
@@ -43,10 +46,10 @@ class InstModuleTable
     public function __construct(TableGateway $tableGateway, ContainerInterface $container)
     {
         $this->tableGateway = $tableGateway;
-        $adapter = \Zend\Db\TableGateway\Feature\GlobalAdapterFeature::getStaticAdapter();
+        $adapter = \Laminas\Db\TableGateway\Feature\GlobalAdapterFeature::getStaticAdapter();
         $this->adapter = $adapter;
         $this->resultSetPrototype = new ResultSet();
-        $this->applicationTable = new ApplicationTable;
+        $this->applicationTable = new ApplicationTable();
         $this->container = $container;
         $this->module_zend_path = $GLOBALS['srcdir'] . DIRECTORY_SEPARATOR
             . ".." . DIRECTORY_SEPARATOR . $GLOBALS['baseModDir'] . $GLOBALS['zendModDir'] . DIRECTORY_SEPARATOR . "module";
@@ -78,13 +81,36 @@ class InstModuleTable
         if (file_exists($sqltext)) {
             if ($sqlarray = @file($sqltext)) {
                 $sql = implode("", $sqlarray);
+
+                $specialPattern = '/#SpecialSql[\w\W]*#EndSpecialSql/sU';
+                $specialReplacement = '';
+                preg_match_all($specialPattern, $sql, $specialMatches);
+                //separate spacial sql and clean sql string
+                $sql = preg_replace($specialPattern, $specialReplacement, $sql);
                 $sqla = explode(";", $sql);
+
                 foreach ($sqla as $sqlq) {
-                    if (strlen($sqlq) > 5) {
-                        $query = rtrim("$sqlq");
-                        $result = $this->applicationTable->zQuery($query);
+                    $query = rtrim("$sqlq");
+                    if (strlen($query) > 5) {
+                        if (!$this->applicationTable->zQuery($query)) {
+                            return false;
+                        }
                     }
                 }
+                //handle special sql
+                $cleanSpecialPattern = '/(#SpecialSql|#EndSpecialSql)/';
+                foreach ($specialMatches[0] as $sqlq) {
+                    $query = rtrim("$sqlq");
+                    //remove special sql prefix suffix
+                    $query = preg_replace($cleanSpecialPattern, $specialReplacement, $query);
+                    if (strlen($query) > 5) {
+                        if (!$this->applicationTable->zQuery($query)) {
+                            return false;
+                        }
+                    }
+                }
+
+
 
                 return true;
             } else {
@@ -257,7 +283,7 @@ class InstModuleTable
      */
     function getRegistryEntry($id, $cols = "")
     {
-        $sql = "SELECT mod_directory FROM modules WHERE mod_id = ?";
+        $sql = "SELECT mod_directory, sql_version, acl_version FROM modules WHERE mod_id = ?";
         $results = $this->applicationTable->zQuery($sql, array($id));
 
         $resultSet = new ResultSet();
@@ -305,11 +331,13 @@ class InstModuleTable
             }
         } else {
             $sql = "UPDATE modules SET sql_run=1, mod_nick_name=?, mod_enc_menu=?,
-                                 date=NOW()
+                                 date=NOW(), sql_version = ?, acl_version = ?
                              WHERE mod_id = ?";
             $params = array(
                 $values[0],
                 $values[1],
+                $values[2],
+                ($values[3] ?? null),
                 $id,
             );
             $resp = $this->applicationTable->zQuery($sql, $params);
@@ -715,7 +743,7 @@ class InstModuleTable
             $check = $row;
         }
 
-        if (is_array($check) && (count($check) > 0)) {
+        if (!empty($check) && is_array($check) && (count($check) > 0)) {
             if ($check['mod_active'] == "1") {
                 return "Enabled";
             } else {
@@ -797,7 +825,7 @@ class InstModuleTable
 
     public function insertAclSections($acl_data, $mod_dir, $module_id)
     {
-        $obj = new ApplicationTable;
+        $obj = new ApplicationTable();
         foreach ($acl_data as $acl) {
             $identifier = $acl['section_id'];
             $name = $acl['section_name'];
@@ -852,7 +880,7 @@ class InstModuleTable
 
     public function deleteACLSections($module_id)
     {
-        $obj = new ApplicationTable;
+        $obj = new ApplicationTable();
         $sql = "DELETE FROM module_acl_sections WHERE module_id =? AND parent_section <> 0";
         $obj->zQuery($sql, array($module_id));
 

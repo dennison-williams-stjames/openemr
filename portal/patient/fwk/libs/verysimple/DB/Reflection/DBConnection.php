@@ -1,4 +1,5 @@
 <?php
+
 /** @package    verysimple::DB::Reflection */
 
 /**
@@ -30,7 +31,7 @@ class DBConnection
     private $adapter;
     private $handler;
     private $dbopen;
-    
+
     /**
      * Instantiate new DBConnection
      *
@@ -41,13 +42,13 @@ class DBConnection
     function __construct($dbconnstring, $handler = null)
     {
         $this->dbopen = false;
-        
+
         $this->Host = $dbconnstring->Host;
         $this->Port = $dbconnstring->Port;
         $this->Username = $dbconnstring->Username;
         $this->Password = $dbconnstring->Password;
         $this->DBName = $dbconnstring->DBName;
-        
+
         // TODO: this is redundant after switching to the DataAdapter
         $this->csetting = new ConnectionSetting();
         $this->csetting->ConnectionString = $dbconnstring->Host . ($dbconnstring->Port ? ':' . $dbconnstring->Port : '');
@@ -55,16 +56,16 @@ class DBConnection
         $this->csetting->Username = $dbconnstring->Username;
         $this->csetting->Password = $dbconnstring->Password;
         $this->csetting->Type = $dbconnstring->Type;
-        
+
         if ($handler) {
             $this->handler = & $handler;
         } else {
             $this->handler = new DBEventHandler();
         }
-        
+
         $this->handler->Log(DBH_LOG_INFO, "Connection Initialized");
     }
-    
+
     /**
      * Destructor closes the db connection.
      *
@@ -74,7 +75,7 @@ class DBConnection
     {
         $this->Disconnect();
     }
-    
+
     /**
      * Opens a connection to the MySQL Server and selects the specified database
      *
@@ -88,18 +89,18 @@ class DBConnection
             $this->handler->Log(DBH_LOG_WARNING, "Connection Already Open");
         } else {
             $this->adapter = new DataAdapter($this->csetting);
-            
+
             try {
                 $this->adapter->Open();
             } catch (Exception $ex) {
                 $this->handler->Crash(DatabaseException::$CONNECTION_ERROR, $ex->getMessage());
             }
-            
+
             $this->handler->Log(DBH_LOG_INFO, "Connection Open");
             $this->dbopen = true;
         }
     }
-    
+
     /**
      * Checks that the connection is open and if not, crashes
      *
@@ -117,7 +118,7 @@ class DBConnection
             }
         }
     }
-    
+
     /**
      * Closing the connection to the MySQL Server
      *
@@ -126,7 +127,7 @@ class DBConnection
     function Disconnect()
     {
         $this->handler->Log(DBH_LOG_INFO, "Closing Connection...");
-        
+
         if ($this->dbopen) {
             $this->adapter->Close();
             $this->dbopen = false;
@@ -135,7 +136,7 @@ class DBConnection
             $this->handler->Log(DBH_LOG_WARNING, "Connection Already Closed");
         }
     }
-    
+
     /**
      * Executes a SQL select statement and returns a MySQL resultset
      *
@@ -146,12 +147,12 @@ class DBConnection
     function Select($sql)
     {
         $this->RequireConnection(true);
-        
+
         $this->handler->Log(DBH_LOG_QUERY, "Executing Query", $sql);
-        
+
         return $this->adapter->Select($sql);
     }
-    
+
     /**
      * Executes a SQL query that does not return a resultset
      *
@@ -161,10 +162,10 @@ class DBConnection
     function Update($sql)
     {
         $this->RequireConnection(true);
-        
+
         return $this->adapter->Escape($sql);
     }
-    
+
     /**
      * Moves the database curser forward and returns the current row as an associative array
      *
@@ -175,11 +176,11 @@ class DBConnection
     function Next($rs)
     {
         $this->RequireConnection();
-        
+
         $this->handler->Log(DBH_LOG_DEBUG, "Fetching next result as array");
         return $this->adapter->Fetch($rs);
     }
-    
+
     /**
      * Releases the resources for the given resultset
      *
@@ -189,7 +190,7 @@ class DBConnection
     function Release($rs)
     {
         $this->RequireConnection();
-        
+
         $this->handler->Log(DBH_LOG_DEBUG, "Releasing result resources");
         return $this->adapter->Release($rs);
     }

@@ -1,4 +1,5 @@
 <?php
+
 /**
  *
  * AMC 304d STAGE2 Numerator
@@ -27,7 +28,7 @@ class AMC_304d_STG2_Numerator implements AmcFilterIF
     {
         return "AMC_304d_STG2 Numerator";
     }
-    
+
     public function test(AmcPatient $patient, $beginDate, $endDate)
     {
         // Were sent an appropriate reminder during the EHR reporting period

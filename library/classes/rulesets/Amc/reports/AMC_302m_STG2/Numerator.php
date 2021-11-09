@@ -1,4 +1,5 @@
 <?php
+
 /**
  *
  * AMC 302m STAGE2 Numerator
@@ -26,7 +27,7 @@ class AMC_302m_STG2_Numerator implements AmcFilterIF
     {
         return "AMC_302m_STG2 Numerator";
     }
-    
+
     public function test(AmcPatient $patient, $beginDate, $endDate)
     {
         // Is patient provided patient specific education during the report period.

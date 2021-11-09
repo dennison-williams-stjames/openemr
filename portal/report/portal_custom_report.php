@@ -32,15 +32,14 @@ if (isset($_SESSION['pid']) && isset($_SESSION['patient_portal_onsite_two'])) {
     exit;
 }
 
-$ignoreAuth = true;
-global $ignoreAuth;
+$ignoreAuth_onsite_portal = true;
+global $ignoreAuth_onsite_portal;
 
 require_once('../../interface/globals.php');
 require_once("$srcdir/forms.inc");
 require_once("$srcdir/pnotes.inc");
 require_once("$srcdir/patient.inc");
 require_once("$srcdir/options.inc.php");
-require_once("$srcdir/acl.inc");
 require_once("$srcdir/lists.inc");
 require_once("$srcdir/report.inc");
 require_once("$srcdir/classes/Document.class.php");
@@ -52,8 +51,6 @@ require_once($GLOBALS['fileroot'] . "/controllers/C_Document.class.php");
 
 use ESign\Api;
 use Mpdf\Mpdf;
-
-$_SESSION['authUser'] = 'portal-user';
 
 $staged_docs = array();
 $archive_name = '';
@@ -89,13 +86,14 @@ if ($PDF_OUTPUT) {
     ob_start();
 }
 
-$auth_notes_a  = acl_check('encounters', 'notes_a');
-$auth_notes    = acl_check('encounters', 'notes');
-$auth_coding_a = acl_check('encounters', 'coding_a');
-$auth_coding   = acl_check('encounters', 'coding');
-$auth_relaxed  = acl_check('encounters', 'relaxed');
-$auth_med      = acl_check('patients', 'med');
-$auth_demo     = acl_check('patients', 'demo');
+// get various authorization levels
+$auth_notes_a  = true; //AclMain::aclCheckCore('encounters', 'notes_a');
+$auth_notes    = true; //AclMain::aclCheckCore('encounters', 'notes');
+$auth_coding_a = true; //AclMain::aclCheckCore('encounters', 'coding_a');
+$auth_coding   = true; //AclMain::aclCheckCore('encounters', 'coding');
+$auth_relaxed  = true; //AclMain::aclCheckCore('encounters', 'relaxed');
+$auth_med      = true; //AclMain::aclCheckCore('patients'  , 'med');
+$auth_demo     = true; //AclMain::aclCheckCore('patients'  , 'demo');
 
 $esignApi = new Api();
 
@@ -126,7 +124,8 @@ function getContent()
             break;
         }
 
-        if (substr($content, $i + 6, $wrlen) === $web_root &&
+        if (
+            substr($content, $i + 6, $wrlen) === $web_root &&
             substr($content, $i + 6, $wsrlen) !== $webserver_root
         ) {
             $content = substr($content, 0, $i + 6) . $webserver_root . substr($content, $i + 6 + $wrlen);
@@ -191,13 +190,12 @@ function zip_content($source, $destination, $content = '', $create = true)
 ?>
 
 <?php if ($PDF_OUTPUT) { ?>
-<link rel="stylesheet" href="<?php echo $GLOBALS['webroot'] ?>/public/themes/style_pdf.css?v=<?php echo $v_js_includes; ?>" />
-<link rel="stylesheet" href="<?php echo $GLOBALS['webroot'] ?>/library/ESign/css/esign_report.css?v=<?php echo $v_js_includes; ?>" />
+<link rel="stylesheet" href="<?php echo $webserver_root; ?>/interface/themes/style_pdf.css?v=<?php echo $v_js_includes; ?>">
+<link rel="stylesheet" href="<?php echo $webserver_root; ?>/library/ESign/css/esign_report.css?v=<?php echo $v_js_includes; ?>" />
 <?php } else {?>
 <html>
 <head>
-<link rel="stylesheet" href="<?php echo $GLOBALS['webroot'] ?>/public/themes/style_light.css?v=<?php echo $v_js_includes; ?>" />
-<link rel="stylesheet" href="<?php echo $GLOBALS['webroot'] ?>/library/ESign/css/esign_report.css" />
+
 <?php } ?>
 
 <?php // do not show stuff from report.php in forms that is encaspulated
@@ -206,34 +204,41 @@ function zip_content($source, $destination, $content = '', $create = true)
       // encounter listings output, but not in the custom report. ?>
 
 <style>
-    div.navigateLink {display:none;}
-    .hilite {background-color: #FFFF00;}
-    .hilite2 {background-color: transparent;}
-    mark {background-color: #FFFF00;}
-    .css_button{cursor:pointer;}
-    .next {background-color: #FFFF00;}
-    #search_options{
-        position:fixed;
-        left:0px;
-        top:0px;
-        z-index:10;
-        border-bottom: solid thin #6D6D6D;
-        padding:0% 2% 0% 2.5%;
-    }
-    img { max-width:700px; }
+
+.h3,
+h3 {
+    font-size: 20px;
+}
+.report_search_div {
+font-size: 20px !important;
+font-style: bold;
+}
+.label {
+color: black;
+}/*
+.groupname {
+color:green;
+}*/
+input[type="checkbox"],
+input[type="radio"] {
+    margin: 0 5px 5px;
+    line-height: normal;
+}
 </style>
 
 <?php if (!$PDF_OUTPUT) { ?>
-    <script type="text/javascript" src="<?php echo $GLOBALS['assets_static_relative']; ?>/jquery/dist/jquery.min.js"></script>
-    <script type="text/javascript" src="<?php echo $GLOBALS['web_root']?>/library/js/SearchHighlight.js"></script>
-    <script type="text/javascript">var $j = jQuery.noConflict();</script>
+<link rel="stylesheet" href="<?php echo $GLOBALS['webroot'] ?>/library/ESign/css/esign_report.css?v=<?php echo $v_js_includes; ?>" />
+<script src="<?php echo $GLOBALS['web_root']?>/library/js/SearchHighlight.js?v=<?php echo $v_js_includes; ?>"></script>
+    <!-- Unclear where a conflict occurs but if jquery is already in scope then !!!! removed noconflict sjp 12-1-2019-->
+<script>var $j = '$';</script>
 
     <?php // if the track_anything form exists, then include the styling
     if (file_exists(dirname(__FILE__) . "/../../forms/track_anything/style.css")) { ?>
-    <link rel="stylesheet" href="<?php echo $GLOBALS['web_root']?>/interface/forms/track_anything/style.css?v=<?php echo $v_js_includes; ?>">
-    <?php } ?>
+ <link rel="stylesheet" href="<?php echo $GLOBALS['web_root']?>/interface/forms/track_anything/style.css?v=<?php echo $v_js_includes; ?>">
+    <?php  } ?>
 
 <script>
+
   // Code for search & Highlight
   function reset_highlight(form_id,form_dir,class_name) { // Removes <span class='hilite' id=''>VAL</span> with VAL
       $j("."+class_name).each(function(){
@@ -297,7 +302,7 @@ function zip_content($source, $destination, $content = '', $create = true)
         res_id = res_id+1;
         $j(this).attr("id",'result_'+res_id);
       });
-    } else {
+    }else{
       if(case_sensitive == true)
       doSearch(form_id,form_dir,'partial','hilite',keys,'true');
       else
@@ -316,7 +321,7 @@ function zip_content($source, $destination, $content = '', $create = true)
     var match = null;
     match = keys.match(/[\^\$\.\|\?\+\(\)\\~`\!@#%&\+={}<>]{1,}/);
     if(match){
-      document.getElementById('alert_msg').innerHTML='<?php echo xla('Special characters are not allowed');?>..!';
+      document.getElementById('alert_msg').innerHTML = jsText(<?php echo xlj('Special characters are not allowed'); ?>) + '..!';
       return;
     }
     else{
@@ -340,7 +345,7 @@ function zip_content($source, $destination, $content = '', $create = true)
     }
     if($j('.hilite').length <1){
       if(keys != '')
-      document.getElementById('alert_msg').innerHTML='<?php echo xla('No results found');?>..!';
+      document.getElementById('alert_msg').innerHTML = jsText(<?php echo xlj('No results found'); ?>) + '..!';
     }
     else{
       document.getElementById('alert_msg').innerHTML='';
@@ -485,7 +490,7 @@ function zip_content($source, $destination, $content = '', $create = true)
     var match = null;
     match = keys.match(/[\^\$\.\|\?\+\(\)\\~`\!@#%&\+={}<>]{1,}/);
     if(match){
-      document.getElementById('alert_msg').innerHTML='<?php echo xla('Special characters are not allowed');?>..!';
+      document.getElementById('alert_msg').innerHTML = jsText(<?php echo xlj('Special characters are not allowed'); ?>) + '..!';
       return;
     }
     else{
@@ -510,7 +515,7 @@ function zip_content($source, $destination, $content = '', $create = true)
     }
     if(w_count <1){
       if(keys != '')
-      document.getElementById('alert_msg').innerHTML='<?php echo xla('No results found');?>..!';
+      document.getElementById('alert_msg').innerHTML = jsText(<?php echo xlj('No results found'); ?>) + '..!';
     }
     else{
       document.getElementById('alert_msg').innerHTML='';
@@ -522,16 +527,17 @@ function zip_content($source, $destination, $content = '', $create = true)
       }
       var tot_res = res_array.length/w_count;
       if(tot_res > 0){
-        document.getElementById('alert_msg').innerHTML='<?php echo xla('Showing result');?> '+cur_res+' <?php echo xla('of');?> '+tot_res;
+        document.getElementById('alert_msg').innerHTML = jsText(<?php echo xlj('Showing result'); ?>) + ' ' + cur_res + ' ' + jsText(<?php echo xlj('of'); ?>) + ' ' + tot_res;
       }
     }
 
   }
 </script>
 </head>
-<body class="body_top" style="padding:1rem 0;max-width:98%;">
+<body class="body_top" style="padding-top:95px;">
 <?php } ?>
 <div id="report_custom" style="width:100%;">  <!-- large outer DIV -->
+
 <?php
 if (sizeof($_GET) > 0) {
     $ar = $_GET;
@@ -564,12 +570,10 @@ if ($printable) {
     echo '<page_header style="text-align:right;"> ' . xlt("PATIENT") . ':' . text($titleres['lname']) . ', ' . text($titleres['fname']) . ' - ' . text($titleres['DOB_TS']) . '</page_header>    ';
     echo '<page_footer style="text-align:right;">' . xlt('Generated on') . ' ' . text(oeFormatShortDate()) . ' - ' . text($facility['name']) . ' ' . text($facility['phone']) . '</page_footer>';
 
-    // Use logo if it exists as 'practice_logo.gif' in the site dir
-    // old code used the global custom dir which is no longer a valid
     $practice_logo = "";
     $plogo = glob("$OE_SITE_DIR/images/*");// let's give the user a little say in image format.
     $plogo = preg_grep('~practice_logo\.(gif|png|jpg|jpeg)$~i', $plogo);
-    if (! empty($plogo)) {
+    if (!empty($plogo)) {
         $k = current(array_keys($plogo));
         $practice_logo = $plogo[$k];
     }
@@ -582,27 +586,24 @@ if ($printable) {
 <a href="javascript:window.close();"><span class='title'><?php echo text($titleres['fname']) . " " . text($titleres['lname']); ?></span></a><br />
 <span class='text'><?php echo xlt('Generated on'); ?>: <?php echo text(oeFormatShortDate()); ?></span>
 <br /><br />
-<?php } else { // not printable ?>
-    <button type="button" onclick="rtnBack(1)">
-        <span class='title-head'><?php echo xlt('Custom Report'); ?></span>
-        <span class='back'><?php echo text($tback); ?></span>
-    </button>
-    <button type="button" onclick="rtnBack(0)">
-        <?php echo xlt('Printable Version'); ?>
-    </button>
-    <br /><br />
+
+    <?php
+} else { // not printable ?>
+    <a href="./report/portal_custom_report.php?printable=1&<?php echo postToGet($ar); ?>" class='link_submit' target='new'>
+        <button><?php echo xlt('Printable Version'); ?></button>
+    </a><br />
 <?php } // end not printable ?>
+
 <?php
 // include ALL form's report.php files
 $inclookupres = sqlStatement("select distinct formdir from forms where pid = ? AND deleted=0", [$pid]);
 while ($result = sqlFetchArray($inclookupres)) {
+  // include_once("{$GLOBALS['incdir']}/forms/" . $result["formdir"] . "/report.php");
     $formdir = $result['formdir'];
     if (substr($formdir, 0, 3) == 'LBF') {
         include_once($GLOBALS['incdir'] . "/forms/LBF/report.php");
-    } elseif (file_exists($GLOBALS['incdir'] . "/forms/$formdir/report.php")) {
-        if ($formdir != 'eye_mag') {
-            include_once($GLOBALS['incdir'] . "/forms/$formdir/report.php");
-        }
+    } else {
+        include_once($GLOBALS['incdir'] . "/forms/$formdir/report.php");
     }
 }
 
@@ -794,13 +795,12 @@ foreach ($ar as $key => $val) {
                 }
 
                 $d = new Document($document_id);
-                $fname = basename($d->get_url());
+                $fname = basename($d->get_name());
                 $extension = substr($fname, strrpos($fname, "."));
                 if (strtolower($extension) == '.zip' || strtolower($extension) == '.dcm') {
                     continue;
                 }
-
-                echo "<h1>" . xlt('Document') . " '" . text($fname) . "'</h1>";
+                echo "<h1>" . xlt('Document') . " '" . text($fname) . "-" . text($d->get_id()) . "'</h1>";
 
                 $notes = $d->get_notes();
                 if (!empty($notes)) {
@@ -898,8 +898,7 @@ foreach ($ar as $key => $val) {
                             echo "<img src='$from_file_tmp_web_name'><br /><br />";
                             $tmp_files_remove[] = $from_file_tmp_web_name;
                         } else {
-                            // @todo do a download from printable
-                            /*echo "<img src='" . $GLOBALS['webroot'] . "/controller.php?document&retrieve&patient_id=&document_id=" . attr_url($document_id) . "&as_file=false&original_file=false'><br /><br />";*/
+                            echo "<img src='" . $GLOBALS['webroot'] . "/controller.php?document&retrieve&patient_id=&document_id=" . attr_url($document_id) . "&as_file=false&original_file=false'><br /><br />";
                         }
                     }
                 } // end if-else
@@ -1051,19 +1050,8 @@ if ($printable) {
     echo "<br /><br />" . xlt('Signature') . ": _______________________________<br />";
 }
 ?>
-</div> <!-- end of report_custom DIV -->
 
-<?php if (!$printable) { ?>
-    <hr />
-    <button type="button" onclick="rtnBack(1)">
-        <span class='title-head'><?php echo xlt('Custom Report'); ?></span>
-        <span class='back'><?php echo text($tback); ?></span>
-    </button>
-    <button type="button" onclick="rtnBack(0)">
-        <?php echo xlt('Printable Version'); ?>
-    </button>
-    <br /><br />
-<?php } ?>
+</div> <!-- end of report_custom DIV -->
 
 <?php
 if ($PDF_OUTPUT) {
@@ -1105,7 +1093,7 @@ if ($PDF_OUTPUT) {
 
                 unlink($archive_name);
             } else {
-                $pdf->Output($fn, 'D'); // D = Download, I = Inline
+                $pdf->Output($fn, $GLOBALS['pdf_output']); // D = Download, I = Inline
             }
         } catch (Exception $exception) {
             die(text($exception));
@@ -1116,16 +1104,6 @@ if ($PDF_OUTPUT) {
         unlink($tmp_file);
     }
 } else { ?>
-    <script>
-        function rtnBack (orBack = 1) {
-            if (orBack) {
-                location.replace('portal_patient_report.php');
-                return false;
-            }
-            let where = "portal_custom_report.php?printable=1&<?php echo postToGet($ar); ?>";
-            window.open(where, '_blank');
-        }
-    </script>
 </body>
 </html>
 <?php } ?>

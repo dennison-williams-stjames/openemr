@@ -1,4 +1,5 @@
 <?php
+
 // +-----------------------------------------------------------------------------+
 // Copyright (C) 2011 ZMG LLC <sam@zhservices.com>
 //
@@ -41,7 +42,7 @@ class xmltoarray_parser_htmlfix
     var $index;
     var $thearray;
     var $parser;
-    
+
     /**
      * Default constructor for xmltoarray_parser_htmlfix.
      */
@@ -52,7 +53,7 @@ class xmltoarray_parser_htmlfix
         $this->thearray  = array();
         $this->parser = xml_parser_create();
     }
-    
+
     /**
      * xmlparser_setoption sets XML options based on xml_parser_set_option options.
      * @param $optionName - The name of the option from the xml_parser_set_option list.
@@ -62,7 +63,7 @@ class xmltoarray_parser_htmlfix
     {
         xml_parser_set_option($this->parser, $optionName, $value);
     }
-    
+
     /**
      * xmlparser_fix_into_struct fixes the XML and passes the XML into the struct parser.
      * @param $xml - A string XML value.
@@ -78,15 +79,15 @@ class xmltoarray_parser_htmlfix
         }
 
         foreach ($keys as $key => $value) {
-            $xml =  preg_replace("/".$key."/", $value, $xml);
+            $xml =  preg_replace("/" . $key . "/", $value, $xml);
         }
 
         $xml =  str_replace("&", "%and%", $xml);
-        
+
         xml_parse_into_struct($this->parser, $xml, $this->values, $this->index);
         xml_parser_free($this->parser);
     }
-    
+
     /**
      * createArray creates and returns the array.
      * @return The associative XML array.
@@ -94,7 +95,7 @@ class xmltoarray_parser_htmlfix
     function createArray()
     {
         $i = 0;
-        $name = isset($this->values[$i]['tag']) ? $this->values[$i]['tag']: '';
+        $name = isset($this->values[$i]['tag']) ? $this->values[$i]['tag'] : '';
         $this->thearray[$name] = isset($this->values[$i]['attributes']) ? $this->values[$i]['attributes'] : '';
         $this->thearray[$name] = $this->_struct_to_array($this->values, $i);
         return $this->thearray;
@@ -112,30 +113,30 @@ class xmltoarray_parser_htmlfix
         if (isset($values[$i]['value'])) {
             array_push($child, $values[$i]['value']);
         }
-        
+
         while ($i++ < count($values)) {
             if (isset($values[$i])) {
                 switch ($values[$i]['type']) {
                     case 'cdata':
                         array_push($child, $values[$i]['value']);
                         break;
-                    
+
                     case 'complete':
                         $name = $values[$i]['tag'];
                         if (!empty($name)) {
-                            $child[$name]= (isset($values[$i]['value']))?($values[$i]['value']):'';
+                            $child[$name] = (isset($values[$i]['value'])) ? ($values[$i]['value']) : '';
                             if (isset($values[$i]['attributes'])) {
                                 $child[$name] = $values[$i]['attributes'];
                             }
                         }
                         break;
-                    
+
                     case 'open':
                         $name = $values[$i]['tag'];
                         $size = isset($child[$name]) ? sizeof($child[$name]) : 0;
                         $child[$name][$size] = $this->_struct_to_array($values, $i);
                         break;
-                    
+
                     case 'close':
                         return $child;
                     break;

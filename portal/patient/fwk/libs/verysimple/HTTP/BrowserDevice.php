@@ -1,4 +1,5 @@
 <?php
+
 /** @package    verysimple::HTTP */
 
 /**
@@ -23,7 +24,7 @@
  */
 class BrowserDevice
 {
-    
+
     /**
      * patters to search for devices
      *
@@ -36,7 +37,7 @@ class BrowserDevice
             'MSIE' => 'microsoft',
             'safari' => 'apple'
     );
-    
+
     /**
      * patters to search for devices
      *
@@ -62,7 +63,7 @@ class BrowserDevice
     public $SupportsCSS;
     public $IsNativeDevice;
     public $NativeClientVersion;
-    
+
     /**
      * Private constructor enforces the Singleton pattern
      */
@@ -70,7 +71,7 @@ class BrowserDevice
     {
         // do nothing
     }
-    
+
     /**
      * Parse the user agent and detect the browser, populating
      * all internal properties accordingly
@@ -85,10 +86,10 @@ class BrowserDevice
         $this->Vendor = 'unknown';
         $this->SupportsJS = true;
         $this->SupportsCSS = true;
-        
+
         $this->UserAgent = isset($_SERVER ['HTTP_USER_AGENT']) ? $_SERVER ['HTTP_USER_AGENT'] : "";
         $wap = isset($_SERVER ['HTTP_X_WAP_PROFILE']) ? $_SERVER ['HTTP_X_WAP_PROFILE'] : "";
-        
+
         if (! $this->UserAgent) {
             $this->IsConsole = true;
         } else {
@@ -99,7 +100,7 @@ class BrowserDevice
                     break;
                 }
             }
-            
+
             if ($this->IsMobile == false) {
                 foreach (BrowserDevice::$DESKTOP_DEVICE_PATTERNS as $key => $val) {
                     if (preg_match('/' . $key . '/i', $this->UserAgent)) {
@@ -110,7 +111,7 @@ class BrowserDevice
             }
         }
     }
-    
+
     /**
      * Returns an instance of a BrowserDevice populated based on the
      * server variables provided
@@ -124,7 +125,7 @@ class BrowserDevice
             self::$instance = new $c();
             self::$instance->Detect();
         }
-        
+
         return self::$instance;
     }
 }

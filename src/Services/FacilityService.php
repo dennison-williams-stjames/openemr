@@ -1,4 +1,5 @@
 <?php
+
 /**
  * FacilityService
  *
@@ -7,24 +8,37 @@
  * @author    Matthew Vita <matthewvita48@gmail.com>
  * @author    Brady Miller <brady.g.miller@gmail.com>
  * @author    Sherwin Gaddis <sherwingaddis@gmail.com>
+ * @author    Jerry Padgett <sjpadgett@gmail.com>
  * @copyright Copyright (c) 2018 Matthew Vita <matthewvita48@gmail.com>
  * @copyright Copyright (c) 2018 Brady Miller <brady.g.miller@gmail.com>
+ * @copyright Copyright (c) 2020 Jerry Padgett <sjpadgett@gmail.com>
  * @license   https://github.com/openemr/openemr/blob/master/LICENSE GNU General Public License 3
  */
 
-
 namespace OpenEMR\Services;
 
-use OpenEMR\Common\Utils\QueryUtils;
+use OpenEMR\Common\Uuid\UuidRegistry;
+use OpenEMR\Validators\FacilityValidator;
+use OpenEMR\Validators\ProcessingResult;
+use OpenEMR\Events\Facility\FacilityCreatedEvent;
+use OpenEMR\Events\Facility\FacilityUpdatedEvent;
 use Particle\Validator\Validator;
 
-class FacilityService
+class FacilityService extends BaseService
 {
+    private $facilityValidator;
+    private $uuidRegistry;
+    private const FACILITY_TABLE = "facility";
+
     /**
      * Default constructor.
      */
     public function __construct()
     {
+        parent::__construct(self::FACILITY_TABLE);
+        $this->uuidRegistry = new UuidRegistry(['table_name' => self::FACILITY_TABLE]);
+        $this->uuidRegistry->createMissingUuids();
+        $this->facilityValidator = new FacilityValidator();
     }
 
     public function validate($facility)
@@ -54,11 +68,12 @@ class FacilityService
         $validator->optional('facility_npi')->lengthBetween(2, 15);
         $validator->optional('facility_code')->lengthBetween(2, 31);
         $validator->optional('facility_taxonomy')->lengthBetween(2, 15);
+        $validator->optional('iban')->lengthBetween(2, 34);
 
         return $validator->validate($facility);
     }
 
-    public function getAll()
+    public function getAllFacility()
     {
         return $this->get(array("order" => "ORDER BY FAC.name ASC"));
     }
@@ -71,7 +86,7 @@ class FacilityService
 
         $args = array(
             "where" => "WHERE FAC.primary_business_entity = 1",
-            "data"  => null,
+            "data" => null,
             "limit" => 1
         );
 
@@ -120,7 +135,7 @@ class FacilityService
     {
         return $this->get(array(
             "where" => "WHERE FAC.id = ?",
-            "data"  => array($id),
+            "data" => array($id),
             "limit" => 1
         ));
     }
@@ -129,8 +144,8 @@ class FacilityService
     {
         return $this->get(array(
             "where" => "WHERE USER.id = ?",
-            "data"  => array($userId),
-            "join"  => "JOIN users USER ON FAC.id = USER.facility_id",
+            "data" => array($userId),
+            "join" => "JOIN users USER ON FAC.id = USER.facility_id",
             "limit" => 1
         ));
     }
@@ -140,7 +155,7 @@ class FacilityService
         $facility = $this->getFacilityForUser($userId);
 
         if (!empty($facility)) {
-            $formatted  = "";
+            $formatted = "";
             $formatted .= $facility["name"];
             $formatted .= "\n";
             $formatted .= $facility["street"];
@@ -161,147 +176,45 @@ class FacilityService
     {
         return $this->get(array(
             "where" => "WHERE ENC.encounter = ?",
-            "data"  => array($encounterId),
-            "join"  => "JOIN form_encounter ENC ON FAC.id = ENC.facility_id",
+            "data" => array($encounterId),
+            "join" => "JOIN form_encounter ENC ON FAC.id = ENC.facility_id",
             "limit" => 1
         ));
     }
 
-    public function update($data)
+    public function updateFacility($data)
     {
-        $sql  = " UPDATE facility SET name=?,
-            phone=?,
-            fax=?,
-            street=?,
-            city=?,
-            state=?,
-            postal_code=?,
-            country_code=?,
-            federal_ein=?,
-            website=?,
-            email=?,
-            color=?,
-            service_location=?,
-            billing_location=?,
-            accepts_assignment=?,
-            pos_code=?,
-            domain_identifier=?,
-            attn=?,
-            tax_id_type=?,
-            primary_business_entity=?,
-            facility_npi=?,
-            facility_code=?,
-            facility_taxonomy=?,
-            mail_street=?,
-            mail_street2=?,
-            mail_city=?,
-            mail_state=?,
-            mail_zip=?,
-            oid=? WHERE id=?";
-
-        return sqlStatement(
+        $dataBeforeUpdate = $this->getById($data['id']);
+        $query = $this->buildUpdateColumns($data);
+        $sql = " UPDATE facility SET ";
+        $sql .= $query['set'];
+        $sql .= " WHERE id = ?";
+        array_push($query['bind'], $data['id']);
+        $result = sqlStatement(
             $sql,
-            array(
-                $data["name"],
-                $data["phone"],
-                $data["fax"],
-                $data["street"],
-                $data["city"],
-                $data["state"],
-                $data["postal_code"],
-                $data["country_code"],
-                $data["federal_ein"],
-                $data["website"],
-                $data["email"],
-                $data["color"],
-                $data["service_location"],
-                $data["billing_location"],
-                $data["accepts_assignment"],
-                $data["pos_code"],
-                $data["domain_identifier"],
-                $data["attn"],
-                $data["tax_id_type"],
-                $data["primary_business_entity"],
-                $data["facility_npi"],
-                $data["facility_code"],
-                $data["facility_taxonomy"],
-                $data["mail_street"],
-                $data["mail_street2"],
-                $data["mail_city"],
-                $data["mail_state"],
-                $data["mail_zip"],
-                $data['oid'],
-                $data["fid"]
-            )
+            $query['bind']
         );
+
+        $facilityUpdatedEvent = new FacilityUpdatedEvent($dataBeforeUpdate, $data);
+        $GLOBALS["kernel"]->getEventDispatcher()->dispatch(FacilityUpdatedEvent::EVENT_HANDLE, $facilityUpdatedEvent, 10);
+
+        return $result;
     }
 
-    public function insert($data)
+    public function insertFacility($data)
     {
-        $sql  = " INSERT INTO facility SET
-             name=?,
-             phone=?,
-             fax=?,
-             street=?,
-             city=?,
-             state=?,
-             postal_code=?,
-             country_code=?,
-             federal_ein=?,
-             website=?,
-             email=?,
-             color=?,
-             service_location=?,
-             billing_location=?,
-             accepts_assignment=?,
-             pos_code=?,
-             domain_identifier=?,
-             attn=?,
-             tax_id_type=?,
-             primary_business_entity=?,
-             facility_npi=?,
-             facility_code=?,
-             facility_taxonomy=?,
-             mail_street=?,
-             mail_street2=?,
-             mail_city=?,
-             mail_state=?,
-             mail_zip=?,
-             oid=? ";
-        return sqlInsert(
+        $query = $this->buildInsertColumns($data);
+        $sql = " INSERT INTO facility SET ";
+        $sql .= $query['set'];
+        $facilityId = sqlInsert(
             $sql,
-            array(
-                $data["name"],
-                $data["phone"],
-                $data["fax"],
-                $data["street"],
-                $data["city"],
-                $data["state"],
-                $data["postal_code"],
-                $data["country_code"],
-                $data["federal_ein"],
-                $data["website"],
-                $data["email"],
-                $data["color"],
-                $data["service_location"],
-                $data["billing_location"],
-                $data["accepts_assignment"],
-                $data["pos_code"],
-                $data["domain_identifier"],
-                $data["attn"],
-                $data["tax_id_type"],
-                $data["primary_business_entity"],
-                $data["facility_npi"],
-                $data["facility_code"],
-                $data["facility_taxonomy"],
-                $data["mail_street"],
-                $data["mail_street2"],
-                $data["mail_city"],
-                $data["mail_state"],
-                $data["mail_zip"],
-                $data["oid"]
-            )
+            $query['bind']
         );
+
+        $facilityCreatedEvent = new FacilityCreatedEvent(array_merge($data, ['id' => $facilityId]));
+        $GLOBALS["kernel"]->getEventDispatcher()->dispatch(FacilityCreatedEvent::EVENT_HANDLE, $facilityCreatedEvent, 10);
+
+        return $facilityId;
     }
 
     public function updateUsersFacility($facility_name, $facility_id)
@@ -321,7 +234,8 @@ class FacilityService
      */
     private function get($map)
     {
-        $sql  = " SELECT FAC.id,";
+        $sql = " SELECT FAC.id,";
+        $sql .= "        FAC.uuid,";
         $sql .= "        FAC.name,";
         $sql .= "        FAC.phone,";
         $sql .= "        FAC.fax,";
@@ -352,10 +266,12 @@ class FacilityService
         $sql .= "        FAC.mail_city,";
         $sql .= "        FAC.mail_state,";
         $sql .= "        FAC.mail_zip,";
-        $sql .= "        FAC.oid";
+        $sql .= "        FAC.oid,";
+        $sql .= "        FAC.iban,";
+        $sql .= "        FAC.info";
         $sql .= " FROM facility FAC";
 
-        return QueryUtils::selectHelper($sql, $map);
+        return self::selectHelper($sql, $map);
     }
 
     private function getPrimaryBusinessEntityLegacy()
@@ -364,5 +280,168 @@ class FacilityService
             "order" => "ORDER BY FAC.billing_location DESC, FAC.accepts_assignment DESC, FAC.id ASC",
             "limit" => 1
         ));
+    }
+
+    /**
+     * Returns a list of facilities matching optional search criteria.
+     * Search criteria is conveyed by array where key = field/column name, value = field value.
+     * If no search criteria is provided, all records are returned.
+     *
+     * @param  $search search array parameters
+     * @param  $isAndCondition specifies if AND condition is used for multiple criteria. Defaults to true.
+     * @return ProcessingResult which contains validation messages, internal error messages, and the data
+     * payload.
+     */
+    public function getAll($search = array(), $isAndCondition = true)
+    {
+        $processingResult = new ProcessingResult();
+
+        // Validating and Converting _id to UUID byte
+        if (isset($search['uuid'])) {
+            $isValid = $this->facilityValidator->validateId(
+                'uuid',
+                self::FACILITY_TABLE,
+                $search['uuid'],
+                true
+            );
+            if ($isValid != true) {
+                return $isValid;
+            }
+            $search['uuid'] = UuidRegistry::uuidToBytes($search['uuid']);
+        }
+        $additionalSql = array();
+        if (!empty($search)) {
+            $additionalSql['where'] = ' WHERE ';
+            $additionalSql["data"] = array();
+            $whereClauses = array();
+            foreach ($search as $fieldName => $fieldValue) {
+                // equality match
+                array_push($whereClauses, $fieldName . ' = ?');
+                array_push($additionalSql["data"], $fieldValue);
+            }
+            $sqlCondition = ($isAndCondition == true) ? 'AND' : 'OR';
+            $additionalSql['where'] .= implode(' ' . $sqlCondition . ' ', $whereClauses);
+        }
+        $statementResults = $this->get($additionalSql);
+        if ($statementResults) {
+            foreach ($statementResults as $row) {
+                $row['uuid'] = UuidRegistry::uuidToString($row['uuid']);
+                $processingResult->addData($row);
+            }
+        }
+
+        return $processingResult;
+    }
+
+    /**
+     * Returns a single facility record by facility uuid.
+     * @param $uuid - The facility uuid identifier in string format.
+     * @return ProcessingResult which contains validation messages, internal error messages, and the data
+     * payload.
+     */
+    public function getOne($uuid)
+    {
+        $processingResult = new ProcessingResult();
+        $isValid = $this->facilityValidator->validateId('uuid', self::FACILITY_TABLE, $uuid, true);
+        if ($isValid !== true) {
+            return $isValid;
+        }
+        $uuidBytes = UuidRegistry::uuidToBytes($uuid);
+        $sqlResult = $this->get(array(
+            "where" => "WHERE FAC.uuid = ?",
+            "data" => array($uuidBytes),
+            "limit" => 1
+        ));
+
+        if ($sqlResult) {
+            $sqlResult['uuid'] = UuidRegistry::uuidToString($sqlResult['uuid']);
+            $processingResult->addData($sqlResult);
+        } else {
+            $processingResult->addInternalError("error processing SQL Insert");
+        }
+
+        return $processingResult;
+    }
+
+    /**
+     * Inserts a new facility record.
+     *
+     * @param $data The facility fields (array) to insert.
+     * @return ProcessingResult which contains validation messages, internal error messages, and the data
+     * payload.
+     */
+    public function insert($data)
+    {
+        $processingResult = $this->facilityValidator->validate(
+            $data,
+            FacilityValidator::DATABASE_INSERT_CONTEXT
+        );
+
+        if (!$processingResult->isValid()) {
+            return $processingResult;
+        }
+
+        $data['uuid'] = (new UuidRegistry(['table_name' => self::FACILITY_TABLE]))->createUuid();
+
+        $query = $this->buildInsertColumns($data);
+        $sql = " INSERT INTO " . self::FACILITY_TABLE . " SET ";
+        $sql .= $query['set'];
+
+        $results = sqlInsert(
+            $sql,
+            $query['bind']
+        );
+
+        if ($results) {
+            $processingResult->addData(array(
+                'id' => $results,
+                'uuid' => UuidRegistry::uuidToString($data['uuid'])
+            ));
+        } else {
+            $processingResult->addInternalError("error processing SQL Insert");
+        }
+
+        return $processingResult;
+    }
+
+    /**
+     * Updates an existing facility record.
+     *
+     * @param $uuid - The facility uuid identifier in string format used for update.
+     * @param $data - The updated facility data fields
+     * @return ProcessingResult which contains validation messages, internal error messages, and the data
+     * payload.
+     */
+    public function update($uuid, $data)
+    {
+        if (empty($data)) {
+            $processingResult = new ProcessingResult();
+            $processingResult->setValidationMessages("Invalid Data");
+            return $processingResult;
+        }
+        $data["uuid"] = $uuid;
+        $processingResult = $this->facilityValidator->validate(
+            $data,
+            FacilityValidator::DATABASE_UPDATE_CONTEXT
+        );
+        if (!$processingResult->isValid()) {
+            return $processingResult;
+        }
+
+        $query = $this->buildUpdateColumns($data);
+        $sql = " UPDATE " . self::FACILITY_TABLE . " SET ";
+        $sql .= $query['set'];
+        $sql .= " WHERE `uuid` = ?";
+
+        $uuidBinary = UuidRegistry::uuidToBytes($uuid);
+        array_push($query['bind'], $uuidBinary);
+        $sqlResult = sqlStatement($sql, $query['bind']);
+
+        if (!$sqlResult) {
+            $processingResult->addErrorMessage("error processing SQL Update");
+        } else {
+            $processingResult = $this->getOne($uuid);
+        }
+        return $processingResult;
     }
 }

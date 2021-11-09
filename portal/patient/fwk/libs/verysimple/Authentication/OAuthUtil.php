@@ -1,5 +1,7 @@
 <?php
+
 /** @package    verysimple::Authentication */
+
 require_once "oauth/OAuthStore.php";
 require_once "oauth/OAuthRequester.php";
 require_once "verysimple/String/VerySimpleStringUtil.php";
@@ -15,7 +17,7 @@ require_once "verysimple/String/VerySimpleStringUtil.php";
  */
 class OAuthUtil
 {
-    
+
     /**
      * Given a URL return an OAuth signed URL.
      * This will handle creating a timestamp and nonce
@@ -42,20 +44,20 @@ class OAuthUtil
                 'consumer_secret' => $secret
         );
         $params = $params ? $params : array ();
-        
+
         OAuthStore::instance("2Leg", $options);
-        
+
         // Obtain a request object for the request we want to make
         $request = new OAuthRequester($url, $method, $params, $body);
-        
+
         $sig = $request->sign($key, null, '');
-        
+
         $data = $request->signatureBaseString();
-        
+
         $url = substr(urldecode($data . '&oauth_signature=' . $request->calculateDataSignature($data, $secret, '', $signature_method)), strlen($method) + 1);
-        
+
         $url = VerySimpleStringUtil::ReplaceFirst('&', '?', $url);
-        
+
         return $url;
     }
 }

@@ -1,4 +1,5 @@
 <?php
+
 /** @package    verysimple::Phreeze */
 
 /**
@@ -18,7 +19,7 @@ require_once("IObservable.php");
 abstract class Observable implements IObservable
 {
     private $_observers = array ();
-    
+
     /**
      * Registers an observer with this object
      *
@@ -30,7 +31,7 @@ abstract class Observable implements IObservable
             $this->_observers [] = & $observer;
         }
     }
-    
+
     /**
      * Fires and observable event.
      * All registered observers will be notified

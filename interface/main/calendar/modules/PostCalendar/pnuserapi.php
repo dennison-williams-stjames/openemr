@@ -31,7 +31,6 @@
 //  Require utility classes
 //=========================================================================
 require_once($GLOBALS['fileroot'] . "/library/patient.inc");
-require_once($GLOBALS['fileroot']."/library/appointments.inc.php");
 require_once($GLOBALS['fileroot'] . "/library/group.inc");
 require_once($GLOBALS['fileroot'] . "/library/encounter_events.inc.php");
 $pcModInfo = pnModGetInfo(pnModGetIDFromName(__POSTCALENDAR__));
@@ -325,28 +324,6 @@ function postcalendar_userapi_buildView($args)
         // filter the display on the requested username, the provinfo array is
         // used to build columns in the week view.
 
-        // if we were passed in __PC_SCHEDULED__ then we only want a list of 
-        // providers that are currently scheduled
-        if (is_array($pc_username) && $pc_username[0] === '__PC_SCHEDULED__') {
-            $eventsByDate =& postcalendar_userapi_pcGetEvents(
-               array('start'=>$starting_date,'end'=>$ending_date, 'viewtype' => $viewtype));
-            $providers = array();
-            foreach ($eventsByDate as $date => $events) {
-               foreach ($events as $event) {
-                  if ($event['catname'] === 'In Office') {
-                     $providers[$event['aid']] = 1;
-                  } // if
-               } // foreach
-            } // foreach
-            $provIDs = array_keys($providers);
-
-            foreach ($provinfo as $provider) {
-               if (array_search($provider['id'], $provIDs) !== FALSE) {
-                  array_push($single, $provider);
-               } // if
-            } // foreach
-
-        } else {
         foreach ($provinfo as $provider) {
             if (is_array($pc_username)) {
                 foreach ($pc_username as $uname) {
@@ -361,8 +338,7 @@ function postcalendar_userapi_buildView($args)
                     array_push($provIDs, $provider['id']);
                 }
             }
-        } // foreach
-	} // else
+        }
 
         if ($single != null) {
             $provinfo = $single;
@@ -587,7 +563,6 @@ function postcalendar_userapi_buildView($args)
             $tpl->display($template, $cacheid);
             echo postcalendar_footer();
             echo "\n</body></html>";
-            session_write_close();
             exit;
     }
 
@@ -924,7 +899,7 @@ function &postcalendar_userapi_pcQueryEvents($args)
             $sql .= " AND a.pc_facility = '" . pnVarPrepForStore($pc_facility) . "' "; /*
                       AND u.facility_id = $pc_facility
                       AND u2.facility_id = $pc_facility "; */
-    } elseif ($pc_facility) {
+    } elseif (!empty($pc_facility)) {
         // pc_facility could be provided in the search arguments -- JRM March 2008
         $sql .= " AND a.pc_facility = '" . pnVarPrepForStore($pc_facility) . "' "; /*.
                 " AND u.facility_id = $pc_facility".
@@ -1231,7 +1206,9 @@ function &postcalendar_userapi_pcGetEvents($args)
             $s_keywords = '';
         }
 
-        $a = array('start' => $start_date,'end' => $end_date,'s_keywords' => $s_keywords,'s_category' => $s_category,'s_topic' => $s_topic,'viewtype' => $viewtype, "sort" => "pc_startTime ASC, a.pc_duration ASC ",'providerID' => $providerID, 'provider_id' => $provider_id);
+        $providerID = $providerID ?? '';
+
+        $a = array('start' => $start_date,'end' => $end_date,'s_keywords' => $s_keywords,'s_category' => $s_category,'s_topic' => $s_topic,'viewtype' => ($viewtype ?? null), "sort" => "pc_startTime ASC, a.pc_duration ASC ",'providerID' => $providerID, 'provider_id' => $provider_id);
         $events = pnModAPIFunc(__POSTCALENDAR__, 'user', 'pcQueryEvents', $a);
     }
 
@@ -1251,7 +1228,7 @@ function &postcalendar_userapi_pcGetEvents($args)
         $days[$store_date] = array();
     }
 
-    $days = calculateEvents($days, $events, $viewtype);
+    $days = calculateEvents($days, $events, ($viewtype ?? null));
     return $days;
 }
 

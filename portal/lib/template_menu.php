@@ -1,4 +1,5 @@
 <?php
+
 /**
  * /template_menu.php
  *
@@ -9,19 +10,18 @@
  * @license   https://github.com/openemr/openemr/blob/master/LICENSE GNU General Public License 3
  */
 
-// global to all
 foreach (glob($GLOBALS['OE_SITE_DIR'] . "/documents/onsite_portal_documents/templates/*.tpl") as $filename) {
     $basefile = basename($filename, ".tpl");
     $btnname = str_replace('_', ' ', $basefile);
     $btnfile = $basefile . '.tpl';
 
-    echo '<li><button type="button" class="btn btn-success navbar-btn" id="' . $basefile . '"' . 'onclick="page.newDocument(' . "<%= cpid %>,'<%= cuser %>','$btnfile')".'"'.">$btnname</button></li>";
+    echo '<li class="nav-item px-1 py-1 py-md-0"><a class="nav-link text-success btn btn-outline-success" id="' . $basefile . '"' . 'href="#" onclick="page.newDocument(' . "<%= cpid %>,'<%= cuser %>','$btnfile')" . ';"' . ">$btnname</a></li>";
 }
-// per pid only
+
 foreach (glob($GLOBALS['OE_SITE_DIR'] . "/documents/onsite_portal_documents/templates/" . $pid . "/*.tpl") as $filename) {
     $basefile = basename($filename, ".tpl");
     $btnname = str_replace('_', ' ', $basefile);
     $btnfile = $basefile . '.tpl';
 
-    echo '<li><button type="button" class="btn btn-warning navbar-btn" id="' . $basefile . '"' . 'onclick="page.newDocument(' . "<%= cpid %>,'<%= cuser %>','$btnfile')".'"'.">$btnname</button></li>";
+    echo '<li class="nav-item px-1 py-1 py-md-0"><a class="nav-link text-success btn btn-outline-success" id="' . $basefile . '"' . 'href="#" onclick="page.newDocument(' . "<%= cpid %>,'<%= cuser %>','$btnfile')" . '";' . ">$btnname</a></li>";
 }

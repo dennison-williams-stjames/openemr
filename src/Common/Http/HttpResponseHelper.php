@@ -1,4 +1,5 @@
 <?php
+
 /**
  * HttpResponseHelper
  *
@@ -25,10 +26,6 @@ class HttpResponseHelper
     public static function send($statusCode, $payload, $serializationStrategy)
     {
         $response = null;
-
-        if (method_exists($payload, 'toSerializedObject')) {
-            $payload = $payload->toSerializedObject();
-        }
 
         switch ($serializationStrategy) {
             case 'JSON':

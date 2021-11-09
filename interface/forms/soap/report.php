@@ -1,4 +1,5 @@
 <?php
+
 /**
  * soap form
  * Forms generated from formsWiz
@@ -10,13 +11,8 @@
  * @license   https://github.com/openemr/openemr/blob/master/LICENSE GNU General Public License 3
  */
 
-require_once(dirname(__FILE__).'/../../globals.php');
-require_once($GLOBALS["srcdir"]."/api.inc");
-
-// Only clinicians should have access to this
-// Clinicians at SJI are those allowed to see lab results
-require_once("$srcdir/acl.inc");
-if (!acl_check('patients','lab')) die("Access Denied.");
+require_once(dirname(__FILE__) . '/../../globals.php');
+require_once($GLOBALS["srcdir"] . "/api.inc");
 
 function soap_report($pid, $encounter, $cols, $id)
 {
@@ -34,7 +30,7 @@ function soap_report($pid, $encounter, $cols, $id)
                 $value = "yes";
             }
 
-            $key=ucwords(str_replace("_", " ", $key));
+            $key = ucwords(str_replace("_", " ", $key));
                                                                               //Updated by Sherwin 10/24/2016
             print "<td><span class=bold>" . xlt($key) . ": </span><span class=text>" . nl2br(text($value)) . "</span></td>";
             $count++;

@@ -1,4 +1,5 @@
 <?php
+
 // NOTE: This code has been licensed for use to verysimple, inc. by
 // Keyvan Minoukadeh under the terms of the LGPL license on 8/10/05.
 //
@@ -73,7 +74,7 @@ class Mime_Types
             'doc' => 'application/msword',
             'htm' => 'text/html'
     );
-    
+
     /**
      * Path to file command - empty string disables the use of the file command
      *
@@ -81,7 +82,7 @@ class Mime_Types
      */
     var $file_cmd = '';
     // var $file_cmd = '/usr/bin/file';
-    
+
     /**
      * File options, used with the file command
      * Example:
@@ -95,7 +96,7 @@ class Mime_Types
             'b' => null,
             'i' => null
     );
-    
+
     /**
      * Constructor
      * optional parameter can be either a string containing the path to the
@@ -119,7 +120,7 @@ class Mime_Types
             $this->set($mime_types);
         }
     }
-    
+
     /**
      * Scan - goes through all MIME types passing the extension and type to the callback function.
      * The types will be sent in alphabetical order.
@@ -166,7 +167,7 @@ class Mime_Types
             }
         }
     }
-    
+
     /**
      * Get file type - returns MIME type by trying to guess it using the file command.
      *
@@ -207,7 +208,8 @@ class Mime_Types
                 $result = strtolower($result);
                 $pattern = '[a-z0-9.+_-]';
                 if (preg_match('!((' . $pattern . '+)/' . $pattern . '+)!', $result, $match)) {
-                    if (in_array($match [2], array (
+                    if (
+                        in_array($match [2], array (
                             'application',
                             'audio',
                             'image',
@@ -217,7 +219,8 @@ class Mime_Types
                             'video',
                             'chemical',
                             'model'
-                    )) || (substr($match [2], 0, 2) == 'x-')) {
+                        )) || (substr($match [2], 0, 2) == 'x-')
+                    ) {
                         $type = $match [1];
                     }
                 }
@@ -238,7 +241,7 @@ class Mime_Types
 
         return $type;
     }
-    
+
     /**
      * Get type - returns MIME type based on the file extension.
      * Example:
@@ -265,7 +268,7 @@ class Mime_Types
 
         return false;
     }
-    
+
     /**
      * Set - set extension and MIME type
      * Example:
@@ -329,7 +332,7 @@ class Mime_Types
             $this->mime_types [strtolower($ext)] = $type;
         }
     }
-    
+
     /**
      * Has extension - returns true if extension $ext exists, false otherwise
      * Example:
@@ -342,7 +345,7 @@ class Mime_Types
     {
         return (isset($this->mime_types [strtolower($ext)]));
     }
-    
+
     /**
      * Has type - returns true if type $type exists, false otherwise
      * Example:
@@ -355,7 +358,7 @@ class Mime_Types
     {
         return (in_array(strtolower($type), $this->mime_types));
     }
-    
+
     /**
      * Get extension - returns string containing a extension associated with $type
      * Example:
@@ -376,7 +379,7 @@ class Mime_Types
 
         return false;
     }
-    
+
     /**
      * Get extensions - returns array containing extension(s)
      * Example:
@@ -391,7 +394,7 @@ class Mime_Types
         $type = strtolower($type);
         return (array_keys($this->mime_types, $type));
     }
-    
+
     /**
      * Remove extension
      * Example:
@@ -418,7 +421,7 @@ class Mime_Types
             }
         }
     }
-    
+
     /**
      * Remove type
      * Example:
@@ -445,7 +448,7 @@ class Mime_Types
         if (! $slash_pos) {
             return;
         }
-        
+
         $type_info = array (
                 'last_match' => false,
                 'wildcard' => false,
@@ -461,7 +464,7 @@ class Mime_Types
                 '_remove_type_callback'
         ), $type_info);
     }
-    
+
     /**
      * Load file - load file containing mime types.
      * Example:
@@ -501,11 +504,11 @@ class Mime_Types
 
         return true;
     }
-    
+
     //
     // private methods
     //
-    
+
     /**
      * Remove type callback
      *

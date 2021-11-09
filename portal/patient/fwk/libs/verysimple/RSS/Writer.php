@@ -1,5 +1,7 @@
 <?php
+
 /** @package    verysimple::RSS */
+
 require_once("verysimple/XML/XMLUtil.php");
 
 /**
@@ -25,7 +27,7 @@ class RSS_Writer
     private $rss_simplexml;
     protected $item_list;
     protected $item_counter;
-    
+
     /**
      * Instantiate an RSS_Writer
      *
@@ -57,7 +59,7 @@ class RSS_Writer
     private function elementCreate($parent_node, $node_name, $content = '', $attributes = false, $return = true)
     {
         $content = XMLUtil::Escape($content);
-        
+
         $element = $this->rss_dom->createElement($node_name, $content);
         if ($attributes) {
             foreach ($attributes as $key => $value) {
@@ -77,7 +79,7 @@ class RSS_Writer
         $result = $this->rss_simplexml->xpath($xpath . $node_name);
         if ($result) {
             $result [0] = $value;
-            
+
             if ($attributes) {
                 foreach ($attributes as $key => $value) {
                     $result [0] [$key] = $value;
@@ -99,7 +101,7 @@ class RSS_Writer
     {
         $image = $this->elementCreate($this->channel, 'image');
         $this->elementCreate($image, 'url', $url);
-        
+
         if ($width > 144) {
             $width = 144;
         }
@@ -107,13 +109,13 @@ class RSS_Writer
         if ($height > 400) {
             $height = 400;
         }
-        
+
         $this->elementCreate($image, 'width', $width);
         $this->elementCreate($image, 'height', $height);
-        
+
         $this->elementCreate($image, 'title', $this->title->nodeValue);
         $this->elementCreate($image, 'link', $this->link->nodeValue);
-        
+
         $this->elementCreate($image, 'description', $description);
     }
     public function addItem($title, $link, $description, $author, $date, $source = '', $guid = '')
@@ -157,7 +159,7 @@ class RSS_Writer
                 'type' => $type
         ), false);
     }
-    
+
     /**
      * returns RSS xml
      *
@@ -168,7 +170,7 @@ class RSS_Writer
     {
         return $this->rss_dom->saveXML();
     }
-    
+
     /**
      * Writes out the XML header and content to the browser
      */

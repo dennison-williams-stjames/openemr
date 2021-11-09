@@ -1,4 +1,5 @@
 <?php
+
 /**
  *
  * AMC 302f 2 STAGE1 Denominator
@@ -27,7 +28,7 @@ class AMC_302f_2_STG1_Denominator implements AmcFilterIF
     {
         return "AMC_302f_2_STG1 Denominator";
     }
-    
+
     public function test(AmcPatient $patient, $beginDate, $endDate)
     {
         //Number of unique patients seen by the EP during the EHR reporting period

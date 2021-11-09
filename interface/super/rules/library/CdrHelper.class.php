@@ -1,4 +1,5 @@
 <?php
+
 // Copyright (C) 2011 Ensoftek, Inc
 //
 // This program is free software; you can redistribute it and/or
@@ -25,7 +26,7 @@ class CdrResults
         var $active_flag;
         var $reminder_flag;
         var $access_control;
-        
+
     function __construct($rule_id = "", $active_alert_flag = "", $passive_alert_flag = "", $patient_reminder_flag = "", $access_control = "")
     {
         $this->id = $rule_id;
@@ -35,7 +36,7 @@ class CdrResults
         $this->reminder_flag = $patient_reminder_flag;
                     $this->access_control = $access_control;
     }
-      
+
     function active_alert_flag()
     {
             return $this->active_flag;
@@ -55,7 +56,7 @@ class CdrResults
     {
             return $this->id;
     }
-      
+
     function patient_reminder_flag()
     {
             return $this->reminder_flag;
@@ -65,7 +66,7 @@ class CdrResults
     {
             return $this->access_control;
     }
-      
+
     function update_table()
     {
 
@@ -74,9 +75,9 @@ class CdrResults
                               ", passive_alert_flag = ?" .
                               ", patient_reminder_flag = ?" .
                           " WHERE id = ? AND pid = 0";
-    
+
            sqlStatement($query, array($this->active_flag,$this->passive_flag,$this->reminder_flag,$this->id));
-                        
+
                     // Set the settings that apply to all rules including the patient custom rules (pid is > 0)
                     $query = "UPDATE clinical_rules SET access_control = ?" .
                                                       " WHERE id = ?";

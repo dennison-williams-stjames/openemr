@@ -1,4 +1,5 @@
 <?php
+
 /**
  * pending followup
  *
@@ -11,13 +12,13 @@
  * @license   https://github.com/openemr/openemr/blob/master/LICENSE GNU General Public License 3
  */
 
-
 require_once("../globals.php");
 require_once("../../library/patient.inc");
-require_once("../../library/acl.inc");
 require_once("../../custom/code_types.inc.php");
 
+use OpenEMR\Common\Acl\AclMain;
 use OpenEMR\Common\Csrf\CsrfUtils;
+use OpenEMR\Core\Header;
 use OpenEMR\Services\FacilityService;
 
 $facilityService = new FacilityService();
@@ -62,7 +63,7 @@ function thisLineItem($row, $codetype, $code)
     } // End not csv export
 }
 
-if (! acl_check('acct', 'rep')) {
+if (! AclMain::aclCheckCore('acct', 'rep')) {
     die(xlt("Unauthorized access."));
 }
 
@@ -94,17 +95,12 @@ if ($_POST['form_csvexport']) {
 <html>
 <head>
 
-<link rel="stylesheet" href="<?php echo $css_header; ?>" type="text/css">
-<link rel="stylesheet" href="<?php echo $GLOBALS['assets_static_relative']; ?>/jquery-datetimepicker/build/jquery.datetimepicker.min.css">
+    <?php Header::setupHeader(['datetime-picker']); ?>
 
 <title><?php echo xlt('Pending Followup from Results') ?></title>
 
-<script type="text/javascript" src="<?php echo $GLOBALS['assets_static_relative']; ?>/jquery-1-9-1/jquery.min.js"></script>
-<script type="text/javascript" src="<?php echo $GLOBALS['assets_static_relative']; ?>/jquery-datetimepicker/build/jquery.datetimepicker.full.min.js"></script>
-
-
-<script language="JavaScript">
-    $(function() {
+<script>
+    $(function () {
         var win = top.printLogSetup ? top : opener.top;
         win.printLogSetup(document.getElementById('printbutton'));
 
@@ -135,7 +131,7 @@ if ($_POST['form_csvexport']) {
     <?php
   // Build a drop-down list of facilities.
   //
-    $fres = $facilityService->getAll();
+    $fres = $facilityService->getAllFacility();
     echo "   <select name='form_facility'>\n";
     echo "    <option value=''>-- All Facilities --\n";
     foreach ($fres as $frow) {
@@ -154,7 +150,7 @@ if ($_POST['form_csvexport']) {
    <input type='text' class='datepicker' name='form_from_date' id="form_from_date" size='10' value='<?php echo attr($form_from_date); ?>'
     title='yyyy-mm-dd'>
 
-   &nbsp;<?php echo xlt('To'); ?>:
+   &nbsp;<?php echo xlt('To{{Range}}'); ?>:
    <input type='text' class='datepicker' name='form_to_date' id="form_to_date" size='10' value='<?php echo attr($form_to_date); ?>'
     title='yyyy-mm-dd'>
    &nbsp;
@@ -248,7 +244,7 @@ if ($_POST['form_refresh'] || $_POST['form_csvexport']) {
             "b.code = ? AND " .
             "b.activity = 1 AND " .
             "fe.pid = b.pid AND fe.encounter = b.encounter AND " .
-            "fe.date >= ?", array($patient_id, $codetype, $code, $date_ordered.' 00:00:00'));
+            "fe.date >= ?", array($patient_id, $codetype, $code, $date_ordered . ' 00:00:00'));
 
             // If there was such a service, then this followup is not pending.
             if (!empty($brow['count'])) {

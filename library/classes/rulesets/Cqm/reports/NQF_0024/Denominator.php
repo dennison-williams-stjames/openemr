@@ -1,4 +1,5 @@
 <?php
+
 // Copyright (C) 2011 Ken Chapple <ken@mi-squared.com>
 //
 // This program is free software; you can redistribute it and/or
@@ -12,7 +13,7 @@ class NQF_0024_Denominator implements CqmFilterIF
     {
         return "Denominator";
     }
-    
+
     public function test(CqmPatient $patient, $beginDate, $endDate)
     {
         // Same as IPP

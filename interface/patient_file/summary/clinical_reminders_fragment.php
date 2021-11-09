@@ -1,4 +1,5 @@
 <?php
+
 /**
  * This simply shows the Clinical Reminder Widget
  *
@@ -9,8 +10,7 @@
  * @license   https://github.com/openemr/openemr/blob/master/LICENSE GNU General Public License 3
  */
 
-$sessionReadOnly = true;
-require_once(dirname(__FILE__) . "/../../globals.php");
+require_once(__DIR__ . "/../../globals.php");
 require_once("$srcdir/clinical_rules.php");
 
 use OpenEMR\Common\Csrf\CsrfUtils;

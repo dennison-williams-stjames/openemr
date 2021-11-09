@@ -1,15 +1,19 @@
 <?php
 //First make sure user has access
 require_once("../../interface/globals.php");
-require_once("$srcdir/acl.inc");
-//ensure user has proper access
-if (!acl_check('admin', 'acl')) {
-            echo xlt('ACL Administration Not Authorized');
-            exit;
+
+use OpenEMR\Common\Acl\AclMain;
+use OpenEMR\Common\Csrf\CsrfUtils;
+
+if (!empty($_POST)) {
+    if (!CsrfUtils::verifyCsrfToken($_POST["csrf_token_form"])) {
+        CsrfUtils::csrfNotVerified();
+    }
 }
-//ensure php is installed
-if (!isset($phpgacl_location)) {
-            echo xlt('php-GACL access controls are turned off');
+
+//ensure user has proper access
+if (!AclMain::aclCheckCore('admin', 'acl')) {
+            echo xlt('ACL Administration Not Authorized');
             exit;
 }
 
@@ -41,19 +45,20 @@ switch(strtolower(trim($group_type))) {
 		break;
 }
 
-switch ($_POST['action']) {
+$postAction = $_POST['action'] ?? null;
+switch ($postAction) {
 	case 'Remove':
 		$gacl_api->debug_text('Delete!!');
 
 		//Parse the form values
 		//foreach ($_POST['delete_assigned_aro'] as $aro_value) {
-		while (list(,$object_value) = @each($_POST['delete_assigned_object'])) {
+        foreach ($_POST['delete_assigned_object'] as $object_value) {
 			$split_object_value = explode('^', $object_value);
 			$selected_object_array[$split_object_value[0]][] = $split_object_value[1];
 		}
 
 		//Insert Object -> GROUP mappings
-		while (list($object_section_value,$object_array) = @each($selected_object_array)) {
+        foreach ($selected_object_array as $object_section_value => $object_array) {
 			$gacl_api->debug_text('Assign: Object ID: '. $object_section_value .' to Group: '. $_POST['group_id']);
 
 			foreach ($object_array as $object_value) {
@@ -62,7 +67,7 @@ switch ($_POST['action']) {
 		}
 
 		//Return page.
-		$gacl_api->return_page($_SERVER['PHP_SELF'] .'?group_type='. $_POST['group_type'] .'&group_id='. $_POST['group_id']);
+		$gacl_api->return_page($_SERVER['PHP_SELF'] .'?group_type='. urlencode($_POST['group_type']) .'&group_id='. urlencode($_POST['group_id']));
 
 		break;
 	case 'Submit':
@@ -71,13 +76,13 @@ switch ($_POST['action']) {
 		//showarray($_POST['selected_'.$_POST['group_type']]);
 		//Parse the form values
 		//foreach ($_POST['selected_aro'] as $aro_value) {
-		while (list(,$object_value) = @each($_POST['selected_'.$_POST['group_type']])) {
+        foreach ($_POST['selected_'.$_POST['group_type']] as $object_value) {
 			$split_object_value = explode('^', $object_value);
 			$selected_object_array[$split_object_value[0]][] = $split_object_value[1];
 		}
 
 		//Insert ARO -> GROUP mappings
-		while (list($object_section_value,$object_array) = @each($selected_object_array)) {
+        foreach ($selected_object_array as $object_section_value => $object_array) {
 			$gacl_api->debug_text('Assign: Object ID: '. $object_section_value .' to Group: '. $_POST['group_id']);
 
 			foreach ($object_array as $object_value) {
@@ -85,7 +90,7 @@ switch ($_POST['action']) {
 			}
 		}
 
-		$gacl_api->return_page($_SERVER['PHP_SELF'] .'?group_type='. $_POST['group_type'] .'&group_id='. $_POST['group_id']);
+		$gacl_api->return_page($_SERVER['PHP_SELF'] .'?group_type='. urlencode($_POST['group_type']) .'&group_id='. urlencode($_POST['group_id']));
 
 		break;
 	default:
@@ -155,7 +160,7 @@ switch ($_POST['action']) {
 		WHERE   a.group_id='. $db->qstr($_GET['group_id']) .'
 		ORDER BY c.name, b.name';
 	//$rs = $db->Execute($query);
-	$rs = $db->PageExecute($query, $gacl_api->_items_per_page, $_GET['page']);
+	$rs = $db->PageExecute($query, $gacl_api->_items_per_page, ($_GET['page'] ?? null));
 
 	$object_rows = array();
 
@@ -184,11 +189,13 @@ switch ($_POST['action']) {
 	$smarty->assign('group_name', $group_data[2]);
 
 	$smarty->assign('group_id', $_GET['group_id']);
+    $smarty->assign('group_id_escaped', attr($_GET['group_id']));
 
 	break;
 }
 
 $smarty->assign('group_type', $group_type);
+$smarty->assign('group_type_escaped', attr($group_type));
 $smarty->assign('object_type', $object_type);
 $smarty->assign('return_page', $_SERVER['REQUEST_URI'] );
 
@@ -197,6 +204,8 @@ $smarty->assign('page_title', 'Assign Group - '. strtoupper($group_type));
 
 $smarty->assign('phpgacl_version', $gacl_api->get_version() );
 $smarty->assign('phpgacl_schema_version', $gacl_api->get_schema_version() );
+
+$smarty->assign("CSRF_TOKEN_FORM", CsrfUtils::collectCsrfToken());
 
 $smarty->display('phpgacl/assign_group.tpl');
 ?>

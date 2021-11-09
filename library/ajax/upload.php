@@ -1,4 +1,5 @@
 <?php
+
 /**
  * Drag and Drop file uploader.
  *

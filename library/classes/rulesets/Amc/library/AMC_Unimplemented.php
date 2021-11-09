@@ -1,4 +1,5 @@
 <?php
+
 // Copyright (C) 2011 Ken Chapple <ken@mi-squared.com>
 //
 // This program is free software; you can redistribute it and/or
@@ -19,12 +20,12 @@ class AMC_Unimplemented extends AbstractAmcReport implements RsUnimplementedIF
     {
         return null;
     }
-    
+
     public function createDenominator()
     {
         return null;
     }
-    
+
     public function createNumerator()
     {
         return null;

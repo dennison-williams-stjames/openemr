@@ -73,9 +73,9 @@
             if (document.getElementById('option_insurance_payment'))
                 document.getElementById('option_insurance_payment').style.backgroundColor = '#DEDEDE';
             if (document.getElementById('option_family_payment'))
-                document.getElementById('option_family_payment').style.backgroundColor = '#ffffff';
+                document.getElementById('option_family_payment').style.backgroundColor = 'var(--white)';
             if (document.getElementById('option_patient_payment'))
-                document.getElementById('option_patient_payment').style.backgroundColor = '#ffffff';
+                document.getElementById('option_patient_payment').style.backgroundColor = 'var(--white)';
         }
         if (newValue == 'insurance') {
             if (document.getElementById('option_family_payment'))
@@ -83,7 +83,7 @@
             if (document.getElementById('option_patient_payment'))
                 document.getElementById('option_patient_payment').style.backgroundColor = '#DEDEDE';
             if (document.getElementById('option_insurance_payment'))
-                document.getElementById('option_insurance_payment').style.backgroundColor = '#ffffff';
+                document.getElementById('option_insurance_payment').style.backgroundColor = 'var(--white)';
         }
     }
 
@@ -272,7 +272,7 @@
         //Readjusts the various values.
         let UnpostedAmt = 0;
         <?php
-        if ($screen == 'new_payment') { ?>
+        if (!empty($screen) && ($screen == 'new_payment')) { ?>
         UnpostedAmt = formatNumber(document.getElementById('HidUnpostedAmount').value * 1);
             <?php
         } else { ?>
@@ -334,41 +334,65 @@
 
     function FormValidations() {//Screen validations are done here.
         if (document.getElementById('check_date').value == '') {
-            alert("<?php echo htmlspecialchars(xl('Please Fill the Date'), ENT_QUOTES) ?>");
+            let message = <?php echo xlj('Please Fill the Date') ?>;
+            // a good use of syncAlertMsg when a promise or an await (then({})) with actions and/or
+            // for an alert to time out, is not needed. et al validation alerts.
+            syncAlertMsg('<h4 class="bg-light text-danger">'+message+'</h4>', 1500, 'warning', 'lg');
             document.getElementById('check_date').focus();
             return false;
         } else if (!ValidateDateGreaterThanNow(document.getElementById('check_date').value, '<?php echo DateFormatRead();?>')) {
-            alert("<?php echo htmlspecialchars(xl('Date Cannot be greater than Today'), ENT_QUOTES) ?>");
+            let message = <?php echo xlj('Date Cannot be greater than Today') ?>;
+            syncAlertMsg('<h4 class="bg-light text-danger">'+message+'</h4>', 1500, 'warning', 'lg');
             document.getElementById('check_date').focus();
             return false;
         }
         if (document.getElementById('post_to_date').value == '') {
-            alert("<?php echo htmlspecialchars(xl('Please Fill the Post To Date'), ENT_QUOTES) ?>");
+            let message = <?php echo xlj('Please Fill the Post To Date') ?>;
+            (async (message, time) => {
+                await asyncAlertMsg(message, time, 'warning', 'lg');
+            })(message, 1500).then(res => {
+            });
             document.getElementById('post_to_date').focus();
             return false;
         } else if (!ValidateDateGreaterThanNow(document.getElementById('post_to_date').value, '<?php echo DateFormatRead();?>')) {
-            alert("<?php echo htmlspecialchars(xl('Post To Date Cannot be greater than Today'), ENT_QUOTES) ?>");
+            let message = <?php echo xlj('Post To Date Cannot be greater than Today') ?>;
+            (async (message, time) => {
+                await asyncAlertMsg(message, time, 'warning', 'lg');
+            })(message, 1500).then(res => {
+            });
             document.getElementById('post_to_date').focus();
             return false;
         } else if (DateCheckGreater(document.getElementById('post_to_date').value, '<?php echo $GLOBALS['post_to_date_benchmark'] == '' ? date('Y-m-d', time() - (10 * 24 * 60 * 60)) : htmlspecialchars(oeFormatShortDate($GLOBALS['post_to_date_benchmark']));?>',
             '<?php echo DateFormatRead();?>')) {
-            alert("<?php echo htmlspecialchars(xl('Post To Date Must be greater than the Financial Close Date.'), ENT_QUOTES) ?>");
+            let message = <?php echo xlj('Post To Date must be greater than the financial close date.') ?>;
+            (async (message, time) => {
+                await asyncAlertMsg(message, time, 'warning', 'lg');
+            })(message, 1500).then(res => {
+            });
             document.getElementById('post_to_date').focus();
             return false;
         }
         if (((document.getElementById('payment_method').options[document.getElementById('payment_method').selectedIndex].value == 'check_payment' ||
             document.getElementById('payment_method').options[document.getElementById('payment_method').selectedIndex].value == 'bank_draft') &&
             document.getElementById('check_number').value == '')) {
-            alert("<?php echo htmlspecialchars(xl('Please Fill the Check Number'), ENT_QUOTES) ?>");
+            let message = <?php echo xlj('Please Fill the Check Number') ?>;
+            (async (message, time) => {
+                await asyncAlertMsg(message, time, 'warning', 'lg');
+            })(message, 1500).then(res => {
+            });
             document.getElementById('check_number').focus();
             return false;
         }
         <?php
-        if ($screen == 'edit_payment') {
+        if (!empty($screen) && ($screen == 'edit_payment')) {
             ?>
         if (document.getElementById('check_number').value != '' &&
             document.getElementById('payment_method').options[document.getElementById('payment_method').selectedIndex].value == '') {
-            alert("<?php echo htmlspecialchars(xl('Please Select the Payment Method'), ENT_QUOTES) ?>");
+            let message = <?php echo xlj('Please Select the Payment Method') ?>;
+            (async (message, time) => {
+                await asyncAlertMsg(message, time, 'warning', 'lg');
+            })(message, 1500).then(res => {
+            });
             document.getElementById('payment_method').focus();
             return false;
         }
@@ -376,20 +400,32 @@
         }
         ?>
         if (document.getElementById('payment_amount').value == '') {
-            alert("<?php echo htmlspecialchars(xl('Please Fill the Payment Amount'), ENT_QUOTES) ?>");
+            let message = <?php echo xlj('Please Fill the Payment Amount') ?>;
+            (async (message, time) => {
+                await asyncAlertMsg(message, time, 'warning', 'lg');
+            })(message, 1500).then(res => {
+            });
             document.getElementById('payment_amount').focus();
             return false;
         }
         if (document.getElementById('payment_amount').value != document.getElementById('payment_amount').value * 1) {
-            alert("<?php echo htmlspecialchars(xl('Payment Amount must be Numeric'), ENT_QUOTES) ?>");
+            let message = <?php echo xlj('Payment Amount must be Numeric') ?>;
+            (async (message, time) => {
+                await asyncAlertMsg(message, time, 'warning', 'lg');
+            })(message, 1500).then(res => {
+            });
             document.getElementById('payment_amount').focus();
             return false;
         }
         <?php
-        if ($screen == 'edit_payment') {
+        if (!empty($screen) && ($screen == 'edit_payment')) {
             ?>
         if (document.getElementById('adjustment_code').options[document.getElementById('adjustment_code').selectedIndex].value == '') {
-            alert("<?php echo htmlspecialchars(xl('Please Fill the Payment Category'), ENT_QUOTES) ?>");
+            let message = <?php echo xlj('Please Fill the Payment Category') ?>;
+            (async (message, time) => {
+                await asyncAlertMsg(message, time, 'warning', 'lg');
+            })(message, 1500).then(res => {
+            });
             document.getElementById('adjustment_code').focus();
             return false;
         }
@@ -397,18 +433,30 @@
         }
         ?>
         if (document.getElementById('type_code').value == '') {
-            alert("<?php echo htmlspecialchars(xl('Please Fill the Payment From'), ENT_QUOTES) ?>");
+            let message = <?php echo xlj('Please Fill the Payment From') ?>;
+            (async (message, time) => {
+                await asyncAlertMsg(message, time, 'warning', 'lg');
+            })(message, 1500).then(res => {
+            });
             document.getElementById('type_code').focus();
             return false;
         }
         if (document.getElementById('hidden_type_code').value != document.getElementById('div_insurance_or_patient').innerHTML) {
-            alert("<?php echo htmlspecialchars(xl('Take Payment From, from Drop Down'), ENT_QUOTES) ?>");
+            let message = <?php echo xlj('Take Payment From, from Drop Down')?>;
+            (async (message, time) => {
+                await asyncAlertMsg(message, time, 'warning', 'lg');
+            })(message, 1500).then(res => {
+            });
             document.getElementById('type_code').focus();
             return false;
         }
         if (document.getElementById('deposit_date').value == '') {
         } else if (!ValidateDateGreaterThanNow(document.getElementById('deposit_date').value, '<?php echo DateFormatRead();?>')) {
-            alert("<?php echo htmlspecialchars(xl('Deposit Date Cannot be greater than Today'), ENT_QUOTES) ?>");
+            let message = <?php echo xlj('Deposit Date Cannot be greater than Today') ?>;
+            (async (message, time) => {
+                await asyncAlertMsg(message, time, 'warning', 'lg');
+            })(message, 1500).then(res => {
+            });
             document.getElementById('deposit_date').focus();
             return false;
         }

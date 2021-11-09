@@ -1,4 +1,5 @@
 <?php
+
  // Copyright (C) 2010-2011 Aron Racho <aron@mi-squred.com>
  //
  // This program is free software; you can redistribute it and/or
@@ -58,7 +59,7 @@ abstract class RuleCriteriaFactory
         $methodDetail,
         $value
     ) {
-        
+
         $criteriaType = $this->resolveCriteriaType($method, $methodDetail, $value);
         if ($criteriaType == null) {
             // could not resolve a criteria

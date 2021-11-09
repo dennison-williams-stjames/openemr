@@ -1,4 +1,5 @@
 <?php
+
 // Copyright (C) 2011 Ken Chapple <ken@mi-squared.com>
 //
 // This program is free software; you can redistribute it and/or
@@ -12,7 +13,7 @@ class NQF_0038_Numerator7 implements CqmFilterIF
     {
         return "Numerator 7";
     }
-    
+
     public function test(CqmPatient $patient, $beginDate, $endDate)
     {
         if (Immunizations::checkPheumococcal($patient, $beginDate, $endDate)) {

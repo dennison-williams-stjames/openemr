@@ -1,18 +1,15 @@
 <?php
 //First make sure user has access
 require_once("../../interface/globals.php");
-require_once("$srcdir/acl.inc");
+
+use OpenEMR\Common\Acl\AclMain;
+use OpenEMR\Common\Csrf\CsrfUtils;
+
 //ensure user has proper access
-if (!acl_check('admin', 'acl')) {
+if (!AclMain::aclCheckCore('admin', 'acl')) {
             echo xlt('ACL Administration Not Authorized');
             exit;
 }
-//ensure php is installed
-if (!isset($phpgacl_location)) {
-            echo xlt('php-GACL access controls are turned off');
-            exit;
-}
-
 
 require_once('gacl_admin.inc.php');
 
@@ -38,12 +35,13 @@ switch(strtolower(trim($group_type))) {
 		break;
 }
 
-switch ($_POST['action']) {
+$postAction = $_POST['action'] ?? null;
+switch ($postAction) {
 	case 'Delete':
 		//See edit_group.php
 		break;
 	default:
-		$formatted_groups = $gacl_api->format_groups($gacl_api->sort_groups($group_type), HTML);
+		$formatted_groups = $gacl_api->format_groups($gacl_api->sort_groups($group_type), 'HTML');
 
 		$query = '
 			SELECT		a.id, a.name, a.value, count(b.'. $group_type .'_id)
@@ -90,6 +88,8 @@ $smarty->assign('page_title', strtoupper($group_type) .' Group Admin');
 
 $smarty->assign('phpgacl_version', $gacl_api->get_version());
 $smarty->assign('phpgacl_schema_version', $gacl_api->get_schema_version());
+
+$smarty->assign("CSRF_TOKEN_FORM", CsrfUtils::collectCsrfToken());
 
 $smarty->display('phpgacl/group_admin.tpl');
 ?>

@@ -1,4 +1,5 @@
 <?php
+
 /**
  * dynamic_finder_ajax.php
  *
@@ -16,7 +17,7 @@
  */
 
 require_once(dirname(__FILE__) . "/../../globals.php");
-require_once($GLOBALS['srcdir']."/options.inc.php");
+require_once($GLOBALS['srcdir'] . "/options.inc.php");
 
 use OpenEMR\Common\Csrf\CsrfUtils;
 use OpenEMR\Events\BoundFilter;
@@ -59,7 +60,7 @@ if ($iDisplayStart >= 0 && $iDisplayLength >= 0) {
 }
 // Search parameter.  -1 means .
 //
-$searchMethodInPatientList = isset($_GET['searchType' ]) && $_GET['searchType' ]==="true" ?  true : false;
+$searchMethodInPatientList = isset($_GET['searchType' ]) && $_GET['searchType' ] === "true" ?  true : false;
 
 // Column sorting parameters.
 //
@@ -97,7 +98,7 @@ if (isset($_GET['sSearch']) && $_GET['sSearch'] !== "") {
             if ($searchMethodInPatientList) { // exact search
                 array_push($srch_bind, $sSearch, $sSearch, $sSearch);
             } else {// like search
-                array_push($srch_bind, ("%". $sSearch . "%"), ("%". $sSearch . "%"), ("%". $sSearch . "%"));
+                array_push($srch_bind, ($sSearch . "%"), ($sSearch . "%"), ($sSearch . "%"));
             }
         } elseif ($searchMethodInPatientList) { // exact search
             $where .= "`" . escape_sql_column_name($colname, array('patient_data')) . "` LIKE ? ";
@@ -107,7 +108,7 @@ if (isset($_GET['sSearch']) && $_GET['sSearch'] !== "") {
             array_push($srch_bind, ('%' . $sSearch . '%'));
         } else {
             $where .= "`" . escape_sql_column_name($colname, array('patient_data')) . "` LIKE ? ";
-            array_push($srch_bind, ('%'. $sSearch . '%'));
+            array_push($srch_bind, ($sSearch . '%'));
         }
     }
 
@@ -133,14 +134,14 @@ for ($i = 0; $i < count($aColumns); ++$i) {
             if ($searchMethodInPatientList) { // exact search
                 array_push($srch_bind, $sSearch, $sSearch, $sSearch);
             } else {// like search
-                array_push($srch_bind, ('%'. $sSearch . "%"), ('%'. $sSearch . "%"), ('%'. $sSearch . "%"));
+                array_push($srch_bind, ($sSearch . "%"), ($sSearch . "%"), ($sSearch . "%"));
             }
         } elseif ($searchMethodInPatientList) { // exact search
             $where .= "`" . escape_sql_column_name($colname, array('patient_data')) . "` LIKE ? ";
             array_push($srch_bind, $sSearch);
         } else {
             $where .= "`" . escape_sql_column_name($colname, array('patient_data')) . "` LIKE ? ";
-            array_push($srch_bind, ('%'. $sSearch . '%'));
+            array_push($srch_bind, ($sSearch . '%'));
         }
     }
 }
@@ -160,7 +161,6 @@ $srch_bind = array_merge($boundFilter->getBoundValues(), $srch_bind);
 if ($searchAny) {
     $aColumns = explode(',', $_GET['sColumns']);
 }
-$sellist = 'patient_data.pid';
 $sellist = 'pid';
 foreach ($aColumns as $colname) {
     if ($colname == 'pid') {
@@ -207,15 +207,7 @@ while ($row = sqlFetchArray($res)) {
     $fieldsInfo[$row['field_id']] = $row;
 }
 
-if (strlen($sSearch)) {
-	$sellist = preg_replace('/(.*)(pid)(.*)/','${1}patient_data.${2}${3}', $sellist);
-	$where = preg_replace('/(.*)(`pid`)(.*)/','${1}`patient_data`.${2}${3}', $where);
-	array_push($srch_bind, ('%'. $sSearch . '%'));
-	$where = preg_replace('/(.*)./','${1} OR form_sji_intake_core_variables.aliases LIKE ? )', $where);
-	$query = "SELECT $sellist,max(form_sji_intake_core_variables.id) as mid,form_sji_intake_core_variables.aliases as aliases FROM patient_data LEFT JOIN form_sji_intake_core_variables ON (patient_data.pid=form_sji_intake_core_variables.pid) WHERE $where GROUP BY patient_data.pid $orderby $limit";
-} else {
-	$query = "SELECT $sellist FROM patient_data WHERE $where $orderby $limit";
-}
+$query = "SELECT $sellist FROM patient_data WHERE $where $orderby $limit";
 $res = sqlStatement($query, $srch_bind);
 while ($row = sqlFetchArray($res)) {
     // Each <tr> will have an ID identifying the patient.
@@ -233,15 +225,6 @@ while ($row = sqlFetchArray($res)) {
 
             if ($row['mname']) {
                 $name .= ' ' . $row['mname'];
-            }
-
-            if ($row['mid']) {
-	        $query = "SELECT aliases from form_sji_intake_core_variables where id = ?";
-                $res2 = sqlStatement($query, array($row['mid']));
-		$row2 = sqlFetchArray($res2);
-		if (isset($row2['aliases']) && strlen($row2['aliases'])) {
-			$name .= ' [aka: ' . $row2['aliases'] .']';
-		}
             }
 
             $arow[] = attr($name);

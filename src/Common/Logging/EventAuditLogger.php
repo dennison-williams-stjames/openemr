@@ -1,4 +1,5 @@
 <?php
+
 /**
  * Class to log audited events - must be high performance
  *
@@ -13,7 +14,7 @@
 
 namespace OpenEMR\Common\Logging;
 
-use \DateTime;
+use DateTime;
 use OpenEMR\Common\Crypto\CryptoGen;
 use Waryway\PhpTraitsLibrary\Singleton;
 
@@ -146,66 +147,26 @@ MSG;
      */
     public function newEvent($event, $user, $groupname, $success, $comments = "", $patient_id = null, $log_from = 'open-emr', $menu_item = 'dashboard', $ccda_doc_id = 0)
     {
-        // Set up crypto object that will be used by this singleton class for for encryption/decryption (if not set up already)
-        if (!isset($this->cryptoGen)) {
-            $this->cryptoGen = new CryptoGen();
-        }
-
-        $adodb = $GLOBALS['adodb']['db'];
-        $crt_user=isset($_SERVER['SSL_CLIENT_S_DN_CN']) ?  $_SERVER['SSL_CLIENT_S_DN_CN'] : null;
-
         $category = $event;
         // Special case delete for lists table
         if ($event == 'delete') {
             $category = $this->eventCategoryFinder($comments, $event, '');
         }
 
-        // deal with comments encryption, if turned on
-        $encrypt_comment = 'No';
-        if (!empty($comments)) {
-            if ($GLOBALS["enable_auditlog_encryption"]) {
-                $comments =  $this->cryptoGen->encryptStandard($comments);
-                $encrypt_comment = 'Yes';
-            }
-        }
-
         if ($log_from == 'patient-portal') {
             $sqlMenuItems = "SELECT * FROM patient_portal_menu";
 
             $resMenuItems = sqlStatement($sqlMenuItems);
-            for ($iter=0; $rowMenuItem=sqlFetchArray($resMenuItems); $iter++) {
+            for ($iter = 0; $rowMenuItem = sqlFetchArray($resMenuItems); $iter++) {
                 $menuItems[$rowMenuItem['patient_portal_menu_id']] = $rowMenuItem['menu_name'];
             }
 
             $menuItemId = array_search($menu_item, $menuItems);
-            $sql = "insert into log ( date, event,category, user, patient_id, groupname, success, comments,
-                log_from, menu_item_id, crt_user, ccda_doc_id) values ( NOW(), ?,'Patient Portal', ?, ?, ?, ?, ?, ?, ?,?, ?)";
-            $ret = sqlStatementNoLog($sql, array($event, $user, $patient_id, $groupname, $success, $comments,$log_from, $menuItemId,$crt_user, $ccda_doc_id));
+
+            $this->recordLogItem($success, $event, $user, $groupname, $comments, $patient_id, 'Patient Portal', $log_from, $menuItemId, $ccda_doc_id);
         } else {
-            /* More details added to the log */
-            $sql = "insert into log ( date, event,category, user, groupname, success, comments, crt_user, patient_id) " .
-                "values ( NOW(), " . $adodb->qstr($event) . ",". $adodb->qstr($category) . "," . $adodb->qstr($user) .
-                "," . $adodb->qstr($groupname) . "," . $adodb->qstr($success) . "," .
-                $adodb->qstr($comments) ."," .
-                $adodb->qstr($crt_user) ."," . $adodb->qstr($patient_id). ")";
-
-            $ret = sqlInsertClean_audit($sql);
+            $this->recordLogItem($success, $event, $user, $groupname, $comments, $patient_id, $category);
         }
-
-        // Send item to log_comment_encrypt for comment encyption tracking
-        $last_log_id = $GLOBALS['adodb']['db']->Insert_ID();
-        $encryptLogQry = "INSERT INTO log_comment_encrypt (log_id, encrypt, checksum, `version`) ".
-            " VALUES ( ".
-            $adodb->qstr($last_log_id) . "," .
-            $adodb->qstr($encrypt_comment) . "," .
-            "'', '3')";
-        sqlInsertClean_audit($encryptLogQry);
-
-        if (($patient_id=="NULL") || ($patient_id==null)) {
-            $patient_id=0;
-        }
-
-        $this->send_atna_audit_msg($user, $groupname, $event, $patient_id, $success, $comments);
     }
 
     /******************
@@ -221,30 +182,32 @@ MSG;
     public function getEvents($params)
     {
         // parse the parameters
-        $cols = "DISTINCT date, event, category, user, groupname, patient_id, success, comments,checksum,crt_user, id ";
+        $cols = "DISTINCT l.`date`, l.`event`, l.`category`, l.`user`, l.`groupname`, l.`patient_id`, l.`success`, l.`comments`, l.`user_notes`, l.`crt_user`, l.`log_from`, l.`menu_item_id`, l.`ccda_doc_id`, l.`id`,
+                 el.`encrypt`, el.`checksum`, el.`checksum_api`, el.`version`, el.`log_id` as `log_id_hash`,
+                 al.`log_id` as log_id_api, al.`user_id`, al.`patient_id` as patient_id_api, al.`ip_address`, al.`method`, al.`request`, al.`request_url`, al.`request_body`, al.`response`, al.`created_time` ";
         if (isset($params['cols']) && $params['cols'] != "") {
             $cols = $params['cols'];
         }
 
         $date1 = date("Y-m-d H:i:s", time());
         if (isset($params['sdate']) && $params['sdate'] != "") {
-            $date1= $params['sdate'];
+            $date1 = $params['sdate'];
         }
 
         $date2 = date("Y-m-d H:i:s", time());
         if (isset($params['edate']) && $params['edate'] != "") {
-            $date2= $params['edate'];
+            $date2 = $params['edate'];
         }
 
         $user = "";
         if (isset($params['user']) && $params['user'] != "") {
-            $user= $params['user'];
+            $user = $params['user'];
         }
 
         //VicarePlus :: For Generating log with patient id.
         $patient = "";
         if (isset($params['patient']) && $params['patient'] != "") {
-            $patient= $params['patient'];
+            $patient = $params['patient'];
         }
 
         $sortby = "";
@@ -272,7 +235,7 @@ MSG;
             $event = $params['event'];
         }
 
-        if ($event!="") {
+        if ($event != "") {
             if ($sortby == "comments") {
                 $sortby = "description";
             }
@@ -283,10 +246,6 @@ MSG;
 
             if ($sortby == "success") {
                 $sortby = "";   //VicarePlus :: since there is no success field in extended_log
-            }
-
-            if ($sortby == "checksum") {
-                $sortby = "";  //VicarePlus :: since there is no checksum field in extended_log
             }
 
             if ($sortby == "category") {
@@ -321,204 +280,39 @@ MSG;
         } else {
             // do the query
             $sqlBindArray = array();
-            $sql = "SELECT $cols FROM log WHERE date >= ? AND date <= ?";
+            $sql = "SELECT $cols FROM `log_comment_encrypt` as el LEFT OUTER JOIN `log` as l ON el.`log_id` = l.`id` LEFT OUTER JOIN `api_log` as al ON el.`log_id` = al.`log_id` WHERE ((l.`date` >= ? AND l.`date` <= ?) OR (l.`date` IS NULL OR l.`date` = ''))";
             array_push($sqlBindArray, $date1, $date2);
 
             if ($user != "") {
-                $sql .= " AND user LIKE ?";
+                $sql .= " AND l.`user` LIKE ?";
                 array_push($sqlBindArray, $user);
             }
 
             if ($patient != "") {
-                $sql .= " AND patient_id LIKE ?";
+                $sql .= " AND l.`patient_id` LIKE ?";
                 array_push($sqlBindArray, $patient);
             }
 
             if ($levent != "") {
-                $sql .= " AND event LIKE ?";
+                $sql .= " AND l.`event` LIKE ?";
                 array_push($sqlBindArray, $levent . "%");
             }
 
             if ($tevent != "") {
-                $sql .= " AND event LIKE ?";
+                $sql .= " AND l.`event` LIKE ?";
                 array_push($sqlBindArray, "%" . $tevent);
             }
 
             if ($sortby != "") {
-                $sql .= " ORDER BY " . escape_sql_column_name($sortby, array('log')) . "  ".escape_sort_order($direction); // descending order
+                $sql .= " ORDER BY `" . escape_sql_column_name($sortby, array('log')) . "`  " . escape_sort_order($direction); // descending order
+            } else {
+                $sql .= " ORDER BY el.`log_id` DESC";
             }
 
             $sql .= " LIMIT 5000";
         }
 
-        $res = sqlStatement($sql, $sqlBindArray);
-        for ($iter=0; $row=sqlFetchArray($res); $iter++) {
-            $all[$iter] = $row;
-        }
-
-        return $all;
-    }
-
-    /*
-     *
-     */
-
-    /**
-     * Given an SQL insert/update that was just performeds:
-     * - Find the table and primary id of the row that was created/modified
-     * - Calculate the SHA1 checksum of that row (with all the
-     *   column values concatenated together).
-     * - Return the SHA1 checksum as a 40 char hex string.
-     * If this is not an insert/update query, return "".
-     * If multiple rows were modified, return "".
-     * If we're unable to determine the row modified, return "".
-     *
-     * @todo   May need to incorporate the binded stuff (still analyzing)
-     * @param  $statement
-     * @return string
-     */
-    private function sql_checksum_of_modified_row($statement)
-    {
-        $table = "";
-        $rid = "";
-
-        $tokens = preg_split("/[\s,(\'\"]+/", $statement);
-        /* Identifying the id for insert/replace statements for calculating the checksum */
-        if ((strcasecmp($tokens[0], "INSERT")==0) || (strcasecmp($tokens[0], "REPLACE")==0)) {
-            $table = $tokens[2];
-            $rid = generic_sql_insert_id();
-            /* For handling the table that doesn't have auto-increment column */
-            if ($rid === 0 || $rid === false) {
-                if ($table == "gacl_aco_map" || $table == "gacl_aro_groups_map" || $table == "gacl_aro_map" || $table == "gacl_axo_groups_map" || $table == "gacl_axo_map") {
-                    $id="acl_id";
-                } else if ($table == "gacl_groups_aro_map" || $table == "gacl_groups_axo_map") {
-                    $id="group_id";
-                } else {
-                    $id="id";
-                }
-
-                /* To handle insert statements */
-                if ($tokens[3] == $id) {
-                    for ($i=4; $i<count($tokens); $i++) {
-                        if (strcasecmp($tokens[$i], "VALUES")==0) {
-                            $rid=$tokens[$i+1];
-                            break;
-                        } // if close
-                    } //for close
-                } else if (strcasecmp($tokens[3], "SET")==0) { //if close
-                    /* To handle replace statements */
-                    if ((strcasecmp($tokens[4], "ID")==0) || (strcasecmp($tokens[4], "`ID`")==0)) {
-                        $rid=$tokens[6];
-                    } // if close
-                } else {
-                    return "";
-                }
-            }
-        } else if (strcasecmp($tokens[0], "UPDATE")==0) { // Identifying the id for update statements for
-            // calculating the checksum.
-            $table = $tokens[1];
-
-            $offset = 3;
-            $total = count($tokens);
-
-            /* Identifying the primary key column for the updated record */
-            if ($table == "form_physical_exam") {
-                $id = "forms_id";
-            } else if ($table == "claims") {
-                $id = "patient_id";
-            } else if ($table == "openemr_postcalendar_events") {
-                $id = "pc_eid";
-            } else if ($table == "lang_languages") {
-                $id = "lang_id";
-            } else if ($table == "openemr_postcalendar_categories" || $table == "openemr_postcalendar_topics") {
-                $id = "pc_catid";
-            } else if ($table == "openemr_postcalendar_limits") {
-                $id = "pc_limitid";
-            } else if ($table == "gacl_aco_map" || $table == "gacl_aro_groups_map" || $table == "gacl_aro_map" || $table == "gacl_axo_groups_map" || $table == "gacl_axo_map") {
-                $id="acl_id";
-            } else if ($table == "gacl_groups_aro_map" || $table == "gacl_groups_axo_map") {
-                $id="group_id";
-            } else {
-                $id = "id";
-            }
-
-            /* Identifying the primary key value for the updated record */
-            while ($offset < $total) {
-                /* There are 4 possible ways that the id=123 can be parsed:
-                * ('id', '=', '123')
-                * ('id=', '123')
-                * ('id=123')
-                * ('id', '=123')
-                */
-                $rid = "";
-                /*id=', '123'*/
-                if (($tokens[$offset] == "$id=") && ($offset + 1 < $total)) {
-                    $rid = $tokens[$offset+1];
-                    break;
-                } else if ($tokens[$offset] == "$id" && $tokens[$offset+1] == "=" && ($offset+2 < $total)) {
-                    /* 'id', '=', '123' */
-                    $rid = $tokens[$offset+2];
-                    break;
-                } else if (strpos($tokens[$offset], "$id=") === 0) { /*id=123*/
-                    $tid = substr($tokens[$offset], strlen($id)+1);
-                    if (is_numeric($tid)) {
-                        $rid=$tid;
-                    }
-
-                    break;
-                } else if ($tokens[$offset] == "$id") { /*'id', '=123' */
-                    $tid = substr($tokens[$offset+1], 1);
-                    if (is_numeric($tid)) {
-                        $rid=$tid;
-                    }
-
-                    break;
-                }
-
-                $offset += 1;
-            } // while ($offset < $total)
-        } // else if ($tokens[0] == 'update' || $tokens[0] == 'UPDATE' )
-
-        if ($table == "" || $rid == "") {
-            return "";
-        }
-
-        /* Framing sql statements for calculating checksum */
-        if ($table == "form_physical_exam") {
-            $sql = "select * from $table where forms_id = ?";
-        } else if ($table == "claims") {
-            $sql = "select * from $table where patient_id = ?";
-        } else if ($table == "openemr_postcalendar_events") {
-            $sql = "select * from $table where pc_eid = ?";
-        } else if ($table == "lang_languages") {
-            $sql = "select * from $table where lang_id = ?";
-        } else if ($table == "openemr_postcalendar_categories" || $table == "openemr_postcalendar_topics") {
-            $sql = "select * from $table where pc_catid = ?";
-        } else if ($table == "openemr_postcalendar_limits") {
-            $sql = "select * from $table where pc_limitid = ?";
-        } else if ($table ==  "gacl_aco_map" || $table == "gacl_aro_groups_map" || $table == "gacl_aro_map" || $table == "gacl_axo_groups_map" || $table == "gacl_axo_map") {
-            $sql = "select * from $table where acl_id = ?";
-        } else if ($table == "gacl_groups_aro_map" || $table == "gacl_groups_axo_map") {
-            $sql = "select * from $table where group_id = ?";
-        } else {
-            $sql = "select * from $table where id = ?";
-        }
-
-        // When this function is working perfectly, can then shift to the
-        // sqlQueryNoLog() function.
-        $results = sqlQueryNoLogIgnoreError($sql, [$rid]);
-        $column_values = "";
-        /* Concatenating the column values for the row inserted/updated */
-        if (is_array($results)) {
-            foreach ($results as $field_name => $field) {
-                $column_values .= $field;
-            }
-        }
-
-        // ViCarePlus: As per NIST standard, the encryption algorithm SHA1 is used
-
-        //error_log("COLUMN_VALUES: ".$column_values,0);
-        return sha1($column_values);
+        return sqlStatement($sql, $sqlBindArray);
     }
 
     /**
@@ -566,15 +360,15 @@ MSG;
 
         if (strpos($event, 'patient-record') !== false) {
             $eventIdDisplayName = 'Patient Record';
-        } else if (strpos($event, 'view') !== false) {
+        } elseif (strpos($event, 'view') !== false) {
             $eventIdDisplayName = 'Patient Record';
-        } else if (strpos($event, 'login') !== false) {
+        } elseif (strpos($event, 'login') !== false) {
             $eventIdDisplayName = 'Login';
-        } else if (strpos($event, 'logout') !== false) {
+        } elseif (strpos($event, 'logout') !== false) {
             $eventIdDisplayName = 'Logout';
-        } else if (strpos($event, 'scheduling') !== false) {
+        } elseif (strpos($event, 'scheduling') !== false) {
             $eventIdDisplayName = 'Patient Care Assignment';
-        } else if (strpos($event, 'security-administration') !== false) {
+        } elseif (strpos($event, 'security-administration') !== false) {
             $eventIdDisplayName = 'Security Administration';
         }
 
@@ -594,7 +388,7 @@ MSG;
      * @param  $comments
      * @return string
      */
-    private function create_rfc3881_msg($user, $group, $event, $patient_id, $outcome, $comments)
+    private function createRfc3881Msg($user, $group, $event, $patient_id, $outcome, $comments)
     {
         $eventActionCode = $this->determineRFC3881EventActionCode($event);
         $eventIdDisplayName = $this->determineRFC3881EventIdDisplayName($event);
@@ -635,7 +429,7 @@ MSG;
      * @param  $cafile
      * @return bool|resource
      */
-    private function create_tls_conn($host, $port, $localcert, $cafile)
+    private function createTlsConn($host, $port, $localcert, $cafile)
     {
         $sslopts = array();
         if ($cafile !== null && $cafile != "") {
@@ -682,7 +476,7 @@ MSG;
      * @param $outcome
      * @param $comments
      */
-    public function send_atna_audit_msg($user, $group, $event, $patient_id, $outcome, $comments)
+    public function sendAtnaAuditMsg($user, $group, $event, $patient_id, $outcome, $comments)
     {
         /* If no ATNA repository server is configured, return */
         if (empty($GLOBALS['atna_audit_host']) || empty($GLOBALS['enable_atna_audit'])) {
@@ -693,9 +487,9 @@ MSG;
         $port = $GLOBALS['atna_audit_port'];
         $localcert = $GLOBALS['atna_audit_localcert'];
         $cacert = $GLOBALS['atna_audit_cacert'];
-        $conn = $this->create_tls_conn($host, $port, $localcert, $cacert);
+        $conn = $this->createTlsConn($host, $port, $localcert, $cacert);
         if ($conn !== false) {
-            $msg = $this->create_rfc3881_msg($user, $group, $event, $patient_id, $outcome, $comments);
+            $msg = $this->createRfc3881Msg($user, $group, $event, $patient_id, $outcome, $comments);
             fwrite($conn, $msg);
             fclose($conn);
         }
@@ -713,6 +507,7 @@ MSG;
      */
     public function auditSQLEvent($statement, $outcome, $binds = null)
     {
+
         // Set up crypto object that will be used by this singleton class for for encryption/decryption (if not set up already)
         if (!isset($this->cryptoGen)) {
             $this->cryptoGen = new CryptoGen();
@@ -722,31 +517,42 @@ MSG;
 
         /* Don't log anything if the audit logging is not enabled. Exception for "emergency" users */
         if (!isset($GLOBALS['enable_auditlog']) || !($GLOBALS['enable_auditlog'])) {
-            if ((soundex($user) != soundex("emergency")) && (soundex($user) != soundex("breakglass"))) {
+            if (!$GLOBALS['gbl_force_log_breakglass'] || !$this->isBreakglassUser($user)) {
                 return;
             }
         }
 
         $statement = trim($statement);
 
-        /**
-         * Don't audit SQL statements done to the audit log,
-         * or we'll have an infinite loop.
-         * Skip SELECT count() statements.
-         * Skip the SELECT made by the authCheckSession() function.
-         */
-        if ((stripos($statement, "insert into log") !== false)  // avoid infinite loop
-            || (stripos($statement, "FROM log ") !== false)        // avoid infinite loop
-            || (stripos($statement, "SELECT count(") === 0)        // Skip SELECT count() statements.
-            || (stripos($statement, "select username, password from users") === 0) // Skip the SELECT made by the authCheckSession() function.
+        if (
+            (stripos($statement, "insert into log") !== false)      // avoid infinite loop
+            || (stripos($statement, "insert into `log`") !== false) // avoid infinite loop
+            || (stripos($statement, "FROM log ") !== false)         // avoid infinite loop
+            || (stripos($statement, "FROM `log` ") !== false)       // avoid infinite loop
+            || (strpos($statement, "sequences") !== false)          // Don't log sequences - to avoid the affect due to GenID calls
+            || (stripos($statement, "SELECT count(") === 0)         // Skip SELECT count() statements.
         ) {
             return;
         }
 
-        $group = isset($_SESSION['authGroup']) ?  $_SESSION['authGroup'] : "";
+        /* Determine the query type (select, update, insert, delete) */
+        $querytype = "select";
+        $querytypes = array("select", "update", "insert", "delete","replace");
+        foreach ($querytypes as $qtype) {
+            if (stripos($statement, $qtype) === 0) {
+                $querytype = $qtype;
+                break;
+            }
+        }
+
+        /* If query events are not enabled, don't log them. Exception for "emergency" users. */
+        if (($querytype == "select") && !(array_key_exists('audit_events_query', $GLOBALS) && $GLOBALS['audit_events_query'])) {
+            if (!$GLOBALS['gbl_force_log_breakglass'] || !$this->isBreakglassUser($user)) {
+                return;
+            }
+        }
+
         $comments = $statement;
-        $success = (int)($outcome !== false);
-        $checksum = ($outcome !== false) ? $this->sql_checksum_of_modified_row($statement) : '';
 
         if (is_array($binds)) {
             // Need to include the binded variable elements in the logging
@@ -761,24 +567,9 @@ MSG;
             }
         }
 
-        // ViSolve : Don't log sequences - to avoid the affect due to GenID calls
-        if (strpos($comments, "sequences") !== false) {
-            return;
-        }
-
-        /* Determine the query type (select, update, insert, delete) */
-        $querytype = "select";
-        $querytypes = array("select", "update", "insert", "delete","replace");
-        foreach ($querytypes as $qtype) {
-            if (stripos($statement, $qtype) === 0) {
-                $querytype = $qtype;
-            }
-        }
-
         /* Determine the audit event based on the database tables */
         $event = "other";
         $category = "other";
-
 
         /* When searching for table names, truncate the SQL statement,
          * removing any WHERE, SET, or VALUE clauses.
@@ -813,7 +604,7 @@ MSG;
                 $event = $value;
                 $category = $this->eventCategoryFinder($comments, $event, $table);
                 break;
-            } else if (strpos($truncated_sql, "form_") !== false) {
+            } elseif (strpos($truncated_sql, "form_") !== false) {
                 $event = "patient-record";
                 $category = $this->eventCategoryFinder($comments, $event, $table);
                 break;
@@ -829,7 +620,6 @@ MSG;
             }
         }
 
-
         /* If the event is a patient-record, then note the patient id */
         $pid = 0;
         if ($event == "patient-record") {
@@ -838,67 +628,17 @@ MSG;
             }
         }
 
-        /* If query events are not enabled, don't log them */
-        if (($querytype == "select") && !(array_key_exists('audit_events_query', $GLOBALS) && $GLOBALS['audit_events_query'])) {
-            if ((soundex($user) != soundex("emergency")) && (soundex($user) != soundex("breakglass"))) {
-                return;
-            }
-        }
-
-        if (!($GLOBALS["audit_events_${event}"])) {
-            if ((soundex($user) != soundex("emergency")) && (soundex($user) != soundex("breakglass"))) {
+        if (empty($GLOBALS["audit_events_${event}"])) {
+            if (!$GLOBALS['gbl_force_log_breakglass'] || !$this->isBreakglassUser($user)) {
                 return;
             }
         }
 
         $event = $event . "-" . $querytype;
 
-        /**
-         * @var $adodb \ADODB_mysqli|\ADOConnection
-         */
-        $adodb = $GLOBALS['adodb']['db'];
-
-
-
-        $encrypt_comment = 'No';
-        //July 1, 2014: Ensoftek: Check and encrypt audit logging
-        if (array_key_exists('enable_auditlog_encryption', $GLOBALS) && $GLOBALS["enable_auditlog_encryption"]) {
-            $comments =  $this->cryptoGen->encryptStandard($comments);
-            $encrypt_comment = 'Yes';
-        }
-
-        $current_datetime = date("Y-m-d H:i:s");
-        $SSL_CLIENT_S_DN_CN = $_SERVER['SSL_CLIENT_S_DN_CN'] ?? '';
-        $sql = "insert into log (date, event,category, user, groupname, comments, patient_id, success, checksum,crt_user) " .
-            "values ( ".
-            $adodb->qstr($current_datetime). ", ".
-            $adodb->qstr($event) . ", " .
-            $adodb->qstr($category) . ", " .
-            $adodb->qstr($user) . "," .
-            $adodb->qstr($group) . "," .
-            $adodb->qstr($comments) . "," .
-            $adodb->qstr($pid) . "," .
-            $adodb->qstr($success) . "," .
-            $adodb->qstr($checksum) . "," .
-            $adodb->qstr($SSL_CLIENT_S_DN_CN) .")";
-        sqlInsertClean_audit($sql);
-
-        $last_log_id = $GLOBALS['adodb']['db']->Insert_ID();
-        $checksumGenerate = '';
-        //July 1, 2014: Ensoftek: Record the encryption checksum in a secondary table(log_comment_encrypt)
-        if ($querytype == 'update') {
-            $concatLogColumns = $current_datetime.$event.$user.$group.$comments.$pid.$success.$checksum.$SSL_CLIENT_S_DN_CN;
-            $checksumGenerate = sha1($concatLogColumns);
-        }
-
-        $encryptLogQry = "INSERT INTO log_comment_encrypt (log_id, encrypt, checksum, `version`) ".
-            " VALUES ( ".
-            $adodb->qstr($last_log_id) . "," .
-            $adodb->qstr($encrypt_comment) . "," .
-            $adodb->qstr($checksumGenerate) .", '3')";
-        sqlInsertClean_audit($encryptLogQry);
-
-        $this->send_atna_audit_msg($user, $group, $event, $pid, $success, $comments);
+        $group = $_SESSION['authProvider'] ?? "";
+        $success = (int)($outcome !== false);
+        $this->recordLogItem($success, $event, $user, $group, $comments, $pid, $category);
     }
 
     /**
@@ -907,38 +647,29 @@ MSG;
      *
      * @param $enable
      */
-    public function auditSQLAuditTamper($enable)
+    public function auditSQLAuditTamper($setting, $enable)
     {
-        $user =  isset($_SESSION['authUser']) ? $_SESSION['authUser'] : "";
-        $group = isset($_SESSION['authGroup']) ?  $_SESSION['authGroup'] : "";
+        $user =  $_SESSION['authUser'] ?? "";
+        $group = $_SESSION['authProvider'] ?? "";
         $pid = 0;
-        $checksum = "";
         $success = 1;
         $event = "security-administration" . "-" . "insert";
 
-
-        $adodb = $GLOBALS['adodb']['db'];
-
-        if ($enable == "1") {
-            $comments = "Audit Logging Enabled.";
+        if ($setting == 'enable_auditlog') {
+            $comments = "Audit Logging";
+        } elseif ($setting == 'gbl_force_log_breakglass') {
+            $comments = "Force Breakglass Logging";
         } else {
-            $comments = "Audit Logging Disabled.";
+            $comments = $setting;
         }
 
-        $SSL_CLIENT_S_DN_CN=isset($_SERVER['SSL_CLIENT_S_DN_CN']) ? $_SERVER['SSL_CLIENT_S_DN_CN'] : '';
-        $sql = "insert into log (date, event, user, groupname, comments, patient_id, success, checksum,crt_user) " .
-            "values ( NOW(), " .
-            $adodb->qstr($event) . ", " .
-            $adodb->qstr($user) . "," .
-            $adodb->qstr($group) . "," .
-            $adodb->qstr($comments) . "," .
-            $adodb->qstr($pid) . "," .
-            $adodb->qstr($success) . "," .
-            $adodb->qstr($checksum) . "," .
-            $adodb->qstr($SSL_CLIENT_S_DN_CN) .")";
+        if ($enable == "1") {
+            $comments .= " Enabled.";
+        } else {
+            $comments .= " Disabled.";
+        }
 
-        sqlInsertClean_audit($sql);
-        $this->send_atna_audit_msg($user, $group, $event, $pid, $success, $comments);
+        $this->recordLogItem($success, $event, $user, $group, $comments, $pid);
     }
 
     /**
@@ -953,14 +684,11 @@ MSG;
     public function recordDisclosure($dates, $event, $pid, $recipient, $description, $user)
     {
         $adodb = $GLOBALS['adodb']['db'];
-        $crt_user= $_SERVER['SSL_CLIENT_S_DN_CN'];
-        $groupname=$_SESSION['authProvider'];
-        $success=1;
         $sql = "insert into extended_log ( date, event, user, recipient, patient_id, description) " .
             "values (" . $adodb->qstr($dates) . "," . $adodb->qstr($event) . "," . $adodb->qstr($user) .
-            "," . $adodb->qstr($recipient) . ",".
-            $adodb->qstr($pid) ."," .
-            $adodb->qstr($description) .")";
+            "," . $adodb->qstr($recipient) . "," .
+            $adodb->qstr($pid) . "," .
+            $adodb->qstr($description) . ")";
         $ret = sqlInsertClean_audit($sql);
     }
 
@@ -975,7 +703,7 @@ MSG;
     public function updateRecordedDisclosure($dates, $event, $recipient, $description, $disclosure_id)
     {
         $adodb = $GLOBALS['adodb']['db'];
-        $sql="update extended_log set
+        $sql = "update extended_log set
                 event=" . $adodb->qstr($event) . ",
                 date=" .  $adodb->qstr($dates) . ",
                 recipient=" . $adodb->qstr($recipient) . ",
@@ -995,23 +723,104 @@ MSG;
         $ret = sqlInsertClean_audit($sql);
     }
 
-    /**
-     * July 1, 2014: Ensoftek: Utility function to get data from table(log_comment_encrypt)
-     *
-     * @param  $log_id
-     * @return array
-     */
-    public function logCommentEncryptData($log_id)
+    public function recordLogItem($success, $event, $user, $group, $comments, $patientId = null, $category = null, $logFrom = 'open-emr', $menuItemId = null, $ccdaDocId = null, $user_notes = '', $api = null)
     {
-        $encryptRow = array();
-        $logRes = sqlStatement("SELECT * FROM log_comment_encrypt WHERE log_id=?", array($log_id));
-        while ($logRow = sqlFetchArray($logRes)) {
-            $encryptRow['encrypt'] = $logRow['encrypt'];
-            $encryptRow['checksum'] = $logRow['checksum'];
-            $encryptRow['version'] = $logRow['version'];
+        if ($patientId == "NULL") {
+            $patientId = null;
         }
 
-        return $encryptRow;
+        // Encrypt if applicable
+        if (!isset($this->cryptoGen)) {
+            $this->cryptoGen = new CryptoGen();
+        }
+        $encrypt = 'No';
+        if (!empty($GLOBALS["enable_auditlog_encryption"])) {
+            // encrypt the comments field
+            $comments =  $this->cryptoGen->encryptStandard($comments);
+            if (!empty($api)) {
+                // api log
+                $api['request_url'] = (!empty($api['request_url'])) ? $this->cryptoGen->encryptStandard($api['request_url']) : '';
+                $api['request_body'] = (!empty($api['request_body'])) ? $this->cryptoGen->encryptStandard($api['request_body']) : '';
+                $api['response'] =  (!empty($api['response'])) ? $this->cryptoGen->encryptStandard($api['response']) : '';
+            }
+            $encrypt = 'Yes';
+        } else {
+            // Since storing binary elements (uuid), need to base64 to not jarble them and to ensure the auditing hashing works
+            $comments = base64_encode($comments);
+        }
+
+        // Collect timestamp and if pertinent, collect client cert name
+        $current_datetime = date("Y-m-d H:i:s");
+        $SSL_CLIENT_S_DN_CN = $_SERVER['SSL_CLIENT_S_DN_CN'] ?? '';
+
+        // Note that no longer using checksum field in log table in OpenEMR 6.0 and onward since using the checksum in log_comment_encrypt table.
+        //  Need to keep to maintain backward compatibility since the checksum is used when calculating checksum stored in log_comment_encrypt table
+        //   in pre 6.0.
+        // Note also need to use lower case for 'insert into' to prevent a endless loop
+        // Steps:
+        //  1. insert entry into log table
+        //  2. insert associated entry into log_comment_encrypt
+        //  3. if api log entry, then insert insert associated entry into api_log
+        //  4. if atna server is on, then send entry to atna server
+        //
+        // 1. insert entry into log table
+        $logEntry = [
+            $current_datetime,
+            $event,
+            $category,
+            $user,
+            $group,
+            $comments,
+            $user_notes,
+            $patientId,
+            $success,
+            $SSL_CLIENT_S_DN_CN,
+            $logFrom,
+            $menuItemId,
+            $ccdaDocId
+        ];
+        sqlInsertClean_audit("insert into `log` (`date`, `event`, `category`, `user`, `groupname`, `comments`, `user_notes`, `patient_id`, `success`, `crt_user`, `log_from`, `menu_item_id`, `ccda_doc_id`) values (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)", $logEntry);
+        // 2. insert associated entry (in addition to calculating and storing applicable checksums) into log_comment_encrypt
+        $last_log_id = $GLOBALS['adodb']['db']->Insert_ID();
+        $checksumGenerate = hash('sha3-512', implode($logEntry));
+        if (!empty($api)) {
+            // api log
+            $ipAddress = collectIpAddresses()['ip_string'];
+            $apiLogEntry = [
+                $last_log_id,
+                $api['user_id'],
+                $api['patient_id'],
+                $ipAddress,
+                $api['method'],
+                $api['request'],
+                $api['request_url'],
+                $api['request_body'],
+                $api['response'],
+                $current_datetime
+            ];
+            $checksumGenerateApi = hash('sha3-512', implode($apiLogEntry));
+        } else {
+            $checksumGenerateApi = '';
+        }
+        sqlInsertClean_audit(
+            "INSERT INTO `log_comment_encrypt` (`log_id`, `encrypt`, `checksum`, `checksum_api`, `version`) VALUES (?, ?, ?, ?, '4')",
+            [
+                $last_log_id,
+                $encrypt,
+                $checksumGenerate,
+                $checksumGenerateApi
+            ]
+        );
+        // 3. if api log entry, then insert insert associated entry into api_log
+        if (!empty($api)) {
+            // api log
+            sqlInsertClean_audit("INSERT INTO `api_log` (`log_id`, `user_id`, `patient_id`, `ip_address`, `method`, `request`, `request_url`, `request_body`, `response`, `created_time`) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)", $apiLogEntry);
+        }
+        // 4. if atna server is on, then send entry to atna server
+        if ($patientId == null) {
+            $patientId = 0;
+        }
+        $this->sendAtnaAuditMsg($user, $group, $event, $patientId, $success, $comments);
     }
 
     /**
@@ -1029,9 +838,9 @@ MSG;
                 $fieldValues    = explode("'", $sql);
                 if (in_array('medical_problem', $fieldValues) === true) {
                     return 'Problem List';
-                } else if (in_array('medication', $fieldValues) === true) {
+                } elseif (in_array('medication', $fieldValues) === true) {
                     return 'Medication';
-                } else if (in_array('allergy', $fieldValues) === true) {
+                } elseif (in_array('allergy', $fieldValues) === true) {
                     return 'Allergy';
                 }
             }
@@ -1042,30 +851,30 @@ MSG;
             $fieldValues    = explode("'", $trimSQL);
             if (in_array('medical_problem', $fieldValues) === true) {
                 return 'Problem List';
-            } else if (in_array('medication', $fieldValues) === true) {
+            } elseif (in_array('medication', $fieldValues) === true) {
                 return 'Medication';
-            } else if (in_array('allergy', $fieldValues) === true) {
+            } elseif (in_array('allergy', $fieldValues) === true) {
                 return 'Allergy';
             }
-        } else if ($table == 'immunizations') {
+        } elseif ($table == 'immunizations') {
             return "Immunization";
-        } else if ($table == 'form_vitals') {
+        } elseif ($table == 'form_vitals') {
             return "Vitals";
-        } else if ($table == 'history_data') {
+        } elseif ($table == 'history_data') {
             return "Social and Family History";
-        } else if ($table == 'forms' || $table == 'form_encounter' || strpos($table, 'form_') === 0) {
+        } elseif ($table == 'forms' || $table == 'form_encounter' || strpos($table, 'form_') === 0) {
             return "Encounter Form";
-        } else if ($table == 'insurance_data') {
+        } elseif ($table == 'insurance_data') {
             return "Patient Insurance";
-        } else if ($table == 'patient_data' || $table == 'employer_data') {
+        } elseif ($table == 'patient_data' || $table == 'employer_data') {
             return "Patient Demographics";
-        } else if ($table == 'payments' || $table == "billing" || $table == "claims") {
+        } elseif ($table == 'payments' || $table == "billing" || $table == "claims") {
             return "Billing";
-        } else if ($table == 'pnotes') {
+        } elseif ($table == 'pnotes') {
             return "Clinical Mail";
-        } else if ($table == 'prescriptions') {
+        } elseif ($table == 'prescriptions') {
             return "Medication";
-        } else if ($table == 'transactions') {
+        } elseif ($table == 'transactions') {
             $trimSQL        = stristr($sql, "transactions");
             $fieldValues    = explode("'", $trimSQL);
             if (in_array("LBTref", $fieldValues)) {
@@ -1073,18 +882,54 @@ MSG;
             } else {
                 return $event;
             }
-        } else if ($table == 'amendments' || $table == 'amendments_history') {
+        } elseif ($table == 'amendments' || $table == 'amendments_history') {
             return "Amendments";
-        } else if ($table == 'openemr_postcalendar_events') {
+        } elseif ($table == 'openemr_postcalendar_events') {
             return "Scheduling";
-        } else if ($table == 'procedure_order' || $table == 'procedure_order_code') {
+        } elseif ($table == 'procedure_order' || $table == 'procedure_order_code') {
             return "Lab Order";
-        } else if ($table == 'procedure_report' || $table == 'procedure_result') {
+        } elseif ($table == 'procedure_report' || $table == 'procedure_result') {
             return "Lab Result";
-        } else if ($event == 'security-administration') {
+        } elseif ($event == 'security-administration') {
             return "Security";
         }
 
         return $event;
+    }
+
+    // Goal of this function is to increase performance in logging engine to check
+    //  if a user is a breakglass user (in this case, will log all activities if the
+    //  setting is turned on in Administration->Logging->'Audit all Emergency User Queries').
+    private function isBreakglassUser($user)
+    {
+        // return false if $user is empty
+        if (empty($user)) {
+            return false;
+        }
+
+        // Return the breakglass user flag if it exists already (it is cached by this singleton class to speed the logging engine up)
+        if (isset($this->breakglassUser)) {
+            return $this->breakglassUser;
+        }
+
+        // see if current user is in the breakglass group
+        //  note we are bypassing gacl standard api to improve performance
+        $queryUser = sqlQueryNoLog(
+            "SELECT `gacl_aro`.`value`
+            FROM `gacl_aro`, `gacl_groups_aro_map`, `gacl_aro_groups`
+            WHERE `gacl_aro`.`id` = `gacl_groups_aro_map`.`aro_id`
+            AND `gacl_groups_aro_map`.`group_id` = `gacl_aro_groups`.`id`
+            AND `gacl_aro_groups`.`value` = 'breakglass'
+            AND BINARY `gacl_aro`.`value` = ?",
+            [$user]
+        );
+        if (empty($queryUser)) {
+            // user is not in breakglass group
+            $this->breakglassUser = false;
+        } else {
+            // user is in breakglass group
+            $this->breakglassUser = true;
+        }
+        return $this->breakglassUser;
     }
 }

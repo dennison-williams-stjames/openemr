@@ -1,4 +1,5 @@
 <?php
+
 // Copyright (C) 2011 Brady Miller <brady.g.miller@gmail.com>
 //
 // This program is free software; you can redistribute it and/or
@@ -14,7 +15,7 @@ class AMC_302m_Numerator implements AmcFilterIF
     {
         return "AMC_302m Numerator";
     }
-    
+
     public function test(AmcPatient $patient, $beginDate, $endDate)
     {
         // Is patient provided patient specific education during the report period.

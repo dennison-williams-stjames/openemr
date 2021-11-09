@@ -1,4 +1,5 @@
 <?php
+
 // Copyright (C) 2011 Ken Chapple <ken@mi-squared.com>
 //
 // This program is free software; you can redistribute it and/or
@@ -12,27 +13,27 @@ class NQF_0059_PopulationCriteria implements CqmPopulationCrtiteriaFactory
     {
         return "Population Criteria";
     }
-    
+
     public function createInitialPatientPopulation()
     {
         return new NQF_0059_InitialPatientPopulation();
     }
-    
+
     public function createNumerators()
     {
         return new NQF_0059_Numerator();
     }
-    
+
     public function createDenominator()
     {
         return new NQF_0059_Denominator();
     }
-    
+
     public function createExclusion()
     {
         return new DiabetesExclusions();
     }
-    
+
     public function createDenominatorException()
     {
         return new ExceptionsNone();

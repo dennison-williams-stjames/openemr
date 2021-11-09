@@ -1,4 +1,5 @@
 <?php
+
 // Copyright (C) 2011 Brady Miller <brady.g.miller@gmail.com>
 //
 // This program is free software; you can redistribute it and/or
@@ -14,7 +15,7 @@ class AMC_304d_Numerator implements AmcFilterIF
     {
         return "AMC_304d Numerator";
     }
-    
+
     public function test(AmcPatient $patient, $beginDate, $endDate)
     {
         // Were sent an appropriate reminder during the EHR reporting period

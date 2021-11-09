@@ -1,4 +1,5 @@
 <?php
+
 /** @package    verysimple::Phreeze */
 
 /**
@@ -29,7 +30,7 @@ class KeyMap
     public $ForeignKeyProperty;
     public $KeyType;
     public $LoadType;
-    
+
     /**
      * Initializes the KeyMap
      *

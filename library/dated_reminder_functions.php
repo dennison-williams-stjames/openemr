@@ -1,4 +1,5 @@
 <?php
+
 /**
  * Contains functions used in the dated reminders.
  *
@@ -6,11 +7,11 @@
  * @link      https://www.open-emr.org
  * @author    Craig Bezuidenhout <http://www.tajemo.co.za/>
  * @author    Brady Miller <brady.g.miller@gmail.com>
+ * @author    Jerry Padgett <sjpadgett@gmail.com>
  * @copyright Copyright (c) 2012 tajemo.co.za <http://www.tajemo.co.za/>
  * @copyright Copyright (c) 2018 Brady Miller <brady.g.miller@gmail.com>
  * @license   https://github.com/openemr/openemr/blob/master/LICENSE GNU General Public License 3
  */
-
 
 /**
  * Get Portal Alerts function
@@ -21,17 +22,16 @@ function GetPortalAlertCounts()
 {
     $counts = array();
     $s_user = '%' . $_SESSION['authUser'] . '%';
-    $s_user_id = $_SESSION['authUserID'];
 
     $query = "SELECT Count(`m`.message_status) AS count_mail FROM onsite_mail `m` " .
         "WHERE `m`.owner LIKE ? AND `m`.recipient_id LIKE ? AND `m`.message_status LIKE ?  AND `m`.deleted = 0";
     $qrtn = sqlQueryNoLog($query, array($s_user, $s_user, '%new%'));
-    $counts['mailCnt'] = $qrtn['count_mail'] ? $qrtn['count_mail'] : "0";
+    $counts['mailCnt'] = $qrtn['count_mail'] ?: "0";
 
     $query = "SELECT Count(`m`.status) AS count_audits FROM onsite_portal_activity `m` " .
         "WHERE `m`.status LIKE ?";
     $qrtn = sqlQueryNoLog($query, array('%waiting%'));
-    $counts['auditCnt'] = $qrtn['count_audits'] ? $qrtn['count_audits'] : "0";
+    $counts['auditCnt'] = $qrtn['count_audits'] ?: "0";
 
     $query = "SELECT Count(`m`.id) AS count_chats FROM onsite_messages `m` " .
         "WHERE `m`.recip_id LIKE ? AND `m`.date > (CURRENT_DATE()-2) AND `m`.date < (CURRENT_DATE()+1)";
@@ -41,7 +41,7 @@ function GetPortalAlertCounts()
     $query = "SELECT Count(`m`.status) AS count_payments FROM onsite_portal_activity `m` " .
         "WHERE `m`.status LIKE ? AND `m`.activity = ?";
     $qrtn = sqlQueryNoLog($query, array('%waiting%', 'payment'));
-    $counts['paymentCnt'] = $qrtn['count_payments'] ? $qrtn['count_payments'] : "0";
+    $counts['paymentCnt'] = $qrtn['count_payments'] ?: "0";
 
     $counts['total'] = $counts['mailCnt'] + $counts['auditCnt'] + $counts['chatCnt'] + $counts['paymentCnt'];
 
@@ -53,10 +53,10 @@ function GetPortalAlertCounts()
  *
  * @returns array reminders for specified user, defaults to current user if none specified
  */
-function RemindersArray($days_to_show, $today, $alerts_to_show, $userID = false)
+function RemindersArray($days_to_show, $today, $alerts_to_show, $userID = null)
 {
     if (!$userID) {
-        $userID = $_SESSION['authId'];
+        $userID = $_SESSION['authUserID'];
     }
 
     global $hasAlerts;
@@ -64,19 +64,13 @@ function RemindersArray($days_to_show, $today, $alerts_to_show, $userID = false)
     $reminders = array();
 
 // ----- sql statement for getting uncompleted reminders (sorts by date, then by priority)
-    $drSQL = sqlStatement(
-        "SELECT
-                                    dr.pid, dr.dr_id, dr.dr_message_text,dr.dr_message_due_date,
-                                    u.fname ffname, u.mname fmname, u.lname flname
-                            FROM `dated_reminders` dr
-                            JOIN `users` u ON dr.dr_from_ID = u.id
-                            JOIN `dated_reminders_link` drl ON dr.dr_id = drl.dr_id
-                            WHERE drl.to_id = ?
-                            AND dr.`message_processed` = 0
-                            AND dr.`dr_message_due_date` < ADDDATE(NOW(), INTERVAL " . escape_limit($days_to_show) . " DAY)
-                            ORDER BY `dr_message_due_date` ASC , `message_priority` ASC LIMIT 0," . escape_limit($alerts_to_show),
-        array($userID)
-    );
+    $drSQL = sqlStatement("SELECT dr.pid, dr.dr_id, dr.dr_message_text,dr.dr_message_due_date,
+            u.fname ffname, u.mname fmname, u.lname flname FROM `dated_reminders` dr
+            JOIN `users` u ON dr.dr_from_ID = u.id
+            JOIN `dated_reminders_link` drl ON dr.dr_id = drl.dr_id
+            WHERE drl.to_id = ? AND dr.`message_processed` = 0
+            AND dr.`dr_message_due_date` < ADDDATE(NOW(), INTERVAL " . escape_limit($days_to_show) . " DAY)
+            ORDER BY `dr_message_due_date` ASC , `message_priority` ASC LIMIT 0," . escape_limit($alerts_to_show), array($userID));
 
 // --------- loop through the results
     for ($i = 0; $drRow = sqlFetchArray($drSQL); $i++) {
@@ -127,7 +121,7 @@ function RemindersArray($days_to_show, $today, $alerts_to_show, $userID = false)
 function GetDueReminderCount($days_to_show, $today, $userID = false)
 {
     if (!$userID) {
-        $userID = $_SESSION['authId'];
+        $userID = $_SESSION['authUserID'];
     }
 
 // ----- sql statement for getting uncompleted reminders (sorts by date, then by priority)
@@ -157,7 +151,7 @@ function GetDueReminderCount($days_to_show, $today, $userID = false)
 function GetAllReminderCount($userID = false)
 {
     if (!$userID) {
-        $userID = $_SESSION['authId'];
+        $userID = $_SESSION['authUserID'];
     }
 
 // ----- sql statement for getting uncompleted reminders
@@ -197,23 +191,23 @@ function getRemindersHTML($today, $reminders = array())
 
 // --------- check if reminder is  overdue
         if (strtotime($r['dueDate']) < $today) {
-            $warning = '<i class=\'fa fa-exclamation-triangle fa-lg\' style=\'color:red\' aria-hidden=\'true\'></i> ' . xlt('OVERDUE');
+            $warning = '<i class=\'fa fa-exclamation-triangle fa-lg text-danger\' aria-hidden=\'true\'></i> ' . xlt('OVERDUE');
             //$class = 'bold alert dr';
             $class = '';
         } elseif (strtotime($r['dueDate']) == $today) {
             // --------- check if reminder is due
-            $warning = '<i class=\'fa fa-exclamation-circle fa-lg\' style=\'color:orange\' aria-hidden=\'true\'></i> ' . xlt('TODAY');
+            $warning = '<i class=\'fa fa-exclamation-circle fa-lg\' style=\'color: var(--orange)\' aria-hidden=\'true\'></i> ' . xlt('TODAY');
             $class = '';
         } elseif (strtotime($r['dueDate']) > $today) {
-            $warning = '<i class=\'fa fa-exclamation-circle fa-lg\' style=\'color:green\' aria-hidden=\'true\'></i> ' . xlt('UPCOMING');
+            $warning = '<i class=\'fa fa-exclamation-circle fa-lg text-success\' aria-hidden=\'true\'></i> ' . xlt('UPCOMING');
             $class = '';
         }
 
         // end check if reminder is due or overdue
         // apend to html string
         $pdHTML .= '<p id="p_' . attr($r['messageID']) . '">
-            <a onclick="openAddScreen(' . attr(addslashes($r['messageID'])) . ')" class="dnForwarder btn btn-default btn-send-msg" id="' . attr($r['messageID']) . '" href="#"> ' . xlt('Forward') . ' </a>
-            <a class="dnRemover btn btn-default btn-save" onclick="updateme(' . "'" . attr(addslashes($r['messageID'])) . "'" . ')" id="' . attr($r['messageID']) . '" href="#">
+            <a onclick="openAddScreen(' . attr(addslashes($r['messageID'])) . ')" class="dnForwarder btn btn-secondary btn-send-msg" id="' . attr($r['messageID']) . '" href="#"> ' . xlt('Forward') . ' </a>
+            <a class="dnRemover btn btn-secondary btn-save" onclick="updateme(' . "'" . attr(addslashes($r['messageID'])) . "'" . ')" id="' . attr($r['messageID']) . '" href="#">
             <span>' . xlt('Set As Completed') . '</span>
             </a>
             <span title="' . ($r['PatientID'] > 0 ? xla('Click Patient Name to Open Patient File') : '') . '" class="' . attr($class) . '">' .
@@ -226,7 +220,7 @@ function getRemindersHTML($today, $reminders = array())
             </p>';
     }
 
-    return ($pdHTML == '' ? '<i class=\'fa fa-exclamation-circle fa-lg\' style=\'color:green\' aria-hidden=\'true\'></i> ' . xlt('No Reminders') : $pdHTML);
+    return ($pdHTML == '' ? '<i class=\'fa fa-exclamation-circle fa-lg text-success\' aria-hidden=\'true\'></i> ' . xlt('No Reminders') : $pdHTML);
 }
 
 // ------------------------------------------------
@@ -241,7 +235,7 @@ function getRemindersHTML($today, $reminders = array())
 function setReminderAsProcessed($rID, $userID = false)
 {
     if (!$userID) {
-        $userID = $_SESSION['authId'];
+        $userID = $_SESSION['authUserID'];
     }
 
     if (is_numeric($rID) and $rID > 0) {
@@ -270,7 +264,7 @@ function setReminderAsProcessed($rID, $userID = false)
 function getReminderById($mID, $userID = false)
 {
     if (!$userID) {
-        $userID = $_SESSION['authId'];
+        $userID = $_SESSION['authUserID'];
     }
 
     $rdrSQL = sqlStatement("SELECT * FROM `dated_reminders` dr
@@ -302,7 +296,8 @@ function getReminderById($mID, $userID = false)
 // ------------------------------------------------
 function sendReminder($sendTo, $fromID, $message, $dueDate, $patID, $priority)
 {
-    if (// ------- Should run data checks before running this function for more accurate error reporting
+    if (
+// ------- Should run data checks before running this function for more accurate error reporting
 // ------- check sendTo is not empty
         !empty($sendTo) and
 // ------- check dueDate, only allow valid dates, todo -> enhance date checker
@@ -315,7 +310,7 @@ function sendReminder($sendTo, $fromID, $message, $dueDate, $patID, $priority)
         is_numeric($patID)
     ) {
 // ------- check for valid recipient
-        $cRow = sqlFetchArray(sqlStatement('SELECT count(id) FROM  `users` WHERE  `id` = ?', array($sendDMTo)));
+        $cRow = sqlFetchArray(sqlStatement('SELECT count(id) FROM  `users` WHERE  `id` = ?', array($sendDMTo ?? '')));
         if ($cRow == 0) {
             return false;
         }
@@ -360,8 +355,8 @@ function logRemindersArray()
     $input = array();
     // set blank string for the query
     $where = '';
-    $sentBy = $_GET['sentBy'];
-    $sentTo = $_GET['sentTo'];
+    $sentBy = $_GET['sentBy'] ?? '';
+    $sentTo = $_GET['sentTo'] ?? '';
 //------------------------------------------
 // ----- HANDLE SENT BY FILTER
     if (!empty($sentBy)) {
@@ -455,7 +450,7 @@ function logRemindersArray()
         $reminders[$i]['message'] = $drRow['dr_message_text'];
         $reminders[$i]['fromName'] = $drRow['ffname'] . ' ' . $drRow['fmname'] . ' ' . $drRow['flname'];
         $reminders[$i]['ToName'] = $drRow['tfname'] . ' ' . $drRow['tmname'] . ' ' . $drRow['tlname'];
-        $reminders[$i]['processedByName'] = (empty($prRow) ? 'N/A' : $prRow['ptitle'] . ' ' . $prRow['pfname'] . ' ' . $prRow['pmname'] . ' ' . $prRow['plname']);
+        $reminders[$i]['processedByName'] = (empty($prRow) ? 'N/A' : ($prRow['ptitle'] ?? '') . ' ' . $prRow['pfname'] . ' ' . $prRow['pmname'] . ' ' . $prRow['plname']);
     }
 
 // --------- END OF loop through the results

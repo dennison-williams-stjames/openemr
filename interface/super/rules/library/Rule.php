@@ -1,4 +1,5 @@
 <?php
+
  // Copyright (C) 2010-2011 Aron Racho <aron@mi-squred.com>
  //
  // This program is free software; you can redistribute it and/or
@@ -36,7 +37,7 @@ class Rule
      * @var RuleFilters
      */
     var $filters;
-    
+
     /**
      * @var RuleTargetActionGroups
      */
@@ -58,7 +59,7 @@ class Rule
     {
         $this->developer = $s;
     }
-    
+
     function setFunding($s)
     {
         $this->funding_source = $s;
@@ -141,7 +142,7 @@ class Rule
     {
         $this->filters = $ruleFilters;
     }
-    
+
     function setGroups(array $groups)
     {
         $this->groups = $groups;

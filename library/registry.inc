@@ -1,4 +1,5 @@
 <?php
+
 //these are the functions used to access the forms registry database
 //
 
@@ -7,11 +8,13 @@ function registerForm($directory, $sql_run = 0, $unpackaged = 1, $state = 0)
 {
     $check = sqlQuery("select state from registry where directory=?", array($directory));
     if ($check == false) {
-        $lines = @file($GLOBALS['srcdir']."/../interface/forms/$directory/info.txt");
+        $lines = @file($GLOBALS['srcdir'] . "/../interface/forms/$directory/info.txt");
         if ($lines) {
             $name = $lines[0];
+            $category = $category ?? ($lines[1] ?? 'Miscellaneous');
         } else {
             $name = $directory;
+            $category = "Miscellaneous";
         }
 
         return sqlInsert("insert into registry set
@@ -19,9 +22,10 @@ function registerForm($directory, $sql_run = 0, $unpackaged = 1, $state = 0)
 			state=?,
 			directory=?,
 			sql_run=?,
-			unpackaged=?,
+            unpackaged=?,
+            category=?,
 			date=NOW()
-		", array($name, $state, $directory, $sql_run, $unpackaged));
+		", array($name, $state, $directory, $sql_run, $unpackaged, $category));
     }
 
     return false;
@@ -58,7 +62,7 @@ function getRegistered($state = "1", $limit = "unlimited", $offset = "0", $encou
 
     $res = sqlStatement($sql, array($state));
     if ($res) {
-        for ($iter=0; $row=sqlFetchArray($res); $iter++) {
+        for ($iter = 0; $row = sqlFetchArray($res); $iter++) {
             $all[$iter] = $row;
         }
     } else {
@@ -82,10 +86,10 @@ function getRegistryEntryByDirectory($directory, $cols = "*")
 
 function installSQL($dir)
 {
-    $sqltext = $dir."/table.sql";
+    $sqltext = $dir . "/table.sql";
     if ($sqlarray = @file($sqltext)) {
         $sql = implode("", $sqlarray);
-        //echo "<br>$sql<br><br>";
+        //echo "<br />$sql<br /><br />";
         $sqla = explode(";", $sql);
         foreach ($sqla as $sqlq) {
             if (strlen($sqlq) > 5) {
@@ -115,7 +119,7 @@ function isRegistered($directory, $state = 1)
 {
     $sql = "select id from registry where directory=? and state=?";
     $result = sqlQuery($sql, array($directory, $state));
-    if ($result['id'] != '') {
+    if (!empty($result['id'])) {
         return true;
     }
 

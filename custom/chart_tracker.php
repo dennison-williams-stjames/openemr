@@ -1,4 +1,5 @@
 <?php
+
 /**
  * The Chart Tracker feature facilitates the old traditional paper charts updates.
  * This feature requires a new list:
@@ -16,15 +17,11 @@
  * @Copyright (C) 2017 Roberto Vasquez <robertogagliotta@gmail.com>
  */
 
-
 require_once("../interface/globals.php");
-require_once("$srcdir/acl.inc");
 require_once("$srcdir/options.inc.php");
 
 use OpenEMR\Common\Csrf\CsrfUtils;
 use OpenEMR\Core\Header;
-use OpenEMR\Entities\ChartTracker;
-use OpenEMR\Services\ChartTrackerService;
 use OpenEMR\Services\UserService;
 
 $form_newid   = isset($_POST['form_newid'  ]) ? trim($_POST['form_newid'  ]) : '';
@@ -45,7 +42,7 @@ if ($form_newuser) {
 <?php Header::setupHeader(); ?>
 <title><?php echo xlt('Chart Tracker'); ?></title>
 
-<script language="JavaScript">
+<script>
 
 function locationSelect() {
  var f = document.forms[0];
@@ -71,10 +68,8 @@ function userSelect() {
 <div class="container">
 
     <div class="row">
-        <div class="col-xs-12">
-            <div class="page-header">
-                <h1><?php echo xlt('Chart Tracker'); ?></h1>
-            </div>
+        <div class="col-12">
+            <h1><?php echo xlt('Chart Tracker'); ?></h1>
          </div>
     </div>
 
@@ -88,14 +83,7 @@ if ($form_newloc || $form_newuser) {
     if (!CsrfUtils::verifyCsrfToken($_POST["csrf_token_form"])) {
         CsrfUtils::csrfNotVerified();
     }
-
-    $tracker = new ChartTracker();
-    $tracker->setPid($form_curpid);
-    $tracker->setWhen(new \DateTime(date('Y-m-d H:i:s')));
-    $tracker->setUserId($form_newuser);
-    $tracker->setLocation($form_newloc);
-    $chartTrackerService = new ChartTrackerService();
-    $chartTrackerService->trackPatientLocation($tracker);
+    sqlStatement("INSERT INTO `chart_tracker` (`ct_pid`, `ct_when`, `ct_userid`, `ct_location`) VALUES (?, NOW(), ?, ?)", [$form_curpid, $form_newuser, $form_newloc]);
     echo "<div class='alert alert-success'>" . xlt('Save Successful for chart ID') . " " . "'" . text($form_curid) . "'.</div>";
 }
 
@@ -128,54 +116,54 @@ if (!empty($row)) {
     $current_location = xlt('Unassigned');
     if ($ct_userid) {
         $user = $userService->getUser($ct_userid);
-        $current_location = text($user->getLname() . ", " . $user->getFname() . " " . $user->getMname() . " " . oeFormatDateTime($row['ct_when'], "global", true));
-    } else if ($ct_location) {
-        $current_location = generate_display_field(array('data_type'=>'1','list_id'=>'chartloc'), $ct_location);
+        $current_location = text($user['lname'] . ", " . $user['fname'] . " " . $user['mname'] . " " . oeFormatDateTime($row['ct_when'], "global", true));
+    } elseif ($ct_location) {
+        $current_location = generate_display_field(array('data_type' => '1','list_id' => 'chartloc'), $ct_location);
     }
     ?>
 
     <div class="row">
-        <div class="col-sm-6 well">
-            <div class="form-group">
-                <label for="form_pat_id" class='control-label col-sm-3'><?php echo xlt('Patient ID') . ":"; ?></label>
+        <div class="col-sm-6 jumbotron jumbotron-fluid p-3">
+            <div class="form-row">
+                <label for="form_pat_id" class='col-form-label col-sm-3'><?php echo xlt('Patient ID') . ":"; ?></label>
                 <div class='col-sm-9'>
                     <p class="form-control-static"><?php echo text($row['pid']) ?></p>
                     <input type='hidden' name='form_curpid' value='<?php echo attr($row['pid']); ?>'  />
                     <input type='hidden' name='form_curid' value='<?php echo attr($row['pubpid']); ?>' />
                 </div>
             </div>
-            <div class="form-group">
-                <label for="form_pat_id" class='control-label col-sm-3'><?php echo xlt('Name') . ":"; ?></label>
+            <div class="form-row">
+                <label for="form_pat_id" class='col-form-label col-sm-3'><?php echo xlt('Name') . ":"; ?></label>
                 <div class='col-sm-9'>
                     <p class="form-control-static"><?php echo text($row['lname'] . ", " . $row['fname'] . " " . $row['mname']) ?></p>
                 </div>
             </div>
-            <div class="form-group">
-                <label for="form_pat_id" class='control-label col-sm-3'><?php echo xlt('DOB') . ":"; ?></label>
+            <div class="form-row">
+                <label for="form_pat_id" class='col-form-label col-sm-3'><?php echo xlt('DOB') . ":"; ?></label>
                 <div class='col-sm-9'>
                     <p class="form-control-static"><?php echo text(oeFormatShortDate($row['DOB'])) ?></p>
                 </div>
               </div>
-            <div class="form-group">
-                <label for="form_pat_id" class='control-label col-sm-3'><?php echo xlt('SSN') . ":"; ?></label>
+            <div class="form-row">
+                <label for="form_pat_id" class='col-form-label col-sm-3'><?php echo xlt('SSN') . ":"; ?></label>
                 <div class='col-sm-9'>
                     <p class="form-control-static"><?php echo text($row['ss']) ?></p>
                 </div>
             </div>
-            <div class="form-group">
-                <label for="form_pat_id" class='control-label col-sm-3'><?php echo xlt('Current Location') . ":"; ?></label>
+            <div class="form-row">
+                <label for="form_pat_id" class='col-form-label col-sm-3'><?php echo xlt('Current Location') . ":"; ?></label>
                 <div class='col-sm-9'>
                     <p class="form-control-static"><?php echo text($current_location) ?></p>
                 </div>
             </div>
-            <div class="form-group">
-                <label for="form_curr_loc" class='control-label col-sm-3'><?php echo xlt('Check In To') . ":"; ?></label>
+            <div class="form-row">
+                <label for="form_curr_loc" class='col-form-label col-sm-3'><?php echo xlt('Check In To') . ":"; ?></label>
                 <div class='col-sm-9'>
-                    <?php generate_form_field(array('data_type'=>1,'field_id'=>'newloc','list_id'=>'chartloc','empty_title'=>''), ''); ?>
+                    <?php generate_form_field(array('data_type' => 1,'field_id' => 'newloc','list_id' => 'chartloc','empty_title' => ''), ''); ?>
                 </div>
             </div>
-            <div class="form-group">
-                <label for="form_out_to" class='control-label col-sm-3'><?php echo xlt('Our Out To') . ":"; ?></label>
+            <div class="form-row">
+                <label for="form_out_to" class='col-form-label col-sm-3'><?php echo xlt('Our Out To') . ":"; ?></label>
                 <div class='col-sm-9'>
                     <select name='form_newuser' class='form-control' onchange='userSelect()'>
                         <option value=''></option>
@@ -183,17 +171,17 @@ if (!empty($row)) {
                         $users = $userService->getActiveUsers();
 
                         foreach ($users as $activeUser) {
-                            echo "    <option value='" . attr($activeUser->getId()) . "'";
-                            echo ">" . text($activeUser->getLname()) . ', ' . text($activeUser->getFname()) . ' ' . text($activeUser->getMname()) .
+                            echo "    <option value='" . attr($activeUser['id']) . "'";
+                            echo ">" . text($activeUser['lname']) . ', ' . text($activeUser['fname']) . ' ' . text($activeUser['mname']) .
                             "</option>\n";
                         }
                         ?>
                     </select>
                 </div>
             </div>
-        <div class="form-group">
-            <div class="col-sm-offset-3 col-sm-9">
-                    <button type='submit' class='btn btn-default btn-save' name='form_save'><?php echo xlt("Save"); ?></button>
+        <div class="form-row">
+            <div class="offset-sm-3 col-sm-9">
+                    <button type='submit' class='btn btn-secondary btn-save' name='form_save'><?php echo xlt("Save"); ?></button>
             </div>
         </div>
     </div>
@@ -202,20 +190,20 @@ if (!empty($row)) {
     <?php
 }
 ?>
-    <div class="row">
-        <div class="col-sm-6 well">
-            <div class="form-group">
-                <label for='form_newid' class='control-label col-sm-3'><?php echo xlt('New Patient ID') . ":"; ?></label>
+        <div class="col-sm-6 jumbotron jumbotron-fluid p-3">
+            <div class="form-row">
+                <label for='form_newid' class='col-form-label col-sm-3'><?php echo xlt('New Patient ID') . ":"; ?></label>
                 <div class='col-sm-9'>
-                   <input type='text' name='form_newid' id='form_newid' class='form-control' title='<?php echo xla('Type or scan the patient identifier here'); ?>'>
+                    <input type='text' name='form_newid' id='form_newid' class='form-control' title='<?php echo xla('Type or scan the patient identifier here'); ?>' />
                 </div>
             </div>
-            <div class="form-group">
-            <div class='col-sm-offset-3 col-sm-9'>
-                <button type='submit' class='btn btn-default btn-search' name='form_lookup'><?php echo xlt("Look Up"); ?></button>
+            <div class="form-row">
+                <div class='offset-sm-3 col-sm-9'>
+                    <button type='submit' class='btn btn-secondary btn-search' name='form_lookup'><?php echo xlt("Look Up"); ?></button>
+                </div>
             </div>
         </div>
-    </div>
+        </div>
 </form>
 
 </div>

@@ -1,4 +1,5 @@
 <?php
+
 namespace OpenEMR\Common\System;
 
 /**
@@ -19,7 +20,7 @@ class System
     {
         $exec_command = escapeshellcmd($command); // @see  https://www.php.net/manual/en/function.escapeshellcmd.php
         $whereIsCommand = (PHP_OS == 'WINNT') ? 'where' : 'which';
-    
+
         $process = proc_open(
             "$whereIsCommand $exec_command",
             array(
@@ -35,10 +36,10 @@ class System
             fclose($pipes[1]);
             fclose($pipes[2]);
             proc_close($process);
-    
+
             return $stdout != '';
         }
-    
+
         return false;
     }
 

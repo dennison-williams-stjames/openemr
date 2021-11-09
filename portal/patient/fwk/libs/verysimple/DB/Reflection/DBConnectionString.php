@@ -1,4 +1,5 @@
 <?php
+
 /** @package    verysimple::DB::Reflection */
 
 /**
@@ -18,7 +19,7 @@ class DBConnectionString
     public $Password;
     public $DBName;
     public $Type;
-    
+
     /**
      * Create a new instance of a DBConnectionString
      *

@@ -1,4 +1,5 @@
 <?php
+
 /**
  * OemrUI class.
  *
@@ -8,12 +9,15 @@
  * @copyright Copyright (c) 2018 Ranganath Pathak <pathak@scrs1.org>
  * @license   https://github.com/openemr/openemr/blob/master/LICENSE GNU General Public License 3
  */
+
 namespace OpenEMR\OeUI;
 
 use OpenEMR\Common\Csrf\CsrfUtils;
 use OpenEMR\Core\Header;
 
-Header::setupHeader(['jquery-ui', 'jquery-ui-base', 'no_jquery', 'no_bootstrap', 'no_fontawesome', 'no_main-theme', 'no_textformat', 'no_dialog' ]);
+// Special case where not setting up the header for a script, so using setupAssets function,
+//  which does not autoload anything. The actual header is set up in another script.
+Header::setupAssets();
 
 class OemrUI
 {
@@ -69,16 +73,15 @@ class OemrUI
     {
         global $v_js_includes;
 
-        $this->heading = ($arrOeUiSettings['include_patient_name'] && !empty($arrOeUiSettings['heading_title']))? $arrOeUiSettings['heading_title'] . " - " . getPatientNameFirstLast($_SESSION['pid']):$arrOeUiSettings['heading_title'];
-        $this->expandable = $arrOeUiSettings['expandable'];
-        $this->arrFiles = $arrOeUiSettings['expandable_files'];
-        $this->arrAction = array($arrOeUiSettings['action'], $arrOeUiSettings['action_title'], $arrOeUiSettings['action_href']);
-        $this->display_help_icon = $arrOeUiSettings['show_help_icon'];
-        $this->help_file = $arrOeUiSettings['help_file_name'];
-        if ($arrOeUiSettings['expandable'] && $arrOeUiSettings['expandable_files']) {
+        $this->heading = (!empty($arrOeUiSettings['include_patient_name']) && !empty($arrOeUiSettings['heading_title'])) ? ($arrOeUiSettings['heading_title'] ?? '') . " - " . getPatientNameFirstLast($_SESSION['pid']) : ($arrOeUiSettings['heading_title'] ?? '');
+        $this->expandable = $arrOeUiSettings['expandable'] ?? null;
+        $this->arrFiles = $arrOeUiSettings['expandable_files'] ?? null;
+        $this->arrAction = array(($arrOeUiSettings['action'] ?? null), ($arrOeUiSettings['action_title'] ?? null), ($arrOeUiSettings['action_href'] ?? null));
+        $this->display_help_icon = $arrOeUiSettings['show_help_icon'] ?? null;
+        $this->help_file = $arrOeUiSettings['help_file_name'] ?? null;
+        if (!empty($arrOeUiSettings['expandable']) && !empty($arrOeUiSettings['expandable_files'])) {
             $this->current_state = collectAndOrganizeExpandSetting($arrOeUiSettings['expandable_files']);
         }
-        echo "\r\n<script src='" . $GLOBALS['webroot'] . "/library/js/oeUI/universalTooltip.js?v=" . $v_js_includes. "'></script>\r\n";
     }
 
     /**
@@ -98,7 +101,7 @@ class OemrUI
             $expandable_icon = $arrexpandIcon[0];
             $heading = "<h2>$heading $expandable_icon $action_icon $help_icon</h2>";
         } else {
-            $heading = "<h2>" . xlt("Please supply a heading") . " <i class='fa fa-smile-o' aria-hidden='true'></i></h2>";
+            $heading = "<h2>" . xlt("Please supply a heading") . " <i class='fa fa-oe-smile-o' aria-hidden='true'></i></h2>";
         }
         return $heading;
     }
@@ -128,8 +131,8 @@ class OemrUI
         }
         $expandable_icon = '';
         if ($expandable) {
-            $expandable_icon = "<i id='exp_cont_icon' class='oe-superscript-small expand_contract fa " .  attr($expand_icon_class) . "'" . " title='" . attr($expand_title) . "' 
-            aria-hidden='true'></i>";
+            $expandable_icon = "<a href='#' id='exp_cont_icon' class='text-dark text-decoration-none oe-superscript-small expand_contract fa " .  attr($expand_icon_class) . "'" . " title='" . attr($expand_title) . "'
+            aria-hidden='true'></a>";
         }
         return array($expandable_icon, $container);
     }
@@ -142,7 +145,7 @@ class OemrUI
     public function oeContainer()
     {
         $arrexpandIcon = $this->expandIcon();
-        $container = $arrexpandIcon[1] ? $arrexpandIcon[1]:'container';
+        $container = $arrexpandIcon[1] ? $arrexpandIcon[1] : 'container';
         return $container;
     }
 
@@ -168,19 +171,19 @@ class OemrUI
         switch ($action) {
             case "reset":
                 $action_title = ($action_title) ? $action_title : xl("Reset");
-                $action_icon = "<a href='" . attr($action_href) ."' onclick='top.restoreSession()'><i id='advanced-action' class='fa fa-undo fa-2x small' title='" . attr($action_title) ."' aria-hidden='true'></i></a>";
+                $action_icon = "<a href='" . attr($action_href) . "' onclick='top.restoreSession()'><i id='advanced-action' class='fa fa-undo fa-oe-sm' title='" . attr($action_title) . "' aria-hidden='true'></i></a>";
                 break;
             case "conceal":
                 $action_title = xl("Click to Hide"); // default needed for jQuery to function
-                $action_icon = "<i id='show_hide' class='fa fa-2x small fa-eye-slash' title='" . attr($action_title) . "'></i>";
+                $action_icon = "<i id='show_hide' class='fa fa-oe-sm fa-eye-slash' title='" . attr($action_title) . "'></i>";
                 break;
             case "reveal":
                 $action_title = xl("Click to Show"); // default needed for jQuery to function
-                $action_icon = "<i id='show_hide' class='fa fa-2x small fa-eye' title='" . attr($action_title) . "'></i>";
+                $action_icon = "<i id='show_hide' class='fa fa-oe-sm fa-eye' title='" . attr($action_title) . "'></i>";
                 break;
             case "search":
                 $action_title = xl("Click to show search"); // default needed for jQuery to function
-                $action_icon = "<i id='show_hide' class='fa fa-search-plus fa-2x small' title='" . attr($action_title) . "'></i>";
+                $action_icon = "<i id='show_hide' class='fa fa-search-plus fa-oe-sm' title='" . attr($action_title) . "'></i>";
                 break;
             case "link":
                 if (strpos($action_href, 'http') !== false) {
@@ -189,7 +192,7 @@ class OemrUI
                     $target = '_self';
                 }
                 $action_title = ($action_title) ? $action_title : xl("Click to go to page");
-                $action_icon = "<a href='" . attr($action_href) . "' target = '" .attr($target)."' onclick='top.restoreSession()'><i id='advanced-action' class='fa fa-external-link fa-2x small' title='" . attr($action_title) ."' aria-hidden='true'></i></a>";
+                $action_icon = "<a href='" . attr($action_href) . "' target = '" . attr($target) . "' onclick='top.restoreSession()'><i id='advanced-action' class='fa fa-external-link-alt fa-oe-sm' title='" . attr($action_title) . "' aria-hidden='true'></i></a>";
                 break;
             case "back":
                 $action_title = ($action_title) ? $action_title : xl("Go Back");
@@ -198,7 +201,7 @@ class OemrUI
                 } elseif ($_SESSION ['language_direction'] == 'rtl') {
                     $arrow_direction = 'fa-arrow-circle-right';
                 }
-                $action_icon = "<a href='" . attr($action_href) ."' onclick='top.restoreSession()'><i id='advanced-action' class='fa " . attr($arrow_direction) . " fa-2x small' title='" . attr($action_title) ."' aria-hidden='true'></i></a>";
+                $action_icon = "<a href='" . attr($action_href) . "' onclick='top.restoreSession()'><i id='advanced-action' class='fa " . attr($arrow_direction) . " fa-oe-sm' title='" . attr($action_title) . "' aria-hidden='true'></i></a>";
                 break;
             default:
                 $action_icon = '';
@@ -251,11 +254,11 @@ class OemrUI
         $print = xla("Print");
         if ($help_file) {
             $help_file = attr($help_file);
-            $help_file = $GLOBALS['webroot']."/Documentation/help_files/$help_file";
-            $modal_body = "<iframe src=\"$help_file\" id='targetiframe' style='height:100%; width:100%; overflow-x: hidden; border:none'
+            $help_file = $GLOBALS['webroot'] . "/Documentation/help_files/$help_file";
+            $modal_body = "<iframe src=\"$help_file\" id='targetiframe' class='w-100 h-100 border-0' style='overflow-x: hidden;'
                                 allowtransparency='true'></iframe>";
         } else {
-            $modal_body = "<h3> <i class='fa fa-exclamation-triangle  oe-text-red' aria-hidden='true'></i> " . xlt("Check if a help file exists for this page in") . " " . text("Documentation/help_files") . ".<br><br>" . xlt("Then pass it's name as a value to the element" ." " . text("'help_file_name'") . " "  .  "in the associative array") . " " . text("\$arrOeUiSettings"). ".<br><br>" . xlt("If the help file does not exist create one and place it in") . " " . text("Documentation/help_files") . ".<br>" . "</h3>";
+            $modal_body = "<h3> <i class='fa fa-exclamation-triangle  oe-text-red' aria-hidden='true'></i> " . xlt("Check if a help file exists for this page in") . " " . text("Documentation/help_files") . ".<br /><br />" . xlt("Then pass it's name as a value to the element" . " " . text("'help_file_name'") . " "  .  "in the associative array") . " " . text("\$arrOeUiSettings") . ".<br /><br />" . xlt("If the help file does not exist create one and place it in") . " " . text("Documentation/help_files") . ".<br />" . "</h3>";
         }
         $help_modal = <<<HELP
         <div class="row">
@@ -264,33 +267,26 @@ class OemrUI
                     <div class="modal-content  oe-modal-content" style="height:700px">
                         <div class="modal-header clearfix">
                             <button type="button" class="close" data-dismiss="modal" aria-label="$close">
-                            <span aria-hidden="true" style="color:#000000; font-size:1.5em;">×</span></button>
+                            <span aria-hidden="true" class='text-black' style='font-size:1.5em;'>×</span></button>
                         </div>
                         <div class="modal-body" style="height:80%;">
                             $modal_body
                         </div>
-                        <div class="modal-footer" style="margin-top:0px;">
+                        <div class="modal-footer mt-0">
                            <button class="btn btn-link btn-cancel oe-pull-away" data-dismiss="modal" type="button">$close</button>
-                           <!--<button class="btn btn-default btn-print oe-pull-away" data-dismiss="modal" id="print-help-href" type="button">$print</button>-->
                         </div>
                     </div>
                 </div>
             </div>
         </div>
 HELP;
-        echo $help_modal. "\r\n";
+        echo $help_modal . "\r\n";
 
         $jquery_draggable = <<<JQD
         <script>
         // Jquery draggable
-            $('.modal-dialog').draggable({
-                    handle: ".modal-header, .modal-footer"
-            });
-            $( ".modal-content" ).resizable({
-                aspectRatio: true,
-                minHeight: 300,
-                minWidth: 300
-            });
+            $(".modal-dialog").addClass('drag-action');
+            $(".modal-content").addClass('resize-action');
             var helpTitle = $('#help-href').prop('title');
             $('#myModal').on('hidden.bs.modal', function (e) {
                 $('#help-href').prop('title', '');
@@ -300,7 +296,7 @@ HELP;
             });
         </script>
 JQD;
-        echo $jquery_draggable. "\r\n";
+        echo $jquery_draggable . "\r\n";
         return;
     }
 
@@ -330,10 +326,10 @@ JQD;
                 $("#exp_cont_icon").removeClass ("hidden");
             }
         });
-        $(function() {
+        $(function () {
             $(window).trigger('resize');// to avoid repeating code triggers above on page open
         });
-        
+
         $(function () {
             $('.expand_contract').click(function () {
                 var elementTitle;
@@ -347,7 +343,7 @@ JQD;
                     $('#container_div').toggleClass('container container-fluid');
                     if ($(arrFiles).length) {
                         $.each(arrFiles, function (index, value) {
-                        
+
                             $.post(
                                 "{$web_root}/library/ajax/user_settings.php",
                                 {
@@ -381,7 +377,7 @@ JQD;
         });
         </script>
 EXP;
-        echo $header_expand_js ."\r\n";
+        echo $header_expand_js . "\r\n";
         return;
     }
 
@@ -397,39 +393,74 @@ EXP;
     private function headerActionJs($arrAction = array())
     {
         $arrAction = $this->arrAction;
+        $page = str_replace(" ", "", $this->heading);
+
+        // Build the labels for when the icon is moused-over
+        $labels = "";
+        if ($arrAction[0] == 'search') {
+            $labels .= "var showTitle = " .  xlj('Click to show search') . "\r\n;";
+            $labels .= "var hideTitle = " . xlj('Click to hide search') . "\r\n;";
+        } elseif ($arrAction[0] == 'reveal' || $arrAction[0] == 'conceal') {
+            $labels .= "var hideTitle = " .  xlj('Click to Hide') . "\r\n;";
+            $labels .= "var showTitle = " . xlj('Click to Show') . "\r\n;";
+        }
+
+        // Build the classes for which icon to display whien hiding, showing, etc.
+        $actionClasses = "";
+        if ($arrAction[0] == 'search') {
+            $actionClasses .= "var showActionClass = 'fa-search-plus'; \r\n";
+            $actionClasses .= "var hideActionClass = 'fa-search-minus'; \r\n";
+        } elseif ($arrAction[0] == 'reveal') {
+            $actionClasses .= "var showActionClass = 'fa-eye'; \r\n";
+            $actionClasses .= "var hideActionClass = 'fa-eye-slash'; \r\n";
+        } elseif ($arrAction[0] == 'conceal') {
+            $actionClasses .= "var showActionClass = 'fa-eye-slash'; \r\n";
+            $actionClasses .= "var hideActionClass = 'fa-eye'; \r\n";
+        }
+
         $action_top_js = <<<SHWTOP
         <script>
         $(function () {
+            $labels
+            $actionClasses
             $('#show_hide').click(function () {
                 var elementTitle = '';
 SHWTOP;
-        echo $action_top_js ."\r\n";
-
-        if ($arrAction[0] == 'search') {
-            echo "var showTitle = " .  xlj('Click to show search') . "\r\n;";
-            echo "var hideTitle = " . xlj('Click to hide search') . "\r\n;";
-        } elseif ($arrAction[0] == 'reveal' || $arrAction[0] == 'conceal') {
-            echo "var hideTitle = " .  xlj('Click to Hide') . "\r\n;";
-            echo "var showTitle = " . xlj('Click to Show') . "\r\n;";
-        }
-
-        if ($arrAction[0] == 'search') {
-            echo "$(this).toggleClass('fa-search-plus fa-search-minus'); \r\n";
-        } elseif ($arrAction[0] == 'reveal') {
-            echo "$(this).toggleClass('fa-eye fa-eye-slash'); \r\n";
-        } elseif ($arrAction[0] == 'conceal') {
-            echo "$(this).toggleClass('fa-eye-slash fa-eye'); \r\n";
-        }
+        echo $action_top_js . "\r\n";
 
                 $action_bot_js = <<<SHWBOT
+
+                $(this).toggleClass(showActionClass + ' ' + hideActionClass);
+
                 $('.hideaway').toggle(500);
-                if ($(this).is('.fa-eye') || $(this).is('.fa-search-plus')) {
+                if ($(this).is('.' + showActionClass)) {
                     elementTitle = showTitle;
-                } else if ($(this).is('.fa-eye-slash') || $(this).is('.fa-search-minus')) {
+                } else if ($(this).is('.' + hideActionClass)) {
                     elementTitle = hideTitle;
                 }
                 $(this).prop('title', elementTitle);
-            });
+
+                // Remember our hideaway setting in local storage. If it's visible, show it on next page load
+                localStorage.setItem('display#$page', elementTitle);
+            }); // End of show_hide click()
+
+            // Use localStorage to remember your last setting
+            // Simulate 'click-to-show' if display is set to 'true', or null if there's no setting (default)
+            // getItem() returns a string which is why we have to check for the string 'true'
+            const elementTitle = localStorage.getItem('display#$page');
+            let shouldDisplay = false;
+            if (typeof hideTitle != 'undefined' &&
+                (elementTitle == hideTitle || elementTitle == null)) {
+                shouldDisplay = true
+            }
+
+            // We display if we remember we're showing it, but we don't intentionally hide it (no else here to hide)
+            // Because the hideaway is probably shown by default for a reason like in the billing manager
+            if (shouldDisplay) {
+                $('.hideaway').show(500);
+                $('#show_hide').removeClass(showActionClass);
+                $('#show_hide').addClass(hideActionClass);
+            }
         });
         </script>
 SHWBOT;

@@ -1,4 +1,5 @@
 <?php
+
 /**
  * This is a report of sales by item description.
  *
@@ -13,12 +14,11 @@
  * @license   https://github.com/openemr/openemr/blob/master/LICENSE GNU General Public License 3
  */
 
-
 require_once("../globals.php");
 require_once("$srcdir/patient.inc");
-require_once("$srcdir/acl.inc");
 require_once "$srcdir/options.inc.php";
 
+use OpenEMR\Common\Acl\AclMain;
 use OpenEMR\Common\Csrf\CsrfUtils;
 use OpenEMR\Core\Header;
 
@@ -28,9 +28,9 @@ if (!empty($_POST)) {
     }
 }
 
-$form_provider  = $_POST['form_provider'];
-if ($_POST['form_refresh'] || $_POST['form_csvexport']) {
-    $form_details  = $_POST['form_details']      ? true : false;
+$form_provider  = $_POST['form_provider'] ?? null;
+if (!empty($_POST['form_refresh']) || !empty($_POST['form_csvexport'])) {
+    $form_details = (!empty($_POST['form_details'])) ? true : false;
 } else {
     $form_details = false;
 }
@@ -70,7 +70,7 @@ function thisLineItem($patient_id, $encounter_id, $rowcat, $description, $transd
     $pat_name = $patdata['fname'] . ' ' . $patdata['mname'] . ' ' . $patdata['lname'];
 
     if (empty($rowcat)) {
-        $rowcat = xl('None');
+        $rowcat = xl('None{{Sales}}');
     }
 
     $rowproduct = $description;
@@ -168,7 +168,7 @@ function thisLineItem($patient_id, $encounter_id, $rowcat, $description, $transd
         $catleft = $category;
     }
 
-    if ($_POST['form_details']) {
+    if (!empty($_POST['form_details'])) {
         if ($_POST['form_csvexport']) {
             echo csvEscape(display_desc($category)) . ',';
             echo csvEscape(display_desc($product)) . ',';
@@ -248,15 +248,15 @@ function thisLineItem($patient_id, $encounter_id, $rowcat, $description, $transd
     $grandqty     += $qty;
 } // end function
 
-if (! acl_check('acct', 'rep')) {
+if (! AclMain::aclCheckCore('acct', 'rep')) {
     die(xlt("Unauthorized access."));
 }
 
 $form_from_date = (isset($_POST['form_from_date'])) ? DateToYYYYMMDD($_POST['form_from_date']) : date('Y-m-d');
 $form_to_date   = (isset($_POST['form_to_date'])) ? DateToYYYYMMDD($_POST['form_to_date']) : date('Y-m-d');
-$form_facility  = $_POST['form_facility'];
+$form_facility  = $_POST['form_facility'] ?? null;
 
-if ($_POST['form_csvexport']) {
+if (!empty($_POST['form_csvexport'])) {
     header("Pragma: public");
     header("Expires: 0");
     header("Cache-Control: must-revalidate, post-check=0, pre-check=0");
@@ -297,7 +297,7 @@ if ($_POST['form_csvexport']) {
 
     <?php Header::setupHeader(['datetime-picker', 'report-helper']); ?>
 
-    <style type="text/css">
+    <style>
         /* specifically include & exclude from printing */
         @media print {
             #report_parameters {
@@ -322,16 +322,15 @@ if ($_POST['form_csvexport']) {
         }
 
         table.mymaintable, table.mymaintable td {
-            border: 1px solid #aaaaaa;
             border-collapse: collapse;
         }
         table.mymaintable td {
-            padding: 1pt 4pt 1pt 4pt;
+            padding: 1px 5px 1px 5px;
         }
     </style>
 
-    <script language="JavaScript">
-        $(function() {
+    <script>
+        $(function () {
             oeFixedHeaderSetup(document.getElementById('mymaintable'));
             var win = top.printLogSetup ? top : opener.top;
             win.printLogSetup(document.getElementById('printbutton'));
@@ -365,20 +364,20 @@ if ($_POST['form_csvexport']) {
   <div style='float:left'>
   <table class='text'>
       <tr>
-          <td class='control-label'>
+          <td class='col-form-label'>
             <?php echo xlt('Facility'); ?>:
           </td>
           <td>
         <?php dropdown_facility($form_facility, 'form_facility', true); ?>
           </td>
-          <td class='control-label'>
+          <td class='col-form-label'>
             <?php echo xlt('From'); ?>:
           </td>
           <td>
             <input type='text' class='datepicker form-control' name='form_from_date' id="form_from_date" size='10' value='<?php echo attr(oeFormatShortDate($form_from_date)); ?>'>
           </td>
-          <td class='control-label'>
-            <?php echo xlt('To'); ?>:
+          <td class='col-form-label'>
+            <?php echo xlt('To{{Range}}'); ?>:
           </td>
           <td>
             <input type='text' class='datepicker form-control' name='form_to_date' id="form_to_date" size='10' value='<?php echo attr(oeFormatShortDate($form_to_date)); ?>'>
@@ -387,12 +386,12 @@ if ($_POST['form_csvexport']) {
   </table>
   <table class='text'>
       <tr>
-        <td class='control-label'>
+        <td class='col-form-label'>
         <?php echo xlt('Provider'); ?>:
         </td>
         <td>
         <?php
-        if (acl_check('acct', 'rep_a')) {
+        if (AclMain::aclCheckCore('acct', 'rep_a')) {
           // Build a drop-down list of providers.
             $query = "select id, lname, fname from users where " .
               "authorized = 1 order by lname, fname";
@@ -401,8 +400,8 @@ if ($_POST['form_csvexport']) {
             echo "    <option value=''>-- " . xlt('All Providers') . " --\n";
             while ($row = sqlFetchArray($res)) {
                 $provid = $row['id'];
-                echo "    <option value='". attr($provid) ."'";
-                if ($provid == $_REQUEST['form_provider']) {
+                echo "    <option value='" . attr($provid) . "'";
+                if (!empty($_REQUEST['form_provider']) && ($provid == $_REQUEST['form_provider'])) {
                     echo " selected";
                 }
 
@@ -427,20 +426,20 @@ if ($_POST['form_csvexport']) {
   </div>
 
   </td>
-  <td align='left' valign='middle' height="100%">
-    <table style='border-left:1px solid; width:100%; height:100%' >
+  <td class='h-100' align='left' valign='middle'>
+    <table class='w-100 h-100' style='border-left:1px solid;'>
          <tr>
             <td>
               <div class="text-center">
                   <div class="btn-group" role="group">
-                      <a href='#' class='btn btn-default btn-save' onclick='$("#form_refresh").attr("value","true"); $("#form_csvexport").attr("value",""); $("#theform").submit();'>
+                      <a href='#' class='btn btn-secondary btn-save' onclick='$("#form_refresh").attr("value","true"); $("#form_csvexport").attr("value",""); $("#theform").submit();'>
                         <?php echo xlt('Submit'); ?>
                       </a>
-                    <?php if ($_POST['form_refresh'] || $_POST['form_csvexport']) { ?>
-                            <a href='#' class='btn btn-default btn-print' id='printbutton'>
+                    <?php if (!empty($_POST['form_refresh']) || !empty($_POST['form_csvexport'])) { ?>
+                            <a href='#' class='btn btn-secondary btn-print' id='printbutton'>
                                 <?php echo xlt('Print'); ?>
                             </a>
-                            <a href='#' class='btn btn-default btn-transmit' onclick='$("#form_refresh").attr("value",""); $("#form_csvexport").attr("value","true"); $("#theform").submit();'>
+                            <a href='#' class='btn btn-secondary btn-transmit' onclick='$("#form_refresh").attr("value",""); $("#form_csvexport").attr("value","true"); $("#theform").submit();'>
                                 <?php echo xlt('CSV Export'); ?>
                             </a>
                     <?php } ?>
@@ -456,12 +455,12 @@ if ($_POST['form_csvexport']) {
 </div> <!-- end of parameters -->
 
     <?php
-    if ($_POST['form_refresh'] || $_POST['form_csvexport']) {
+    if (!empty($_POST['form_refresh']) || !empty($_POST['form_csvexport'])) {
         ?>
 
 <div id="report_results">
-<table width='98%' id='mymaintable' class='mymaintable'>
-<thead>
+<table width='98%' id='mymaintable' class='table table-striped mymaintable'>
+<thead class='thead-light'>
  <th>
         <?php echo xlt('Category'); ?>
  </th>
@@ -527,7 +526,7 @@ if ($_POST['form_csvexport']) {
     } // end not export
 }
 
-if ($_POST['form_refresh'] || $_POST['form_csvexport']) {
+if (!empty($_POST['form_refresh']) || !empty($_POST['form_csvexport'])) {
     $from_date = $form_from_date . ' 00:00:00';
     $to_date = $form_to_date . ' 23:59:59';
     $category = "";
@@ -634,7 +633,7 @@ if ($_POST['form_refresh'] || $_POST['form_csvexport']) {
   </td>
   <td class="detail" colspan="3">
         <?php
-        if ($_POST['form_details']) {
+        if (!empty($_POST['form_details'])) {
             echo xlt('Total for') . ' ';
         }
 
@@ -660,10 +659,10 @@ if ($_POST['form_refresh'] || $_POST['form_csvexport']) {
   <td class="detail">
    &nbsp;
   </td>
-  <td class="detail" colspan="3"><b>
+  <td class="detail" colspan="3"><strong>
         <?php echo xlt('Total for category') . ' ';
         echo text(display_desc($category)); ?>
-  </b></td>
+  </strong></td>
         <?php if ($GLOBALS['sales_report_invoice'] == 0 || $GLOBALS['sales_report_invoice'] == 2) {?>
   <td>
    &nbsp;
@@ -672,18 +671,18 @@ if ($_POST['form_refresh'] || $_POST['form_csvexport']) {
   <td align="right">
    &nbsp;
   </td>
-  <td align="right"><b>
+  <td align="right"><strong>
         <?php echo text($catqty); ?>
-  </b></td>
-  <td align="right"><b>
+  </strong></td>
+  <td align="right"><strong>
         <?php echo text(bucks($cattotal)); ?>
-  </b></td>
+  </strong></td>
  </tr>
 
  <tr>
-  <td class="detail" colspan="4"><b>
+  <td class="detail" colspan="4"><strong>
         <?php echo xlt('Grand Total'); ?>
-  </b></td>
+  </strong></td>
         <?php if ($GLOBALS['sales_report_invoice'] == 0 || $GLOBALS['sales_report_invoice'] == 2) {?>
   <td>
    &nbsp;
@@ -692,23 +691,23 @@ if ($_POST['form_refresh'] || $_POST['form_csvexport']) {
   <td align="right">
    &nbsp;
   </td>
-  <td align="right"><b>
+  <td align="right"><strong>
         <?php echo text($grandqty); ?>
-  </b></td>
-  <td align="right"><b>
+  </strong></td>
+  <td align="right"><strong>
         <?php echo text(bucks($grandtotal)); ?>
-  </b></td>
+  </strong></td>
  </tr>
         <?php $report_from_date = oeFormatShortDate($form_from_date)  ;
         $report_to_date = oeFormatShortDate($form_to_date)  ;
         ?>
-<div align='right'><span class='title' ><?php echo xlt('Report Date'). ' '; ?><?php echo text($report_from_date);?> - <?php echo text($report_to_date);?></span></div>
+<div align='right'><span class='title' ><?php echo xlt('Report Date') . ' '; ?><?php echo text($report_from_date);?> - <?php echo text($report_to_date);?></span></div>
         <?php
     } // End not csv export
 }
 
-if (! $_POST['form_csvexport']) {
-    if ($_POST['form_refresh']) {
+if (empty($_POST['form_csvexport'])) {
+    if (!empty($_POST['form_refresh'])) {
         ?>
 
 </tbody>

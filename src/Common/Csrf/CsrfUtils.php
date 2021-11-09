@@ -1,4 +1,5 @@
 <?php
+
 /**
  * CsrfUtils class.
  *
@@ -17,7 +18,6 @@
  * @copyright Copyright (c) 2018-2019 Brady Miller <brady.g.miller@gmail.com>
  * @license   https://github.com/openemr/openemr/blob/master/LICENSE GNU General Public License 3
  */
-
 
 namespace OpenEMR\Common\Csrf;
 
@@ -68,7 +68,7 @@ class CsrfUtils
     }
 
     // Function to manage when a csrf token is not verified
-    public static function csrfNotVerified($toScreen = true, $toLog = true)
+    public static function csrfNotVerified($toScreen = true, $toLog = true, $die = true)
     {
         if ($toScreen) {
             echo xlt('Authentication Error');
@@ -76,6 +76,8 @@ class CsrfUtils
         if ($toLog) {
             error_log("OpenEMR CSRF token authentication error");
         }
-        die;
+        if ($die) {
+            die;
+        }
     }
 }

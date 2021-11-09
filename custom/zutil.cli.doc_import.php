@@ -1,4 +1,5 @@
 <?php
+
 /**
  * Command-line / Unattended document import utility.
  *
@@ -33,7 +34,7 @@
  */
 
 // Allow this script to be run as a cronjob
-require_once(dirname(__FILE__, 2)."/library/allow_cronjobs.php");
+require_once(dirname(__FILE__, 2) . "/library/allow_cronjobs.php");
 
 // Defaults
 $arg = array(
@@ -51,7 +52,7 @@ foreach ($arg as $key => $def) {
     }
 }
 
-require_once(dirname(__FILE__, 2)."/interface/globals.php");
+require_once(dirname(__FILE__, 2) . "/interface/globals.php");
 require_once("$srcdir/documents.php");
 
 if (isset($GLOBALS[$arg['path']])) {
@@ -102,7 +103,7 @@ foreach ($docs as $doc) {
     }
 
     $doc_pathname = $doc->getPathname();
-    $doc_url = "file://".$doc_pathname;
+    $doc_url = "file://" . $doc_pathname;
 
     $finfo = finfo_open();
     $str_mime = finfo_file($finfo, $doc_pathname, FILEINFO_MIME_TYPE);
@@ -126,7 +127,7 @@ foreach ($docs as $doc) {
         $objDoc->set_mimetype($str_mime);
         $objDoc->set_url($doc_url);
         $objDoc->set_size($doc->getSize());
-        $objDoc->set_hash(sha1_file($doc_pathname));
+        $objDoc->set_hash(hash_file('sha3-512', $doc_pathname));
         $objDoc->set_type($objDoc->type_array['file_url']);
         $objDoc->set_owner($arg['owner']);
         $objDoc->set_foreign_id($arg['pid']);

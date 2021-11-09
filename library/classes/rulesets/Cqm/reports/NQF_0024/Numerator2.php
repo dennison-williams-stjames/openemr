@@ -1,4 +1,5 @@
 <?php
+
 // Copyright (C) 2011 Ken Chapple <ken@mi-squared.com>
 //
 // This program is free software; you can redistribute it and/or
@@ -12,7 +13,7 @@ class NQF_0024_Numerator2 implements CqmFilterIF
     {
         return "Numerator 2";
     }
-    
+
     public function test(CqmPatient $patient, $beginDate, $endDate)
     {
         //if ( Helper::check( ClinicalType::COMMUNICATION, Communication::COUNS_NUTRITION, $patient, $beginDate, $endDate ) ) {

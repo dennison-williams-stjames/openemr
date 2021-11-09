@@ -1,4 +1,5 @@
 <?php
+
 /** @package    verysimple::Phreeze */
 
 /**
@@ -19,19 +20,19 @@ class DataPage implements Iterator
      * The Rows property is an array of objects retreived from the data store
      */
     public $Rows = null;
-    
+
     /**
      * ObjectName is the classname of the object that is stored
      */
     public $ObjectName = "";
-    
+
     /**
      * ObjectInstance is an instance of the class that is stored in Rows
      *
      * @var Phreezable
      */
     public $ObjectInstance = null;
-    
+
     /**
      * ObjectKey is the name of the primary key property for the objects in Rows
      */
@@ -40,7 +41,7 @@ class DataPage implements Iterator
     public $TotalPages = 0;
     public $CurrentPage = 0;
     public $PageSize = 0;
-    
+
     /**
      *
      * @return Phreezable
@@ -53,7 +54,7 @@ class DataPage implements Iterator
     {
         reset($this->Rows);
     }
-    
+
     /**
      *
      * @return Phreezable
@@ -70,7 +71,7 @@ class DataPage implements Iterator
     {
         return $this->current() !== false;
     }
-    
+
     /**
      * Returns the entire page as an array of objects.
      * if the asSimpleObject is false
@@ -88,7 +89,7 @@ class DataPage implements Iterator
     function ToObjectArray($asSimpleObject = false, $options = null)
     {
         $arr = null;
-        
+
         if ($asSimpleObject) {
             $arr = array ();
             foreach ($this->Rows as $row) {
@@ -97,7 +98,7 @@ class DataPage implements Iterator
         } else {
             $arr = $this->Rows;
         }
-        
+
         return $arr;
     }
 }

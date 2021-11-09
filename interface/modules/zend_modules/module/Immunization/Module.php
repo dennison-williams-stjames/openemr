@@ -1,20 +1,21 @@
 <?php
+
 namespace Immunization;
 
-use Zend\ModuleManager\ModuleManager;
+use Laminas\ModuleManager\ModuleManager;
 
 class Module
 {
     public function getAutoloaderConfig()
     {
         return array(
-            'Zend\Loader\ClassMapAutoloader' => array(
+            'Laminas\Loader\ClassMapAutoloader' => array(
                 __DIR__ . '/autoload_classmap.php',
             ),
-            'Zend\Loader\StandardAutoloader' => array(
+            'Laminas\Loader\StandardAutoloader' => array(
                 'namespaces' => array(
                     __NAMESPACE__ => __DIR__ . '/src/' . __NAMESPACE__,
-                    
+
                 ),
             ),
         );
@@ -24,7 +25,7 @@ class Module
     {
         return include __DIR__ . '/config/module.config.php';
     }
-    
+
     public function init(ModuleManager $moduleManager)
     {
         // TODO: it needs to be documented why we want to inject the current_controller and current_action here..

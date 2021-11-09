@@ -1,9 +1,10 @@
 <?php
+
 /**
  * Dicom viewer wrapper script for documents
  *
- * @package   OpenEMR
- * @link      https://www.open-emr.org
+ * @package OpenEMR
+ * @link    https://www.open-emr.org
  * @author    Victor Kofia <https://kofiav.com> 'Viewer'
  * @author    Jerry Padgett <sjpadgett@gmail.com> 'Viewer wrapper'
  * @copyright Copyright (c) 2017-2018 Victor Kofia <https://kofiav.com>
@@ -21,15 +22,14 @@ use OpenEMR\Core\Header;
 use OpenEMR\Common\Csrf\CsrfUtils;
 
 $web_path = $_REQUEST['web_path'] ?? null;
-$patid = $_REQUEST['patient_id'];
-$docid = isset($_REQUEST['document_id']) ? $_REQUEST['document_id'] : $_REQUEST['doc_id'];
-$d = new Document(attr($docid));
-$type = '.dcm';
-if ($d->get_mimetype() == 'application/dicom+zip') {
-    $type = '.zip';
-}
-
 if ($web_path) {
+    $patid = $_REQUEST['patient_id'] ?? null;
+    $docid = isset($_REQUEST['document_id']) ? $_REQUEST['document_id'] : ($_REQUEST['doc_id'] ?? null);
+    $d = new Document(attr($docid));
+    $type = '.dcm';
+    if ($d->get_mimetype() == 'application/dicom+zip') {
+        $type = '.zip';
+    }
     $csrf = attr(CsrfUtils::collectCsrfToken());
     $state_url = $GLOBALS['web_root'] . "/library/ajax/upload.php";
     $web_path = attr($web_path) . '&retrieve&patient_id=' . attr_url($patid) . '&document_id=' . attr_url($docid) . '&as_file=false&type=' . attr_url($type);
@@ -39,34 +39,29 @@ if ($web_path) {
 <html>
 <head>
     <title><?php echo xlt("Dicom Viewer"); ?></title>
-    <!--
-        @TODO For v6 develop a jquery-slider replacement
-          for now the only conversion i've not done
-    -->
-    <?php Header::setupHeader(['no_bootstrap', 'jquery-ui', 'jquery-ui-base']); ?>
 
-    <script type="text/javascript" src="<?php echo $GLOBALS['assets_static_relative']; ?>/manual-added-packages/modernizr-3-5-0/modernizr-build.js"></script>
-    <script type="text/javascript" src="<?php echo $GLOBALS['assets_static_relative']; ?>/i18next/dist/umd/i18next.min.js"></script>
-    <script type="text/javascript" src="<?php echo $GLOBALS['assets_static_relative']; ?>/i18next-xhr-backend/dist/umd/i18nextXHRBackend.min.js"></script>
-    <script type="text/javascript" src="<?php echo $GLOBALS['assets_static_relative']; ?>/i18next-browser-languagedetector/dist/umd/i18nextBrowserLanguageDetector.min.js"></script>
-    <script type="text/javascript" src="<?php echo $GLOBALS['assets_static_relative']; ?>/konva/konva.min.js"></script>
-    <script type="text/javascript" src="<?php echo $GLOBALS['assets_static_relative']; ?>/magic-wand-js/js/magic-wand-min.js"></script>
+    <?php Header::setupHeader(['dwv', 'i18next', 'i18next-xhr-backend', 'i18next-browser-languagedetector', 'jszip', 'magic-wand', 'konva']); ?>
     <script type="text/javascript" src="<?php echo $GLOBALS['assets_static_relative']; ?>/flot/jquery.flot.js"></script>
-
-    <script type="text/javascript" src="<?php echo $GLOBALS['web_root'] ?>/library/js/dwv/assets/jszip/dist/jszip.min.js"></script>
-    <script type="text/javascript" src="<?php echo $GLOBALS['web_root'] ?>/library/js/dwv/assets/dwv/decoders/dwv/rle.js"></script>
-    <script type="text/javascript" src="<?php echo $GLOBALS['web_root'] ?>/library/js/dwv/assets/dwv/decoders/pdfjs/jpx.js"></script>
-    <script type="text/javascript" src="<?php echo $GLOBALS['web_root'] ?>/library/js/dwv/assets/dwv/decoders/pdfjs/util.js"></script>
-    <script type="text/javascript" src="<?php echo $GLOBALS['web_root'] ?>/library/js/dwv/assets/dwv/decoders/pdfjs/arithmetic_decoder.js"></script>
-    <script type="text/javascript" src="<?php echo $GLOBALS['web_root'] ?>/library/js/dwv/assets/dwv/decoders/pdfjs/jpg.js"></script>
-    <script type="text/javascript" src="<?php echo $GLOBALS['web_root'] ?>/library/js/dwv/assets/dwv/decoders/rii-mango/lossless-min.js"></script>
-    <script type="text/javascript" src="<?php echo $GLOBALS['web_root'] ?>/library/js/dwv/assets/dwv/dist/dwv.min.js"></script>
-
+    <!-- Local (dwv) -->
+    <script src="<?php echo $GLOBALS['web_root'] ?>/library/js/dwv/gui/browser.js"></script>
+    <script src="<?php echo $GLOBALS['web_root'] ?>/library/js/dwv/gui/colourMap.js"></script>
+    <script src="<?php echo $GLOBALS['web_root'] ?>/library/js/dwv/gui/custom.js"></script>
+    <script src="<?php echo $GLOBALS['web_root'] ?>/library/js/dwv/gui/dropboxLoader.js"></script>
+    <script src="<?php echo $GLOBALS['web_root'] ?>/library/js/dwv/gui/filter.js"></script>
+    <script src="<?php echo $GLOBALS['web_root'] ?>/library/js/dwv/gui/generic.js"></script>
+    <script src="<?php echo $GLOBALS['web_root'] ?>/library/js/dwv/gui/undo.js"></script>
+    <script src="<?php echo $GLOBALS['web_root'] ?>/library/js/dwv/gui/help.js"></script>
+    <script src="<?php echo $GLOBALS['web_root'] ?>/library/js/dwv/gui/html.js"></script>
+    <script src="<?php echo $GLOBALS['web_root'] ?>/library/js/dwv/gui/infoController.js"></script>
+    <script src="<?php echo $GLOBALS['web_root'] ?>/library/js/dwv/gui/infoOverlay.js"></script>
+    <script src="<?php echo $GLOBALS['web_root'] ?>/library/js/dwv/gui/loader.js"></script>
+    <script src="<?php echo $GLOBALS['web_root'] ?>/library/js/dwv/gui/tools.js"></script>
+    <script src="<?php echo $GLOBALS['web_root'] ?>/library/js/dwv/gui/plot.js"></script>
     <!-- i18n dwv wrapper -->
-    <script type="text/javascript" src="<?php echo $GLOBALS['web_root'] ?>/library/js/dwv/dwv_i18n.js"></script>
+    <script src="<?php echo $GLOBALS['web_root'] ?>/library/js/dwv/dwv_i18n.js"></script>
     <!-- Launch the app -->
-    <script type="text/javascript" src="<?php echo $GLOBALS['web_root'] ?>/library/js/dwv/dicom_gui.js"></script>
-    <script type="text/javascript" src="<?php echo $GLOBALS['web_root'] ?>/library/js/dwv/dicom_launcher.js"></script>
+    <script src="<?php echo $GLOBALS['web_root'] ?>/library/js/dwv/dicom_gui.js"></script>
+    <script src="<?php echo $GLOBALS['web_root'] ?>/library/js/dwv/dicom_launcher.js"></script>
 </head>
 <style type="text/css">
     body {
@@ -82,7 +77,7 @@ if ($web_path) {
         margin: 0;
     }
 
-    .container {
+    .container-fluid {
         display: flex;
         flex-direction: column;
     }
@@ -301,7 +296,7 @@ if ($web_path) {
     }
 
     .tags form {
-        width: 50%;
+        width: 45%;
     }
 
     /* draw list */
@@ -411,11 +406,12 @@ if ($web_path) {
 </style>
 <body>
     <!-- DWV -->
-    <div id="dwv" class="container" src='<?php echo $web_path ?>'>
+    <div id="dwv" class="container-fluid" src='<?php echo $web_path ?>'>
+    <?php if ($web_path) { ?>
         <input type="hidden" id="state_url" value='<?php echo $state_url ?>' />
         <input type="hidden" id="csrf" value='<?php echo $csrf ?>' />
-        <input type="hidden" id="doc_id" value='<?php echo attr($docid) ?>' />
-
+        <input type="hidden" id="doc_id" value='<?php echo attr($docid) ?>'' />
+    <?php } ?>
         <div id="pageHeader">
             <!-- Title -->
             <h2>DICOM Viewer<span>&nbsp;<em>( Not for Diagnostics )</em></h2>
@@ -479,5 +475,6 @@ if ($web_path) {
             <div class="drawList" title="Draw list"></div>
         </div><!-- /pageMain -->
     </div><!-- /dwv -->
+
 </body>
 </html>

@@ -1,4 +1,5 @@
 <?php
+
 /**
  *
  * AMC 314g_1_2_14 STAGE2 Denominator
@@ -29,7 +30,7 @@ class AMC_314g_1_2_14_STG2_Denominator implements AmcFilterIF
     {
         return "AMC_314g_1_2_14_STG2 Denominator";
     }
-    
+
     public function test(AmcPatient $patient, $beginDate, $endDate)
     {
         // Seen by the EP

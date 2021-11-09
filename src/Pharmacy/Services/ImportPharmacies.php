@@ -1,4 +1,5 @@
 <?php
+
 /**
  * Class ImportPharmacies
  * @package   OpenEMR
@@ -72,7 +73,7 @@ class ImportPharmacies
         $body = $response->body(); // already should be json.
 
         $pharmacyObj = json_decode($body, true, 512, 0);
-        $i=0;
+        $i = 0;
         foreach ($pharmacyObj as $obj => $value) {
             foreach ($value as $key => $show) {
                 /*********************Skip duplicates*******************/
@@ -80,7 +81,7 @@ class ImportPharmacies
                 if (self::entryCheck($npi) === true) {
                     continue;
                 }
-                /*************Check Zip Code Length**********************/
+               /*************Check Zip Code Length**********************/
                 $zipCode = $show['addresses'][0]['postal_code'];
                 if (strlen($zipCode) > 5) {
                     $zip = substr($zipCode, 0, -4);

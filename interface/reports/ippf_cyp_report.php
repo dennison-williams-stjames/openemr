@@ -1,4 +1,5 @@
 <?php
+
 /**
  * ippf_cyp_report.
  *
@@ -7,15 +8,16 @@
  * @author    Rod Roark <rod@sunsetsystems.com>
  * @author    Brady Miller <brady.g.miller@gmail.com>
  * @copyright Copyright (c) 2009-2010 Rod Roark <rod@sunsetsystems.com>
- * @copyright Copyright (c) 2017-2018 Brady Miller <brady.g.miller@gmail.com>
+ * @copyright Copyright (c) 2017-2019 Brady Miller <brady.g.miller@gmail.com>
  * @license   https://github.com/openemr/openemr/blob/master/LICENSE GNU General Public License 3
  */
 
 require_once("../globals.php");
 require_once("$srcdir/patient.inc");
-require_once("$srcdir/acl.inc");
 
+use OpenEMR\Common\Acl\AclMain;
 use OpenEMR\Common\Csrf\CsrfUtils;
+use OpenEMR\Core\Header;
 
 if (!empty($_POST)) {
     if (!CsrfUtils::verifyCsrfToken($_POST["csrf_token_form"])) {
@@ -137,8 +139,8 @@ function thisLineItem($patient_id, $encounter_id, $description, $transdate, $qty
     $grandqty     += $qty;
 } // end function
 
-if (! acl_check('acct', 'rep')) {
-    die(xl("Unauthorized access."));
+if (! AclMain::aclCheckCore('acct', 'rep')) {
+    die(xlt("Unauthorized access."));
 }
 
 $form_from_date = (isset($_POST['form_from_date'])) ? DateToYYYYMMDD($_POST['form_from_date']) : date('Y-m-d');
@@ -171,16 +173,12 @@ if ($_POST['form_csvexport']) {
 <html>
 <head>
 
-<link rel='stylesheet' href='<?php echo $css_header ?>' type='text/css'>
-<link rel="stylesheet" href="<?php echo $GLOBALS['assets_static_relative']; ?>/jquery-datetimepicker/build/jquery.datetimepicker.min.css">
+<title><?php echo xlt('CYP Report') ?></title>
 
-<title><?php xl('CYP Report', 'e') ?></title>
+    <?php Header::setupHeader(['datetime-picker']); ?>
 
-<script type="text/javascript" src="<?php echo $GLOBALS['assets_static_relative']; ?>/jquery-1-9-1/jquery.min.js"></script>
-<script type="text/javascript" src="<?php echo $GLOBALS['assets_static_relative']; ?>/jquery-datetimepicker/build/jquery.datetimepicker.full.min.js"></script>
-
-<script language="JavaScript">
-    $(function() {
+<script>
+    $(function () {
         var win = top.printLogSetup ? top : opener.top;
         win.printLogSetup(document.getElementById('printbutton'));
 
@@ -227,9 +225,9 @@ if ($_POST['form_csvexport']) {
 
     echo "   </select>\n";
     ?>
-   &nbsp;<?xl('From:','e')?>
+   &nbsp;<?php echo xlt('From')?>:
    <input type='text' class='datepicker' name='form_from_date' id="form_from_date" size='10' value='<?php echo attr(oeFormatShortDate($form_from_date)); ?>'>
-   &nbsp;To:
+   &nbsp;<?php echo xlt('To{{Range}}')?>:
    <input type='text' class='datepicker' name='form_to_date' id="form_to_date" size='10' value='<?php echo attr(oeFormatShortDate($form_to_date)); ?>'>
    &nbsp;
    <input type='checkbox' name='form_details' value='1'<?php echo ($_POST['form_details']) ? " checked" : ""; ?>><?php echo xlt('Details') ?>
@@ -299,7 +297,7 @@ if ($_POST['form_refresh'] || $_POST['form_csvexport']) {
     "JOIN form_encounter AS fe ON fe.pid = b.pid AND fe.encounter = b.encounter " .
     "WHERE b.code_type = 'MA' AND b.activity = 1 AND " .
     "fe.date >= ? AND fe.date <= ?";
-    array_push($sqlBindArray, $from_date.' 00:00:00', $to_date.' 23:59:59');
+    array_push($sqlBindArray, $from_date . ' 00:00:00', $to_date . ' 23:59:59');
 
     // If a facility was specified.
     if ($form_facility) {
@@ -332,7 +330,7 @@ if ($_POST['form_refresh'] || $_POST['form_csvexport']) {
     "fe.pid = s.pid AND fe.encounter = s.encounter AND " .
     "fe.date >= ? AND fe.date <= ? " .
     "WHERE s.fee != 0";
-    array_push($sqlBindArray, $from_date.' 00:00:00', $to_date.' 23:59:59');
+    array_push($sqlBindArray, $from_date . ' 00:00:00', $to_date . ' 23:59:59');
 
     // If a facility was specified.
     if ($form_facility) {

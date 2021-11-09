@@ -1,4 +1,5 @@
 <?php
+
 /**
  *
  * CQM NQF 0013 Numerator
@@ -20,7 +21,7 @@
  * @author  Ensoftek
  * @link    http://www.open-emr.org
  */
- 
+
 class NQF_0013_Numerator implements CqmFilterIF
 {
     public function getTitle()
@@ -48,7 +49,7 @@ class NQF_0013_Numerator implements CqmFilterIF
         if ($number > 0) {
             return true;
         }
-        
+
         return false;
     }
 }

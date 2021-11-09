@@ -1,4 +1,5 @@
 <?php
+
 /**
  * types_edit.php
  *
@@ -11,9 +12,7 @@
  * @license   https://github.com/openemr/openemr/blob/master/LICENSE GNU General Public License 3
  */
 
-
 require_once("../globals.php");
-require_once("$srcdir/acl.inc");
 require_once("$srcdir/options.inc.php");
 
 use OpenEMR\Core\Header;
@@ -22,7 +21,7 @@ $typeid = (isset($_REQUEST['typeid']) ? $_REQUEST['typeid'] : '') + 0;
 $parent = (isset($_REQUEST['parent']) ? $_REQUEST['parent'] : '') + 0;
 $ordtype = isset($_REQUEST['addfav']) ? $_REQUEST['addfav'] : '';
 $disabled = $ordtype ? "disabled" : '';
-$labid = isset($_GET['labid']) ? $_GET['labid'] + 0 : 0;
+$labid = isset($_GET['labid']) ? $_GET['labid'] : 0;
 $info_msg = "";
 
 function QuotedOrNull($fld)
@@ -85,11 +84,10 @@ function recursiveDelete($typeid)
 <!DOCTYPE html>
 <html>
 <head>
-    <?php Header::setupHeader(['opener','topdialog','datetime-picker', 'jquery-ui', 'jquery-ui-base']);?>
-
-<title><?php echo $typeid ? xlt('Edit') : xlt('Add New'); ?> <?php echo xlt('Order/Result Type'); ?></title>
-
-
+    <?php Header::setupHeader(['opener','topdialog','datetime-picker']);?>
+    <title>
+        <?php echo $typeid ? xlt('Edit') : xlt('Add New{{Type}}'); ?> <?php echo xlt('Order/Result Type'); ?>
+    </title>
 <style>
 .disabled {
     pointer-events: none;
@@ -104,12 +102,6 @@ td {
 .inputtext {
     padding-left: 2px;
     padding-right: 2px;
-}
-
-.button {
-    font-family: sans-serif;
-    font-size: 9pt;
-    font-weight: bold;
 }
 
 .ordonly {
@@ -141,7 +133,7 @@ div[id$="_info"] > a {
 }
 </style>
 
-<script language="JavaScript">
+<script>
 
 <?php require($GLOBALS['srcdir'] . "/restoreSession.php"); ?>
 
@@ -165,13 +157,13 @@ function set_related(codetype, code, selector, codedesc) {
 // This is for callback by the find-code popup.
 // Returns the array of currently selected codes with each element in codetype:code format.
 function get_related() {
- return document.forms[0][rcvarname].value.split(';');
+    return document.forms[0][rcvarname].value.split(';');
 }
 
 // This is for callback by the find-code popup.
 // Deletes the specified codetype:code from the currently selected list.
 function del_related(s) {
- my_del_related(s, document.forms[0][rcvarname], false);
+    my_del_related(s, document.forms[0][rcvarname], false);
 }
 
 // This invokes the find-code popup.
@@ -181,9 +173,9 @@ function sel_related(varname) {
     }
     rcvarname = varname;
     let url = '../patient_file/encounter/find_code_dynamic.php';
-    if (varname == 'form_diagnosis_code')
+    if (varname == 'form_diagnosis_code') {
         url = '../patient_file/encounter/find_code_dynamic.php?codetype=' + <?php echo js_url(collect_codetypes("diagnosis", "csv")); ?>;
-
+    }
     dlgopen(url, '_codeslkup', 985, 800, '', <?php echo xlj("Select Default Codes"); ?>);
 }
 
@@ -218,17 +210,27 @@ function proc_type_changed() {
     var f = document.forms[0];
     var pt = f.form_procedure_type;
     var ix = pt.selectedIndex;
-    if (ix < 0) ix = 0;
+    if (ix < 0) {
+        ix = 0;
+    }
     var ptval = pt.options[ix].value;
     var ptpfx = ptval.substring(0, 3);
     $('.ordonly').hide();
     $('.resonly').hide();
     $('.fgponly').hide();
     $('.foronly').hide();
-    if (ptpfx == 'ord') $('.ordonly').show();
-    if (ptpfx == 'for') $('.foronly').show();
-    if (ptpfx == 'res' || ptpfx == 'rec') $('.resonly').show();
-    if (ptpfx == 'fgp') $('.fgponly').show(); // Favorites
+    if (ptpfx == 'ord') {
+        $('.ordonly').show();
+    }
+    if (ptpfx == 'for') {
+        $('.foronly').show();
+    }
+    if (ptpfx == 'res' || ptpfx == 'rec') {
+        $('.resonly').show();
+    }
+    if (ptpfx == 'fgp') {
+        $('.fgponly').show(); // Favorites
+    }
     if (ptpfx == 'grp') {
         $('#form_legend').html(
             "<?php echo xla('Enter Details for Group'); ?>" + "   <i id='grp' class='fa fa-info-circle oe-text-black oe-superscript enter-details-tooltip' aria-hidden='true'></i>");
@@ -250,20 +252,19 @@ function proc_type_changed() {
             "<?php echo xla('Enter Details for Recommendation'); ?>" + "   <i id='rec' class='fa fa-info-circle oe-text-black oe-superscript enter-details-tooltip' aria-hidden='true'></i>");
     }
 }
-    $(function () {
-        proc_type_changed();
-    });
 
+$(function () {
+    proc_type_changed();
+});
 </script>
 
 </head>
-
-    <body class="body_top">
-        <div class= "container">
+    <body>
+        <div class="container mt-3">
             <?php
             // If we are saving, then save and close the window.
             //
-            if ($_POST['form_save']) {
+            if (!empty($_POST['form_save'])) {
                 $p_procedure_code = invalue('form_procedure_code');
 
                 if ($_POST['form_procedure_type'] == 'grp') {
@@ -296,7 +297,7 @@ function proc_type_changed() {
                     $newid = sqlInsert("INSERT INTO procedure_type SET parent = '" . add_escape_custom($parent) . "', $sets");
                     // $newid is not really used in this script
                 }
-            } elseif ($_POST['form_delete']) {
+            } elseif (!empty($_POST['form_delete'])) {
                 if ($typeid) {
                     // Get parent ID so we can refresh the tree view after deleting.
                     $row = sqlQuery("SELECT parent FROM procedure_type WHERE " .
@@ -306,11 +307,11 @@ function proc_type_changed() {
                 }
             }
 
-            if ($_POST['form_save'] || $_POST['form_delete']) {
+            if (!empty($_POST['form_save']) || !empty($_POST['form_delete'])) {
                 // Find out if this parent still has any children.
                 $trow = sqlQuery("SELECT procedure_type_id FROM procedure_type WHERE parent = ? LIMIT 1", [$parent]);
                 // Close this window and redisplay the updated list.
-                echo "<script language='JavaScript'>\n";
+                echo "<script>\n";
                 if ($info_msg) {
                     echo " alert(" . js_escape($info_msg) . ");\n";
                 }
@@ -341,7 +342,7 @@ function proc_type_changed() {
                                         </div>
                                         <div class="col-sm-12">
                                             <?php
-                                            $ordd = $ordtype ? $ordtype : $row['procedure_type'];
+                                            $ordd = (!empty($ordtype)) ? $ordtype : ($row['procedure_type'] ?? null);
                                             echo generate_select_list(
                                                 'form_procedure_type',
                                                 'proc_type',
@@ -385,7 +386,7 @@ function proc_type_changed() {
                                         </div>
                                         <div class="col-sm-12">
                                             <input type='text' name='form_name' id='form_name 'maxlength='63'
-                                                value='<?php echo attr($row['name']); ?>'
+                                                value='<?php echo attr($row['name'] ?? ''); ?>'
                                                 title='<?php echo xla('Your name for this category, procedure or result'); ?>'
                                                  class='form-control'>
                                         </div>
@@ -405,7 +406,7 @@ function proc_type_changed() {
                                         <div class="col-sm-12">
                                             <input type='text' name='form_description' id='form_description'
                                                 maxlength='255'
-                                                value='<?php echo attr($row['description']); ?>'
+                                                value='<?php echo attr($row['description'] ?? ''); ?>'
                                                 title='<?php echo xla('Description of this procedure or result code'); ?>'
                                                 class='form-control'>
                                         </div>
@@ -424,7 +425,7 @@ function proc_type_changed() {
                                         </div>
                                         <div class="col-sm-12">
                                             <input type='text' name='form_seq' id=='form_seq' maxlength='11'
-                                                value='<?php echo attr($row['seq'] + 0); ?>'
+                                                value='<?php echo attr($row['seq'] ?? 0); ?>'
                                                 title='<?php echo xla('Relative ordering of this entity'); ?>'
                                                 class='form-control'>
                                         </div>
@@ -467,7 +468,7 @@ function proc_type_changed() {
 
                                                 while ($pprow = sqlFetchArray($ppres)) {
                                                     echo "<option value='" . attr($pprow['ppid']) . "'";
-                                                    if ($pprow['ppid'] == $row['lab_id']) {
+                                                    if (!empty($row['lab_id']) && ($pprow['ppid'] == $row['lab_id'])) {
                                                         echo " selected";
                                                     }
 
@@ -494,7 +495,7 @@ function proc_type_changed() {
                                         <div class="col-sm-12">
                                             <input type='text' name='form_procedure_code' id='form_procedure_code'
                                                 maxlength='31'
-                                                value='<?php echo attr($row['procedure_code']); ?>'
+                                                value='<?php echo attr($row['procedure_code'] ?? ''); ?>'
                                                 title='<?php echo xla('The vendor-specific code identifying this procedure or result'); ?>'
                                                 class='form-control'>
                                         </div>
@@ -511,11 +512,11 @@ function proc_type_changed() {
                                 <div class="col-sm-12 ordonly foronly">
                                     <div class="clearfix">
                                         <div class="col-sm-12 label-div">
-                                            <label class="control-label" for="form_standard_code"><?php echo xlt('Standard Code'); ?>:</label><a href="#standard_code_info" class="icon-tooltip" data-toggle="collapse"><i class="fa fa-question-circle" aria-hidden="true"></i></a>
+                                            <label class="control-label" for="form_standard_code"><?php echo xlt('Standard Code (LOINC)'); ?>:</label><a href="#standard_code_info" class="icon-tooltip" data-toggle="collapse"><i class="fa fa-question-circle" aria-hidden="true"></i></a>
                                         </div>
                                         <div class="col-sm-12">
                                             <input type='text' name='form_standard_code' id='form_standard_code'
-                                                value='<?php echo attr($row['standard_code']); ?>'
+                                                value='<?php echo attr($row['standard_code'] ?? ''); ?>'
                                                 title='<?php echo xla('Enter the LOINC code for this procedure'); ?>'
                                                 class='form-control'>
                                         </div>
@@ -536,7 +537,7 @@ function proc_type_changed() {
                                         </div>
                                         <div class="col-sm-12">
                                             <input type='text'  name='form_diagnosis_code' id='form_diagnosis_code'
-                                                   value='<?php echo attr($row['related_code']) //data stored in related_code field?>'
+                                                   value='<?php echo attr($row['related_code'] ?? '') //data stored in related_code field?>'
                                                    onclick='sel_related("form_diagnosis_code")'
                                                    title='<?php echo xla('Click to select diagnosis or procedure code to default to order'); ?>'
                                                    class='form-control' readonly />
@@ -562,7 +563,7 @@ function proc_type_changed() {
                                                     'field_id' => 'body_site',
                                                     'list_id' => 'proc_body_site',
                                                     'description' => xl('Body site, if applicable')
-                                                ), $row['body_site']);
+                                                ), ($row['body_site'] ?? null));
                                                 ?>
                                         </div>
                                     </div>
@@ -585,7 +586,7 @@ function proc_type_changed() {
                                                     'field_id' => 'specimen',
                                                     'list_id' => 'proc_specimen',
                                                     'description' => xl('Specimen Type')
-                                                ), $row['specimen']);
+                                                ), ($row['specimen'] ?? null));
                                                 ?>
                                         </div>
                                     </div>
@@ -609,7 +610,7 @@ function proc_type_changed() {
                                                     'field_id' => 'route_admin',
                                                     'list_id' => 'proc_route',
                                                     'description' => xl('Route of administration, if applicable')
-                                                ), $row['route_admin']);
+                                                ), ($row['route_admin'] ?? null));
                                                 ?>
                                         </div>
                                     </div>
@@ -633,7 +634,7 @@ function proc_type_changed() {
                                                     'field_id' => 'laterality',
                                                     'list_id' => 'proc_lat',
                                                     'description' => xl('Laterality of this procedure, if applicable')
-                                                ), $row['laterality']);
+                                                ), ($row['laterality'] ?? null));
                                                 ?>
                                         </div>
                                     </div>
@@ -657,7 +658,7 @@ function proc_type_changed() {
                                                     'field_id' => 'units',
                                                     'list_id' => 'proc_unit',
                                                     'description' => xl('Optional default units for manual entry of results')
-                                                ), $row['units']);
+                                                ), ($row['units'] ?? null));
                                                 ?>
                                         </div>
                                     </div>
@@ -676,7 +677,7 @@ function proc_type_changed() {
                                         </div>
                                         <div class="col-sm-12">
                                             <input type='text' name='form_range' id='form_range' maxlength='255'
-                                                value='<?php echo attr($row['range']); ?>'
+                                                value='<?php echo attr($row['range'] ?? ''); ?>'
                                                 title='<?php echo xla('Optional default range for manual entry of results'); ?>'
                                                 class='form-control' >
                                         </div>
@@ -695,8 +696,8 @@ function proc_type_changed() {
                                             <label class="control-label" for="form_related_code"><?php echo xlt('Followup Services'); ?>:</label><a href="#related_code_info" class="icon-tooltip" data-toggle="collapse"><i class="fa fa-question-circle" aria-hidden="true"></i></a>
                                         </div>
                                         <div class="col-sm-12">
-                                            <input type='text'  name='form_related_code' id='form_related_code'
-                                                value='<?php echo attr($row['related_code']) ?>'
+                                            <input type='text' name='form_related_code' id='form_related_code'
+                                                value='<?php echo attr($row['related_code'] ?? '') ?>'
                                                 onclick='sel_related("form_related_code")'
                                                 title='<?php echo xla('Click to select services to perform if this result is abnormal'); ?>'
                                                 class='form-control' readonly />
@@ -711,13 +712,13 @@ function proc_type_changed() {
                             </div>
                         </fieldset>
                         <?php //can change position of buttons by creating a class 'position-override' and adding rule text-alig:center or right as the case may be in individual stylesheets ?>
-                        <div class="form-group clearfix" id="button-container">
+                        <div class="form-group" id="button-container">
                             <div class="col-sm-12 text-left position-override">
-                                <div class="btn-group btn-group-pinch" role="group">
-                                    <button type='submit' name='form_save'  class="btn btn-default btn-save"  value='<?php echo xla('Save'); ?>'><?php echo xlt('Save'); ?></button>
-                                    <button type="button" class="btn btn-link btn-cancel btn-separate-left" onclick='window.close()';><?php echo xlt('Cancel');?></button>
+                                <div class="btn-group" role="group">
+                                    <button type='submit' name='form_save'  class="btn btn-primary btn-save"  value='<?php echo xla('Save'); ?>'><?php echo xlt('Save'); ?></button>
+                                    <button type="button" class="btn btn-secondary btn-cancel" onclick='window.close()';><?php echo xlt('Cancel');?></button>
                                     <?php if ($typeid) { ?>
-                                        <button type='submit' name='form_delete'  class="btn btn-default btn-cancel btn-delete btn-separate-left" value='<?php echo xla('Delete'); ?>'><?php echo xlt('Delete'); ?></button>
+                                        <button type='submit' name='form_delete' class="btn btn-danger btn-cancel btn-delete" value='<?php echo xla('Delete'); ?>'><?php echo xlt('Delete'); ?></button>
                                     <?php } ?>
                                 </div>
                             </div>
@@ -729,17 +730,15 @@ function proc_type_changed() {
         <script>
             //jqury-ui tooltip
             $(function () {
-                //for jquery tooltip to function if jquery 1.12.1.js is called via jquery-ui in the Header::setupHeader
-                // the relevant css file needs to be called i.e. jquery-ui-darkness - to get a black tooltip
-                $('.icon-tooltip').attr("title", <?php echo xlj('Click to see more information'); ?>).tooltip({
+                $('.icon-tooltip i').attr({"title": <?php echo xlj('Click to see more information'); ?>, "data-toggle":"tooltip", "data-placement":"bottom"}).tooltip({
                     show: {
                         delay: 700,
                         duration: 0
                     }
                 });
-                $('.enter-details-tooltip').attr( "title", <?php echo xlj('Additional help to fill out this form is available by hovering over labels of each box and clicking on the dark blue help ? icon that is revealed'); ?> + ". " + <?php echo xlj('On mobile devices tap once on the label to reveal the help icon and tap on the icon to show the help section'); ?> + ".").tooltip();
+                $('.enter-details-tooltip').attr({"title": <?php echo xlj('Additional help to fill out this form is available by hovering over labels of each box and clicking on the dark blue help ? icon that is revealed. On mobile devices tap once on the label to reveal the help icon and tap on the icon to show the help section'); ?>, "data-toggle":"tooltip", "data-placement":"bottom"}).tooltip();
                 $('#form_procedure_type').click(function(){
-                    $('.enter-details-tooltip').attr( "title", <?php echo xlj('Additional help to fill out this form is available by hovering over labels of each box and clicking on the dark blue help ? icon that is revealed'); ?> + ". " + <?php echo xlj('On mobile devices tap once on the label to reveal the help icon and tap on the icon to show the help section'); ?> + ".").tooltip();
+                    $('.enter-details-tooltip').attr({"title": <?php echo xlj('Additional help to fill out this form is available by hovering over labels of each box and clicking on the dark blue help ? icon that is revealed. On mobile devices tap once on the label to reveal the help icon and tap on the icon to show the help section'); ?>, "data-toggle":"tooltip", "data-placement":"bottom"}).tooltip();
                 });
             });
         </script>

@@ -1,5 +1,7 @@
 <?php
+
 /** @package    verysimple::Authentication */
+
 require_once("IAuthenticatable.php");
 
 /**
@@ -36,10 +38,10 @@ class SimpleAccount implements IAuthenticatable
             $this->_authenticated = true;
             return true;
         }
-        
+
         return false;
     }
-    
+
     /**
      * This is implemented only for Phreeze but is not utilized
      *

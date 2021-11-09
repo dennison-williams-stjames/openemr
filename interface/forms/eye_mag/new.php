@@ -1,4 +1,5 @@
 <?php
+
 /**
  * forms/eye_mag/new.php
  *
@@ -11,37 +12,38 @@
  * @license   https://github.com/openemr/openemr/blob/master/LICENSE GNU General Public License 3
  */
 
+require_once("../../globals.php");
+require_once("$srcdir/api.inc");
 
-include_once("../../globals.php");
-include_once("$srcdir/api.inc");
+use OpenEMR\Common\Session\SessionUtil;
 
 $form_name = "Eye Exam";
 $table_name = "form_eye_base";
 $form_folder = "eye_mag";
-include_once("../../forms/".$form_folder."/php/".$form_folder."_functions.php");
-formHeader("Form: ".$form_name);
+include_once("../../forms/" . $form_folder . "/php/" . $form_folder . "_functions.php");
+formHeader("Form: " . $form_name);
 $returnurl = 'encounter_top.php';
 
-$pid = $_REQUEST['pid'];
+$pid = $_REQUEST['pid'] ?? null;
 
 if (!$pid) {
     $pid = $_SESSION['pid'];
 } else {
-    $_SESSION['pid'] = $pid;
+    SessionUtil::setSession('pid', $pid);
 }
 
-if (!$user) {
+if (empty($user)) {
     $user = $_SESSION['authUser'];
 }
 
-if (!$group) {
+if (empty($group)) {
     $group = $_SESSION['authProvider'];
 }
 
 if (!$_SESSION['encounter']) {
     $encounter = date("Ymd");
 } else {
-    $encounter=$_SESSION['encounter'];
+    $encounter = $_SESSION['encounter'];
 }
 
 $query = "select * from form_encounter where pid =? and encounter= ?";
@@ -54,13 +56,13 @@ $query = "SELECT * " .
     "f.formdir = ? AND f.encounter = fe.encounter AND f.encounter=? AND f.deleted = 0";
 $erow = sqlQuery($query, array($pid, $encounter_date, $form_folder, $encounter));
 
-if ($erow['form_id'] > '0') {
+if (!empty($erow['form_id']) && ($erow['form_id'] > '0')) {
     formHeader("Redirecting....");
-    formJump('./view_form.php?formname='.$form_folder.'&id='.attr($erow['form_id']).'&pid='.attr($pid));
+    formJump('./view_form.php?formname=' . $form_folder . '&id=' . attr($erow['form_id']) . '&pid=' . attr($pid));
     formFooter();
     exit;
 } else {
-    $id = $erow2['count']++; //erow2['count'] is not defined and formSubmit doesn't use it since we are inserting...
+    $id = (!empty($erow2['count'])) ? $erow2['count']++ : null; //erow2['count'] is not defined and formSubmit doesn't use it since we are inserting...
     $providerid = findProvider(attr($pid), $encounter);
     $newid = formSubmit($table_name, $_POST, $id, $providerid);
     $tables = array('form_eye_hpi','form_eye_ros','form_eye_vitals',
@@ -68,7 +70,7 @@ if ($erow['form_id'] > '0') {
         'form_eye_external', 'form_eye_antseg','form_eye_postseg',
         'form_eye_neuro','form_eye_locking');
     foreach ($tables as $table) {
-        $sql = "INSERT INTO ". $table ." set id=?, pid=?";
+        $sql = "INSERT INTO " . $table . " set id=?, pid=?";
         sqlStatement($sql, array($newid, $pid));
     }
     $sql = "insert into forms (date, encounter, form_name, form_id, pid, " .
@@ -77,6 +79,6 @@ if ($erow['form_id'] > '0') {
 }
 
     formHeader("Redirecting....");
-    formJump('./view_form.php?formname='.$form_folder.'&id='.attr($newid).'&pid='.attr($pid));
+    formJump('./view_form.php?formname=' . $form_folder . '&id=' . attr($newid) . '&pid=' . attr($pid));
     formFooter();
     exit;

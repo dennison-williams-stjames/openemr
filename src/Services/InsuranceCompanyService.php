@@ -1,4 +1,5 @@
 <?php
+
 /**
  * InsuranceCompanyService
  *
@@ -11,11 +12,10 @@
  * @license   https://github.com/openemr/openemr/blob/master/LICENSE GNU General Public License 3
  */
 
-
 namespace OpenEMR\Services;
 
-use Particle\Validator\Validator;
 use OpenEMR\Services\AddressService;
+use Particle\Validator\Validator;
 
 class InsuranceCompanyService
 {

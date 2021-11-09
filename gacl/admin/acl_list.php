@@ -1,22 +1,27 @@
 <?php
 //First make sure user has access
 require_once("../../interface/globals.php");
-require_once("$srcdir/acl.inc");
+
+use OpenEMR\Common\Acl\AclMain;
+use OpenEMR\Common\Csrf\CsrfUtils;
+
 //ensure user has proper access
-if (!acl_check('admin', 'acl')) {
+if (!AclMain::aclCheckCore('admin', 'acl')) {
             echo xlt('ACL Administration Not Authorized');
-            exit;
-}
-//ensure php is installed
-if (!isset($phpgacl_location)) {
-            echo xlt('php-GACL access controls are turned off');
             exit;
 }
 
 require_once('gacl_admin.inc.php');
 
-switch ($_GET['action']) {
+$getAction = $_GET['action'] ?? null;
+switch ($getAction) {
 	case 'Delete':
+
+	    //CSRF prevent
+        if (!CsrfUtils::verifyCsrfToken($_GET["csrf_token_form"])) {
+            CsrfUtils::csrfNotVerified();
+        }
+
 		$gacl_api->debug_text('Delete!');
 
 		if (is_array ($_GET['delete_acl']) AND !empty($_GET['delete_acl'])) {
@@ -40,7 +45,7 @@ switch ($_GET['action']) {
 		 * but will only return the matching rows, so it won't show the entire ACL information.
 		 *
 		 */
-		if (isset($_GET['action']) AND $_GET['action'] == 'Filter') {
+		if (isset($getAction) AND $getAction == 'Filter') {
 			$gacl_api->debug_text('Filtering...');
 
 			$query = '
@@ -124,7 +129,7 @@ switch ($_GET['action']) {
 
 		$acl_ids = array();
 
-		$rs = $db->PageExecute($query, $gacl_api->_items_per_page, $_GET['page']);
+		$rs = $db->PageExecute($query, $gacl_api->_items_per_page, ($_GET['page'] ?? null));
 		if ( is_object($rs) ) {
 			$smarty->assign('paging_data', $gacl_api->get_paging_data($rs));
 
@@ -145,7 +150,7 @@ switch ($_GET['action']) {
 		$acls = array();
 
 		//If the user is searching, and there are no results, don't run the query at all
-		if ( !($_GET['action'] == 'Filter' AND $acl_ids_sql == -1) ) {
+		if ( !($getAction == 'Filter' AND $acl_ids_sql == -1) ) {
 
 			// grab acl details
 			$query = '
@@ -221,23 +226,23 @@ switch ($_GET['action']) {
 
 		$smarty->assign('acls', $acls);
 
-		$smarty->assign('filter_aco', $_GET['filter_aco']);
-        $smarty->assign('filter_aco_escaped', attr($_GET['filter_aco']));
+		$smarty->assign('filter_aco', ($_GET['filter_aco'] ?? null));
+        $smarty->assign('filter_aco_escaped', attr($_GET['filter_aco'] ?? null));
 
-		$smarty->assign('filter_aro', $_GET['filter_aro']);
-        $smarty->assign('filter_aro_escaped', attr($_GET['filter_aro']));
+		$smarty->assign('filter_aro', ($_GET['filter_aro'] ?? null));
+        $smarty->assign('filter_aro_escaped', attr($_GET['filter_aro'] ?? null));
 
-		$smarty->assign('filter_aro_group', $_GET['filter_aro_group']);
-        $smarty->assign('filter_aro_group_escaped', attr($_GET['filter_aro_group']));
+		$smarty->assign('filter_aro_group', ($_GET['filter_aro_group'] ?? null));
+        $smarty->assign('filter_aro_group_escaped', attr($_GET['filter_aro_group'] ?? null));
 
-		$smarty->assign('filter_axo', $_GET['filter_axo']);
-        $smarty->assign('filter_axo_escaped', attr($_GET['filter_axo']));
+		$smarty->assign('filter_axo', ($_GET['filter_axo'] ?? null));
+        $smarty->assign('filter_axo_escaped', attr($_GET['filter_axo'] ?? null));
 
-		$smarty->assign('filter_axo_group', $_GET['filter_axo_group']);
-        $smarty->assign('filter_axo_group_escaped', attr($_GET['filter_axo_group']));
+		$smarty->assign('filter_axo_group', ($_GET['filter_axo_group'] ?? null));
+        $smarty->assign('filter_axo_group_escaped', attr($_GET['filter_axo_group'] ?? null));
 
-		$smarty->assign('filter_return_value', $_GET['filter_return_value']);
-        $smarty->assign('filter_return_value_escaped', attr($_GET['filter_return_value']));
+		$smarty->assign('filter_return_value', ($_GET['filter_return_value'] ?? null));
+        $smarty->assign('filter_return_value_escaped', attr($_GET['filter_return_value'] ?? null));
 
 		foreach(array('aco','aro','axo','acl') as $type) {
 			//
@@ -287,8 +292,8 @@ switch ($_GET['action']) {
         $smarty->assign('filter_enabled_escaped', attr($_GET['filter_enabled']));
 }
 
-$smarty->assign('action', $_GET['action']);
-$smarty->assign('action_escaped', attr($_GET['action']));
+$smarty->assign('action', $getAction);
+$smarty->assign('action_escaped', attr($getAction));
 
 $smarty->assign('return_page', $_SERVER['PHP_SELF']);
 
@@ -297,6 +302,8 @@ $smarty->assign('page_title', 'ACL List');
 
 $smarty->assign('phpgacl_version', $gacl_api->get_version());
 $smarty->assign('phpgacl_schema_version', $gacl_api->get_schema_version());
+
+$smarty->assign("CSRF_TOKEN_FORM", CsrfUtils::collectCsrfToken());
 
 $smarty->display('phpgacl/acl_list.tpl');
 ?>

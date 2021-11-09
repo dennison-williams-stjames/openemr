@@ -1,25 +1,26 @@
 <?php
+
 namespace Ccr;
 
 use Ccr\Model\Ccr;
 use Ccr\Model\CcrTable;
-use Zend\Db\TableGateway\TableGateway;
-use Zend\ModuleManager\ModuleManager;
-use Zend\View\Helper\Openemr\Emr;
-use Zend\View\Helper\Openemr\Menu;
+use Laminas\Db\TableGateway\TableGateway;
+use Laminas\ModuleManager\ModuleManager;
+use Laminas\View\Helper\Openemr\Emr;
+use Laminas\View\Helper\Openemr\Menu;
 
 class Module
 {
     public function getAutoloaderConfig()
     {
         return array(
-            'Zend\Loader\ClassMapAutoloader' => array(
+            'Laminas\Loader\ClassMapAutoloader' => array(
                 __DIR__ . '/autoload_classmap.php',
             ),
-            'Zend\Loader\StandardAutoloader' => array(
+            'Laminas\Loader\StandardAutoloader' => array(
                 'namespaces' => array(
                     __NAMESPACE__ => __DIR__ . '/src/' . __NAMESPACE__,
-                    
+
                 ),
             ),
         );
@@ -29,7 +30,7 @@ class Module
     {
         return include __DIR__ . '/config/module.config.php';
     }
-    
+
     public function init(ModuleManager $moduleManager)
     {
         $sharedEvents = $moduleManager->getEventManager()->getSharedManager();

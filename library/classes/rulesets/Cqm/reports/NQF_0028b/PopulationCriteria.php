@@ -1,4 +1,5 @@
 <?php
+
 // Copyright (C) 2011 Brady Miller <brady.g.miller@gmail.com>
 //
 // This program is free software; you can redistribute it and/or
@@ -12,27 +13,27 @@ class NQF_0028b_PopulationCriteria implements CqmPopulationCrtiteriaFactory
     {
         return "Population Criteria";
     }
-    
+
     public function createInitialPatientPopulation()
     {
         return new NQF_0028b_InitialPatientPopulation();
     }
-    
+
     public function createNumerators()
     {
         return new NQF_0028b_Numerator();
     }
-    
+
     public function createDenominator()
     {
         return new NQF_0028b_Denominator();
     }
-    
+
     public function createExclusion()
     {
         return new ExclusionsNone();
     }
-    
+
     public function createDenominatorException()
     {
         return new ExceptionsNone();

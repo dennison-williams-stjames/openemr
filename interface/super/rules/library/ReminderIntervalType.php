@@ -1,4 +1,5 @@
 <?php
+
  // Copyright (C) 2010-2011 Aron Racho <aron@mi-squred.com>
  //
  // This program is free software; you can redistribute it and/or
@@ -15,7 +16,7 @@ class ReminderIntervalType
 
     var $code;
     var $lbl;
-    
+
     function __construct($code, $lbl)
     {
         $this->lbl = $lbl;

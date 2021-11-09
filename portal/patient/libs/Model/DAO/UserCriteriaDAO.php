@@ -1,4 +1,5 @@
 <?php
+
 /**
  * UserCriteriaDAO.php
  *
@@ -11,7 +12,6 @@
 
 /** import supporting libraries */
 require_once("verysimple/Phreeze/Criteria.php");
-
 /**
  * UserCriteria allows custom querying for the User object.
  *

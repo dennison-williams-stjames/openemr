@@ -1,4 +1,5 @@
 <?php
+
 /**
  *
  * CQM NQF 0028(2014) Denominator
@@ -20,7 +21,7 @@
  * @author  Ensoftek
  * @link    http://www.open-emr.org
  */
- 
+
 class NQF_0028_2014_Denominator implements CqmFilterIF
 {
     public function getTitle()

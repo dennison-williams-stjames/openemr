@@ -1,4 +1,5 @@
 <?php
+
 /** @package    verysimple::IO */
 
 /**
@@ -18,7 +19,7 @@ require_once("FileHelper.php");
 class FolderHelper
 {
     private $Path;
-    
+
     /**
      * Constructor
      *
@@ -30,7 +31,7 @@ class FolderHelper
     {
         $this->Path = $path;
     }
-    
+
     /**
      * Returns an array of FileHelper objects
      *
@@ -43,7 +44,7 @@ class FolderHelper
     {
         $files = array ();
         $dh = opendir($this->Path);
-        
+
         while ($fname = readdir($dh)) {
             if (is_file($this->Path . $fname)) {
                 if ($pattern == "" || preg_match($pattern, $fname) > 0) {
@@ -51,9 +52,9 @@ class FolderHelper
                 }
             }
         }
-        
+
         closedir($dh);
-        
+
         return $files;
     }
 }

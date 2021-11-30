@@ -31,8 +31,6 @@ if (!$pid) {
 
 global $obj;
 
-// TODO: BUG: This will not work if there is not already a filled out application
-// get the record from the database
 if (!empty($_GET['id'])) {
    $obj = array_merge(
       formFetch("form_".$form_name, $_GET["id"]),
@@ -46,8 +44,29 @@ if (!empty($_GET['id'])) {
    if (isset($row['id'])) {
       $obj = array_merge(
          formFetch("form_".$form_name, $row["id"]),
-         sji_extendedOTH_formFetch($_GET["id"]));
+         sji_extendedOTH_formFetch($row["id"]));
    }
+}
+
+// If there is not already a rental subsidy application then let's try and pull
+// in data from a core variables record
+if (!$obj) {
+   require_once("$srcdir/../interface/forms/sji_intake_core_variables/common.php");
+   require_once("$srcdir/../interface/forms/sji_intake/common.php");
+
+   $query = "select id from form_sji_intake where pid=? order by date desc limit 1";
+   $res = sqlStatement($query, array($pid));
+   $row = sqlFetchArray($res);
+   $id = $row['id'];
+
+   $obj = array_merge(
+	getPatientData($pid),
+	formFetch("form_sji_intake", $id),
+	sji_intake_formFetch($id),
+        get_cv_form_obj($pid)
+   );
+
+   $obj['Name'] = $obj['fname'] .' '. $obj['lname'];
 }
 
 /* A helper function for getting list options */

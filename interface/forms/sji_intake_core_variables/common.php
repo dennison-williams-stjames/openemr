@@ -36,7 +36,7 @@ if (!isset($encounter) || $encounter == "") {
     $encounter = date("Ymd");
 }
 
-if (!$pid && isset($_SESSION['pid'])) {
+if (!isset($pid) && isset($_SESSION['pid'])) {
     $pid = $_SESSION['pid'];
 }
 

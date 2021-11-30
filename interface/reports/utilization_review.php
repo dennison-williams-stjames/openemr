@@ -230,6 +230,11 @@ if (isset($_POST['form_refresh']) || isset($_POST['form_csvexport'])) {
               }
            } else {
               error_log('Did not match race: '. $row['race']);
+              if (isset($race['Unknown'])) {
+                 $race['Unknown'] = $race['Unknown'] + 1;
+              } else {
+                 $race['Unknown'] = 1;
+              }
            }
         }
 
@@ -303,6 +308,11 @@ if (isset($_POST['form_refresh']) || isset($_POST['form_csvexport'])) {
            $ethnicity['Non-Hispanic'] = $ethnicity['Non-Hispanic'] + 1;
         } else {
            error_log('Did not match ethnicity '. $row['ethnicity']);
+           if (isset($ethnicity['Unknown'])) {
+              $ethnicity['Unknown'] = $ethnicity['Unknown'] + 1;
+           } else {
+              $ethnicity['Unknown'] = 1;
+           }
         }
 
         $total = $total + 1;

@@ -51,7 +51,7 @@ CREATE TABLE IF NOT EXISTS `form_sji_stride_intake` (
         /* What other types of support would be useful to you? */
         useful_support varchar(255) default null,
 
-        clinician_narrative varchar(255) default null,
+        clinician_narrative text,
 
 	PRIMARY KEY (id)
 ) ENGINE=InnoDB;

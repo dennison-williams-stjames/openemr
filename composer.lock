@@ -4,8 +4,120 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "109bebcbe7e21e6caee5214425af35c2",
+    "content-hash": "610c0ad69963efb3a771bff20c071b51",
     "packages": [
+        {
+            "name": "DennisonWilliams/sji_alert",
+            "version": "dev-main",
+            "source": {
+                "type": "git",
+                "url": "https://github.com/DennisonWilliams/sji_alert.git",
+                "reference": "06a16335b97de6d16744b3fc4c2b62d28ad02a2a"
+            },
+            "dist": {
+                "type": "zip",
+                "url": "https://api.github.com/repos/DennisonWilliams/sji_alert/zipball/06a16335b97de6d16744b3fc4c2b62d28ad02a2a",
+                "reference": "06a16335b97de6d16744b3fc4c2b62d28ad02a2a",
+                "shasum": ""
+            },
+            "require": {
+                "nyholm/psr7": "^1.4",
+                "openemr/oe-module-installer-plugin": "^0.1.0",
+                "php": "^7.1",
+                "symfony/event-dispatcher": "^4.4.0"
+            },
+            "conflict": {
+                "openemr/openemr": "<6.0.0"
+            },
+            "default-branch": true,
+            "type": "openemr-module",
+            "autoload": {
+                "psr-4": {
+                    "OpenEMR\\Modules\\SJIAlert\\": "src/"
+                }
+            },
+            "license": [
+                "GPL-3.0"
+            ],
+            "authors": [
+                {
+                    "name": "Stephen Nielson",
+                    "email": "stephen@nielson.org",
+                    "role": "Developer"
+                },
+                {
+                    "name": "Dennison Williams",
+                    "email": "Dennison.Williams@DennisonWilliams.com",
+                    "role": "Developer"
+                }
+            ],
+            "description": "Custom Module for participant alerts at SJI",
+            "keywords": [
+                "openemr",
+                "openemr-module"
+            ],
+            "support": {
+                "source": "https://github.com/DennisonWilliams/sji_alert/tree/main",
+                "issues": "https://github.com/DennisonWilliams/sji_alert/issues"
+            },
+            "time": "2021-11-18T22:21:52+00:00"
+        },
+        {
+            "name": "DennisonWilliams/sji_demographics",
+            "version": "dev-main",
+            "source": {
+                "type": "git",
+                "url": "https://github.com/DennisonWilliams/sji_demographics.git",
+                "reference": "718a6f4a5b1f732ba9ceaf3dafdcc5b7153142c5"
+            },
+            "dist": {
+                "type": "zip",
+                "url": "https://api.github.com/repos/DennisonWilliams/sji_demographics/zipball/718a6f4a5b1f732ba9ceaf3dafdcc5b7153142c5",
+                "reference": "718a6f4a5b1f732ba9ceaf3dafdcc5b7153142c5",
+                "shasum": ""
+            },
+            "require": {
+                "nyholm/psr7": "^1.4",
+                "openemr/oe-module-installer-plugin": "^0.1.0",
+                "php": "^7.1",
+                "symfony/event-dispatcher": "^4.4.0"
+            },
+            "conflict": {
+                "openemr/openemr": "<6.0.0"
+            },
+            "default-branch": true,
+            "type": "openemr-module",
+            "autoload": {
+                "psr-4": {
+                    "OpenEMR\\Modules\\SJIDemographics\\": "src/"
+                }
+            },
+            "license": [
+                "GPL-3.0"
+            ],
+            "authors": [
+                {
+                    "name": "Stephen Nielson",
+                    "email": "stephen@nielson.org",
+                    "role": "Developer"
+                },
+                {
+                    "name": "Dennison Williams",
+                    "email": "Dennison.Williams@DennisonWilliams.com",
+                    "role": "Developer"
+                }
+            ],
+            "description": "OpenEMR Custom Demographics Module for SJI",
+            "keywords": [
+                "openemr",
+                "openemr-module"
+            ],
+            "support": {
+                "source": "https://github.com/DennisonWilliams/sji_demographics/tree/main",
+                "issues": "https://github.com/DennisonWilliams/sji_demographics/issues"
+            },
+            "time": "2021-11-23T20:58:13+00:00"
+        },
         {
             "name": "academe/authorizenet-objects",
             "version": "0.7.3",
@@ -4331,16 +4443,16 @@
         },
         {
             "name": "nyholm/psr7",
-            "version": "1.3.2",
+            "version": "1.4.1",
             "source": {
                 "type": "git",
                 "url": "https://github.com/Nyholm/psr7.git",
-                "reference": "a272953743c454ac4af9626634daaf5ab3ce1173"
+                "reference": "2212385b47153ea71b1c1b1374f8cb5e4f7892ec"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/Nyholm/psr7/zipball/a272953743c454ac4af9626634daaf5ab3ce1173",
-                "reference": "a272953743c454ac4af9626634daaf5ab3ce1173",
+                "url": "https://api.github.com/repos/Nyholm/psr7/zipball/2212385b47153ea71b1c1b1374f8cb5e4f7892ec",
+                "reference": "2212385b47153ea71b1c1b1374f8cb5e4f7892ec",
                 "shasum": ""
             },
             "require": {
@@ -4354,7 +4466,7 @@
                 "psr/http-message-implementation": "1.0"
             },
             "require-dev": {
-                "http-interop/http-factory-tests": "^0.8",
+                "http-interop/http-factory-tests": "^0.9",
                 "php-http/psr7-integration-tests": "^1.0",
                 "phpunit/phpunit": "^7.5 || 8.5 || 9.4",
                 "symfony/error-handler": "^4.4"
@@ -4362,7 +4474,7 @@
             "type": "library",
             "extra": {
                 "branch-alias": {
-                    "dev-master": "1.0-dev"
+                    "dev-master": "1.4-dev"
                 }
             },
             "autoload": {
@@ -4392,7 +4504,7 @@
             ],
             "support": {
                 "issues": "https://github.com/Nyholm/psr7/issues",
-                "source": "https://github.com/Nyholm/psr7/tree/1.3.2"
+                "source": "https://github.com/Nyholm/psr7/tree/1.4.1"
             },
             "funding": [
                 {
@@ -4404,7 +4516,7 @@
                     "type": "github"
                 }
             ],
-            "time": "2020-11-14T17:35:34+00:00"
+            "time": "2021-07-02T08:32:20+00:00"
         },
         {
             "name": "nyholm/psr7-server",
@@ -4620,6 +4732,57 @@
                 "source": "https://github.com/thephpleague/omnipay-stripe/tree/v3.1.0"
             },
             "time": "2019-08-31T10:55:06+00:00"
+        },
+        {
+            "name": "openemr/oe-module-installer-plugin",
+            "version": "0.1.5",
+            "source": {
+                "type": "git",
+                "url": "https://github.com/openemr/oe-module-installer-plugin.git",
+                "reference": "4803eb0e6ad07328bd0eac485d0b2ff9e075f9f6"
+            },
+            "dist": {
+                "type": "zip",
+                "url": "https://api.github.com/repos/openemr/oe-module-installer-plugin/zipball/4803eb0e6ad07328bd0eac485d0b2ff9e075f9f6",
+                "reference": "4803eb0e6ad07328bd0eac485d0b2ff9e075f9f6",
+                "shasum": ""
+            },
+            "require": {
+                "composer-plugin-api": "^2.0"
+            },
+            "require-dev": {
+                "composer/composer": "^2.0"
+            },
+            "type": "composer-plugin",
+            "extra": {
+                "class": "OpenEMR\\Composer\\ModuleInstallerPlugin\\Plugin"
+            },
+            "autoload": {
+                "psr-4": {
+                    "OpenEMR\\Composer\\ModuleInstallerPlugin\\": "src/"
+                }
+            },
+            "notification-url": "https://packagist.org/downloads/",
+            "license": [
+                "GPL-3.0"
+            ],
+            "authors": [
+                {
+                    "name": "Stephen Nielson",
+                    "email": "stephen@nielson.org",
+                    "role": "Developer"
+                }
+            ],
+            "description": "OpenEMR Module Installer plugin for installing custom modules into the OpenEMR codebase.",
+            "keywords": [
+                "openemr",
+                "openemr-module"
+            ],
+            "support": {
+                "issues": "https://github.com/openemr/oe-module-installer-plugin/issues",
+                "source": "https://github.com/openemr/oe-module-installer-plugin/tree/0.1.5"
+            },
+            "time": "2021-05-03T14:22:43+00:00"
         },
         {
             "name": "paragonie/constant_time_encoding",
@@ -11087,7 +11250,9 @@
     ],
     "minimum-stability": "stable",
     "stability-flags": {
-        "lcobucci/jwt": 20
+        "lcobucci/jwt": 20,
+        "dennisonwilliams/sji_alert": 20,
+        "dennisonwilliams/sji_demographics": 20
     },
     "prefer-stable": false,
     "prefer-lowest": false,
@@ -11098,5 +11263,5 @@
     "platform-overrides": {
         "php": "7.3"
     },
-    "plugin-api-version": "2.0.0"
+    "plugin-api-version": "2.1.0"
 }

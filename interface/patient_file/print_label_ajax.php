@@ -15,7 +15,6 @@
 
 
 require_once("../globals.php");
-require_once("$srcdir/authentication/password_change.php");
 
 $num=intval($_REQUEST['num']);
 $encounter=$_REQUEST['encounter'];

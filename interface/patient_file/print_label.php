@@ -99,11 +99,21 @@ if (array_key_exists('form_submit', $_POST)) {
 
 <p class="lead">&nbsp;<br>
 
-<?php echo xlt('How many?'); ?>
-<input type="text" name="number" maxlength=3 autofocus>
-<div class="btn-group">
-    <a href="#" onclick="print_labels();" class="btn btn-lg btn-save btn-default"><?php echo xlt('Print labels'); ?></a>
-    <a href='#' class="btn btn-lg btn-link btn-cancel" onclick="popup_close();"><?php echo xlt('Cancel');?></a>
+<div class="btn-group d-flex justify-content-center">
+<?php echo xlt('How many?'); ?>&nbsp;
+<input type="text" name="number" maxlength=3 size=3 autofocus>
+</div>
+
+<div class="btn-group d-flex justify-content-center">
+<button
+	onclick="print_labels();" 
+	class="btn btn-primary btn-small float-left"
+	type="button" name="print" ><?php echo xlt('Print labels'); ?></button>
+
+<button
+	onclick="popup_close();"
+	class="btn btn-primary btn-small float-right" 
+	type="button" name="cancel" ><?php echo xlt('Cancel'); ?></button>
 </div>
 <input type='hidden' name='form_submit' value='<?php echo xla('Yes, Print labels'); ?>'/>
 </form>

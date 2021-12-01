@@ -456,6 +456,9 @@ if (isset($obj['phone_contact'])) {
 
 <!-- emergency contact -->
 
+<!-- Disbaled until we get this working again:
+https://nextcloud.stjamesinfirmary.org/nextcloud/index.php/apps/deck/#/board/35/card/1700
+
 <div class="form-group row col-sm-12 bg-primary"><?php
 echo xlt('State Reimbursement Eligibility: Your answers to the following questions DO NOT change wether or not you may recieve our services and DOES NOT effect whether or not you have to pay for services. As always, all our services are FREE.');
 ?></div>
@@ -565,6 +568,8 @@ if (isset($obj['dependents'])) {
 >
 </div>
 </div>
+
+-->
 
 <div style="margin: 10px;" class="form-group row">
 <div class="col-sm-8 text-center">

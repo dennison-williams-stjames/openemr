@@ -17,8 +17,7 @@
 include_once(dirname(__FILE__).'/../../globals.php');
 include_once($GLOBALS["srcdir"]."/api.inc");
 
-function sji_stride_intake_report($pid, $encounter, $cols, $id = 0)
-{
+function sji_stride_intake_get_data($pid, $id = 0) {
     $form_name = "sji_stride_intake";
     $count = 0;
 
@@ -63,6 +62,62 @@ function sji_stride_intake_report($pid, $encounter, $cols, $id = 0)
           $data['supportive_people'] = implode(', ', $supportive_people);
        }
     }
+
+    return $data;
+}
+
+function sji_stride_intake_report_string($pid) {
+    $data = sji_stride_intake_get_data($pid);
+    $return = '';
+    if ($data) {
+        $return .= "<table>\n";
+        foreach ($data as $key => $value) {
+            if ($key == "id" ||
+                $key == "pid" ||
+                $key == "user" ||
+                $key == "groupname" ||
+                $key == "authorized" ||
+                $key == "activity" ||
+                $key == "Phone" ||
+                $key == "Address" ||
+                $key == "date" ||
+                $value == "" ||
+                preg_match('/^0000/', $value) )
+            {
+                continue;
+            }
+    
+            if ($value == "on") {
+                $value = "yes";
+            }
+    
+            $key=ucwords(str_replace("_", " ", $key));
+            $return .= "<tr>\n";
+
+            if ($key == "Why Are You Here") {
+               $key = xlt('Why are you here');
+            } else if ($key == "Hormone Duration"){
+               $key = xlt('Duration hormones have been taken');
+            } else if ($key == "Hormone Program"){
+               $key = xlt('Programs that have provided hormones');
+            }
+
+            $return .= "<td><span class=bold>" . 
+               xlt($key) . ": </span><span class=text>" . 
+               text($value) . "</span></td>\n";
+
+	    $return .= "</tr>\n";
+        }
+    }
+
+    $return .= "</table>\n";
+    return $return;
+}
+
+function sji_stride_intake_report($pid, $encounter, $cols, $id = 0)
+{
+
+    $data = sji_stride_intake_get_data($pid, $id);
 
     if ($data) {
         print "<table><tr>";

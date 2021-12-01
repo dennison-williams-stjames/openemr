@@ -17,8 +17,8 @@
 
 
 require_once(dirname(__FILE__).'/../../globals.php');
-include_once("$srcdir/api.inc");
-include_once("$srcdir/forms.inc");
+include_once("library/api.inc");
+include_once("library/forms.inc");
 
 /* 
  * name of the database table associated with this form

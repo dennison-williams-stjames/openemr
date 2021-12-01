@@ -25,9 +25,7 @@ function sji_intake_core_variables_fetch($pid, $id = 0) {
    return get_cv_form_obj($pid, $id);
 }
 
-// TODO: should we ad the join tables to this?
-function sji_intake_core_variables_report($pid, $encounter, $cols, $id)
-{
+function sji_intake_core_variables_build_data($pid, $id = 0) {
     $form_name = "sji_intake_core_variables";
     $count = 0;
     $data = sji_intake_core_variables_fetch($pid, $id);
@@ -80,8 +78,54 @@ function sji_intake_core_variables_report($pid, $encounter, $cols, $id)
                  $data['phone_contact'];
            }
            unset($data[$column]);
-        }
+	}
+	return $data;
+    } // if
+}
 
+function sji_intake_core_variables_report_string($pid) {
+	$data = sji_intake_core_variables_build_data($pid);
+	$return = '';
+        $return .= "<table>";
+        foreach ($data as $key => $value) {
+            if ($key == "id" ||
+                $key == "pid" ||
+                $key == "user" ||
+                $key == "groupname" ||
+                $key == "authorized" ||
+                $key == "activity" ||
+                $key == "date" ||
+                $value == "" ||
+                preg_match('/^0000/', $value) )
+            {
+                continue;
+            }
+    
+            if ($value == "on" ) {
+                $value = "yes";
+            }
+    
+            $key=ucwords(str_replace("_", " ", $key));
+            $return .= "<tr>\n";
+	    $return .= "<td><span class=bold>". 
+		    xlt($key). 
+		    ": </span><span class=text>". 
+		    text($value). 
+		    "</span></td>\n";
+            $return .= "</tr>\n";
+        } // foreach
+
+        // get a few other values
+	$return .= "</table>";
+
+	return $return;
+}
+
+
+// TODO: should we ad the join tables to this?
+function sji_intake_core_variables_report($pid, $encounter, $cols, $id) {
+
+	$data = buildData($pid, $id);
         print "<table>";
         foreach ($data as $key => $value) {
             if ($key == "id" ||
@@ -105,10 +149,7 @@ function sji_intake_core_variables_report($pid, $encounter, $cols, $id)
             print "<tr>\n";
             print "<td><span class=bold>" . xlt($key) . ": </span><span class=text>" . text($value) . "</span></td>\n";
             print "</tr>\n";
-        }
+        } // foreach
 
-        // get a few other values
-       
         print "</table>";
-    }
 }

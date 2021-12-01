@@ -1916,5 +1916,10 @@ if ($track_is_registered) {
 
 </script>
 
+<script>
+    /* Custom page modifications for SJI */
+    $('div.demographics-box section:nth-child(2)').hide();
+</script>
+
 </body>
 </html>

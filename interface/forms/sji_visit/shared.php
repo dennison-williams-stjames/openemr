@@ -24,6 +24,7 @@ require_once("$srcdir/lists.inc");
 require_once("$srcdir/encounter.inc");
 require_once("$srcdir/forms.inc");
 
+$table_name = 'form_sji_visit';
 
 $visit_columns = array('symptoms', 'initial_test_for_hiv', 'test_results_for_hiv', 
 'last_tested_for_hiv', 'last_tested_for_sti', 'counselor_name', 'massage', 
@@ -77,56 +78,6 @@ function sji_get_visit_submission_from_data($data) {
 	return $submission;
 }
 
-function new_visit($data, $pid) {
-   global $userauthorized;
-   $provider_id = $userauthorized ? $_SESSION['authUserID'] : 0;
-   $encounter = generate_id();
-   $submission = sji_get_visit_submission_from_data($data);
-   $submission['encounter'] = $encounter;
-   $data['date'] = isset($data['date']) ? $data['date'] : $data['form_date'];
-
-   $id = addForm(
-      $encounter,
-      "New Patient Encounter",
-      '', // we will correctly set this further down
-      "newpatient",
-      $pid,
-      $userauthorized,
-      $data['date']
-   );
-
-   // Add the encounter that we are associating the visit with
-   $eid = sqlInsert("INSERT INTO form_encounter SET " .
-      "date = '" . add_escape_custom($data['date']) . "', " .
-      "onset_date = '" . add_escape_custom(isset($data['onset_date']) ? $data['onset_date'] : '') . "', " .
-      "reason = '" . add_escape_custom(isset($data['reason']) ? $data['reason'] : '') . "', " .
-      "facility = '" . add_escape_custom(isset($data['facility']) ? $data['facility'] : '') ."', " .
-      "pc_catid = '" . add_escape_custom(isset($data['pc_catid']) ? $data['pc_catid'] : '') . "', " .
-      "facility_id = '" . add_escape_custom(isset($data['facility_id']) ? $data['facility_id'] : '') . "', " .
-      "billing_facility = '" . add_escape_custom(isset($data['billing_facility']) ? $data['billing_facility'] : '') . "', " .
-      "sensitivity = '" . add_escape_custom(isset($data['sensitivity']) ? $data['sensitivity'] : '') . "', " .
-      "referral_source = '" . add_escape_custom(isset($data['referral_source']) ? $data['referral_source'] : '') . "', " .
-      "pid = '" . add_escape_custom($pid) . "', " .
-      "encounter = '" . add_escape_custom($encounter) . "', " .
-      "pos_code = '" . add_escape_custom(isset($data['pos_code']) ? $data['pos_code'] : '') . "', " .
-      "external_id = '" . add_escape_custom(isset($data['external_id']) ? $data['external_id'] : '') . "', " .
-      "provider_id = '" . add_escape_custom($provider_id) . "'");
-
-   $newid = sji_extendedVisit($encounter, $data);
-
-   // fix the associated dates
-   $sql = "update form_sji_visit set date=? where encounter=?";
-   sqlQuery($sql, array($data['date'], $encounter));
-   $sql = "update form_encounter set date=? where encounter=?"; // $intake['encounter']
-   sqlQuery($sql, array($data['date'], $encounter));
-   $sql = "update forms set date=?,form_id=? where encounter=?"; // $intake['encounter']
-   sqlQuery($sql, array($data['date'], $eid, $encounter)); 
-
-   setencounter($encounter);
-
-   return $encounter;
-}
-
 function sji_extendedVisit($eid, $submission) {
    global $userauthorized;
 
@@ -171,36 +122,4 @@ function sji_extendedVisit($eid, $submission) {
    }
 
    return $id;
-}
-
-function update_visit($data, $pid) {
-    global $userauthorized;
-
-    $data['date'] = isset($data['date']) ? $data['date'] : $data['form_date'];
-    $id = $data["id"];
-    $result = sqlQuery("SELECT encounter, sensitivity FROM form_encounter WHERE id = ?", array($id));
-    if ($result['sensitivity'] && !acl_check('sensitivities', $result['sensitivity'])) {
-        die(xlt("You are not authorized to see this encounter."));
-    }
-
-    $encounter = $result['encounter'];
-
-    // See view.php to allow or disallow updates of the encounter date.
-    $datepart = acl_check('encounters', 'date_a') ? "date = '" . add_escape_custom($data['date']) . "', " : "";
-    sqlStatement("UPDATE form_encounter SET " .
-    $datepart .
-    "onset_date = '" . add_escape_custom($data['onset_date']) . "', " .
-    "reason = '" . add_escape_custom($data['reason']) . "', " .
-    "facility = '" . add_escape_custom($data['facility']) . "', " .
-    "pc_catid = '" . add_escape_custom($data['pc_catid']) . "', " .
-    "facility_id = '" . add_escape_custom($data['facility_id']) . "', " .
-    "billing_facility = '" . add_escape_custom(isset($data['billing_facility']) ? $data['billing_facility'] : '') . "', " .
-    "sensitivity = '" . add_escape_custom($data['sensitivity']) . "', " .
-    "referral_source = '" . add_escape_custom($data['referral_source']) . "', " .
-    "pid = '" . add_escape_custom($pid) . "', " .
-    "encounter = '" . add_escape_custom($encounter) . "', " .
-    "pos_code = '" . add_escape_custom(isset($data['pos_code']) ? $data['pos_code'] : '') . "' " .
-    "WHERE id = '" . add_escape_custom($id) . "'");
-
-    return sji_extendedVisit($encounter, $data);
 }

@@ -13,106 +13,35 @@
 
 
 require_once('shared.php');
+include_once("$srcdir/api.inc");
 
-use OpenEMR\Common\Csrf\CsrfUtils;
-use OpenEMR\Services\FacilityService;
-
-if (!CsrfUtils::verifyCsrfToken($_POST["csrf_token_form"])) {
-    CsrfUtils::csrfNotVerified();
+if ($encounter == "") {
+    $encounter = date("Ymd");
 }
-
-$facilityService = new FacilityService();
-
-$date             = (isset($_POST['form_date']))            ? DateToYYYYMMDD($_POST['form_date']) : '';
-$onset_date       = (isset($_POST['form_onset_date']))      ? DateToYYYYMMDD($_POST['form_onset_date']) : '';
-$sensitivity      = (isset($_POST['form_sensitivity']))     ? $_POST['form_sensitivity'] : '';
-$pc_catid         = (isset($_POST['pc_catid']))             ? $_POST['pc_catid'] : '';
-$facility_id      = (isset($_POST['facility_id']))          ? $_POST['facility_id'] : '';
-$billing_facility = (isset($_POST['billing_facility']))     ? $_POST['billing_facility'] : '';
-$reason           = (isset($_POST['reason']))               ? $_POST['reason'] : '';
-$mode             = (isset($_POST['mode']))                 ? $_POST['mode'] : '';
-$referral_source  = (isset($_POST['form_referral_source'])) ? $_POST['form_referral_source'] : '';
-$pos_code         = (isset($_POST['pos_code']))              ? $_POST['pos_code'] : '';
-$encounter_provider = $_POST['provider_id'] ?? 0;
-//save therapy group if exist in external_id column
-$external_id         = isset($_POST['form_gid']) ? $_POST['form_gid'] : '';
-
-$facilityresult = $facilityService->getById($facility_id);
-$facility = $facilityresult['name'];
-
-$normalurl = "patient_file/encounter/encounter_top.php";
-
-$nexturl = $normalurl;
-
-$provider_id = $_SESSION['authUserID'] ? $_SESSION['authUserID'] : 0;
-$provider_id = $encounter_provider ? $encounter_provider : $provider_id;
 
 if (!$pid) {
     $pid = $_SESSION['pid'];
 }
 
-if ($mode == 'new') {
-   new_visit(array_merge($_POST, $_GET), $pid);
-} else if ($mode == 'update') {
-   update_visit(array_merge($_POST, $_GET), $pid);
+$submission = array();
+foreach ($visit_columns as $column) {
+   if (isset($_REQUEST[$column])) {
+      $submission[$column] = $_REQUEST[$column];
+   }
+}
+
+if ($_REQUEST["mode"] == "new") {
+   $newid = formSubmit($table_name, $submission, '', $userauthorized);
+   addForm($encounter, "St. James Infirmary Visit Intake", $newid, "sji_visit", $pid, $userauthorized);
+   sji_extendedVisit($newid, $_REQUEST);
+} elseif ($_REQUEST["mode"] == "update") {
+   $success = formUpdate($table_name, $submission, $_REQUEST["id"], $userauthorized);
+   sji_extendedVisit($_REQUEST["id"], $_REQUEST);
 } else {
    die("Unknown mode '" . text($mode) . "'");
 }
 
-setencounter($encounter);
-
-// Update the list of issues associated with this encounter.
-if (isset($_POST['issues']) && is_array($_POST['issues'])) {
-    sqlStatement("DELETE FROM issue_encounter WHERE " .
-    "pid = ? AND encounter = ?", array($pid, $encounter));
-    foreach ($_POST['issues'] as $issue) {
-        $query = "INSERT INTO issue_encounter ( pid, list_id, encounter ) VALUES (?,?,?)";
-        sqlStatement($query, array($pid,$issue,$encounter));
-    }
-}
-
-$result4 = sqlStatement("SELECT fe.encounter,fe.date,openemr_postcalendar_categories.pc_catname FROM form_encounter AS fe ".
-    " left join openemr_postcalendar_categories on fe.pc_catid=openemr_postcalendar_categories.pc_catid  WHERE fe.pid = ? order by fe.date desc", array($pid));
-?>
-<html>
-<body>
-<script language='JavaScript'>
-    EncounterDateArray=new Array;
-    CalendarCategoryArray=new Array;
-    EncounterIdArray=new Array;
-    Count=0;
-        <?php
-        if (sqlNumRows($result4)>0) {
-            while ($rowresult4 = sqlFetchArray($result4)) {
-                ?>
-        EncounterIdArray[Count]=<?php echo js_escape($rowresult4['encounter']); ?>;
-    EncounterDateArray[Count]=<?php echo js_escape(oeFormatShortDate(date("Y-m-d", strtotime($rowresult4['date'])))); ?>;
-    CalendarCategoryArray[Count]=<?php echo js_escape(xl_appt_category($rowresult4['pc_catname'])); ?>;
-            Count++;
-                <?php
-            }
-        }
-        ?>
-
-    // Get the left_nav window, and the name of its sibling (top or bottom) frame that this form is in.
-    // This works no matter how deeply we are nested
-
-    var my_left_nav = top.left_nav;
-    var w = window;
-    for (; w.parent != top; w = w.parent);
-    var my_win_name = w.name;
-    my_left_nav.setPatientEncounter(EncounterIdArray,EncounterDateArray,CalendarCategoryArray);
-    top.restoreSession();
-<?php if ($mode == 'new') { ?>
-    my_left_nav.setEncounter(<?php echo js_escape(oeFormatShortDate($date)) . ", " . js_escape($encounter) . ", window.name"; ?>);
-    // Load the tab set for the new encounter, w is usually the RBot frame.
-    w.location.href = '<?php echo "$rootdir/patient_file/encounter/encounter_top.php"; ?>';
-<?php } else { // not new encounter ?>
-    // Always return to encounter summary page.
-    window.location.href = '<?php echo "$rootdir/patient_file/encounter/forms.php"; ?>';
-<?php } // end if not new encounter ?>
-
-</script>
-
-</body>
-</html>
+$_SESSION["encounter"] = $encounter;
+formHeader("Redirecting....");
+formJump();
+formFooter();

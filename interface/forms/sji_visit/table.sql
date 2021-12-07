@@ -39,7 +39,7 @@ CREATE TABLE IF NOT EXISTS `form_sji_visit` (
  KEY `form_sji_visit_encounter_idx` (`encounter`) USING BTREE,
  CONSTRAINT `form_sji_visit_pid_patient_data_pid_fk` FOREIGN KEY (`pid`) REFERENCES `patient_data` (`pid`) ON DELETE CASCADE ON UPDATE CASCADE,
  CONSTRAINT `form_sji_visit_pid_patient_data_pid_fk` FOREIGN KEY (`encounter`) REFERENCES `form_encounter` (`encounter`) ON DELETE CASCADE ON UPDATE CASCADE
-) ENGINE=InnoDB
+) ENGINE=InnoDB;
 
 CREATE TABLE IF NOT EXISTS `form_sji_visit_medical_services` (
  id bigint(20) NOT NULL auto_increment,
@@ -49,7 +49,7 @@ CREATE TABLE IF NOT EXISTS `form_sji_visit_medical_services` (
  KEY `form_sji_visit_medical_services_pid_idx` (`pid`) USING BTREE,
  CONSTRAINT `form_sji_visit_medical_services_pid_form_sji_visit_id_fk` 
     FOREIGN KEY (`pid`) REFERENCES `form_sji_visit` (`id`) ON DELETE CASCADE ON UPDATE CASCADE
-) ENGINE=InnoDB
+) ENGINE=InnoDB;
 
 CREATE TABLE IF NOT EXISTS `form_sji_visit_initial_test_for_sti` (
  id bigint(20) NOT NULL auto_increment,
@@ -59,7 +59,7 @@ CREATE TABLE IF NOT EXISTS `form_sji_visit_initial_test_for_sti` (
  KEY `form_sji_visit_initial_test_for_sti_pid_idx` (`pid`) USING BTREE,
  CONSTRAINT `form_sji_visit_initial_test_for_sti_pid_form_sji_visit_id_fk` 
     FOREIGN KEY (`pid`) REFERENCES `form_sji_visit` (`id`) ON DELETE CASCADE ON UPDATE CASCADE
-) ENGINE=InnoDB
+) ENGINE=InnoDB;
 
 CREATE TABLE IF NOT EXISTS `form_sji_visit_test_results_for_sti` (
  id bigint(20) NOT NULL auto_increment,
@@ -69,7 +69,7 @@ CREATE TABLE IF NOT EXISTS `form_sji_visit_test_results_for_sti` (
  KEY `form_sji_visit_test_results_for_sti_pid_idx` (`pid`) USING BTREE,
  CONSTRAINT `form_sji_visit_test_results_for_sti_pid_form_sji_visit_id_fk` 
     FOREIGN KEY (`pid`) REFERENCES `form_sji_visit` (`id`) ON DELETE CASCADE ON UPDATE CASCADE
-) ENGINE=InnoDB
+) ENGINE=InnoDB;
 
 CREATE TABLE IF NOT EXISTS `form_sji_visit_counseling_services` (
  id bigint(20) NOT NULL auto_increment,
@@ -79,4 +79,4 @@ CREATE TABLE IF NOT EXISTS `form_sji_visit_counseling_services` (
  KEY `form_sji_visit_counseling_services_pid_idx` (`pid`) USING BTREE,
  CONSTRAINT `form_sji_visit_counseling_services_pid_form_sji_visit_id_fk` 
     FOREIGN KEY (`pid`) REFERENCES `form_sji_visit` (`id`) ON DELETE CASCADE ON UPDATE CASCADE
-) ENGINE=InnoDB
+) ENGINE=InnoDB;

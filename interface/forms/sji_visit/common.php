@@ -1,6 +1,6 @@
 <?php
 /**
- * Common script for the encounter form (new and view) scripts.
+ * Common script for the SJI visit form (new and view) scripts.
  *
  * @package   OpenEMR
  * @link      http://www.open-emr.org
@@ -11,19 +11,95 @@
  * @license   https://github.com/openemr/openemr/blob/master/LICENSE GNU General Public License 3
  */
 
+use OpenEMR\Core\Header;
+
+include_once('../../globals.php');
 require_once("shared.php");
 
+if (!isset($srcdir)) {
+	$srcdir = 'library';
+}
+
+if (!isset($rootdir)) {
+	$rootdir = 'interface';
+}
+
+include_once("$srcdir/api.inc");
 require_once("$srcdir/options.inc.php");
 require_once("$srcdir/acl.inc");
 require_once("$srcdir/lists.inc");
 
-use OpenEMR\Common\Csrf\CsrfUtils;
-use OpenEMR\Core\Header;
-use OpenEMR\Services\FacilityService;
-use OpenEMR\OeUI\OemrUI;
-use OpenEMR\Services\UserService;
+formHeader("Form: SJI Visit Intake");
+$returnurl = 'encounter_top.php';
+/* name of this form */
+$form_name = "sji_visit";
+$result = $obj = array();
 
-$facilityService = new FacilityService();
+if (!isset($pid)) {
+    $pid = $_SESSION['pid'];
+}
+
+// get the record from the database
+if (isset($_REQUEST['id']) && $_REQUEST['id'] != "") {
+   $result = $obj = array_merge(
+      formFetch("form_".$form_name, $_REQUEST["id"]),
+      sji_visit_formFetch($_REQUEST["id"]));
+
+}
+
+function sji_visit_formFetch($formid) {
+	$return = array();
+
+	if (!isset($formid)) {
+		error_log(__FUNCTION__ .'($formid) : Did not receive $formid');
+	}
+
+	// Add on the existing form_sji_visit_counseling_services rows
+	$query = "select counseling_services from form_sji_visit_counseling_services where pid=?";
+	$res = sqlStatement($query, array($formid));
+	$counseling_services = array();
+	while ($row = sqlFetchArray($res)) {
+	   $counseling_services[] = $row['counseling_services'];
+	}
+	if (sizeof($counseling_services)) {
+	   $return['counseling_services'] = $counseling_services;
+	}
+
+	// Add on the existing form_sji_visit_initial_test_for_sti rows
+	$query = "select initial_test_for_sti from form_sji_visit_initial_test_for_sti where pid=?";
+	$res = sqlStatement($query, array($formid));
+	$itfs = array();
+	while ($row = sqlFetchArray($res)) {
+	   $itfs [] = $row['initial_test_for_sti'];
+	}
+	if (sizeof($itfs)) {
+	   $return['initial_test_for_sti'] = $itfs;
+	}
+
+	// Add on the existing form_sji_visit_medical_services rows
+	$query = "select medical_services from form_sji_visit_medical_services where pid=?";
+	$res = sqlStatement($query, array($formid));
+	$ms = array();
+	while ($row = sqlFetchArray($res)) {
+	   $ms [] = $row['medical_services'];
+	}
+	if (sizeof($ms)) {
+	   $return['medical_services'] = $ms;
+	}
+
+	// Add on the existing form_sji_visit_test_results_for_sti rows
+	$query = "select test_results_for_sti from form_sji_visit_test_results_for_sti where pid=?";
+	$res = sqlStatement($query, array($formid));
+	$trfs = array();
+	while ($row = sqlFetchArray($res)) {
+	   $trfs[] = $row['test_results_for_sti'];
+	}
+	if (sizeof($trfs)) {
+	   $return['test_results_for_sti'] = $trfs;
+	}
+
+	return $return;
+}
 
 if ($GLOBALS['enable_group_therapy']) {
     require_once("$srcdir/group.inc");
@@ -34,84 +110,6 @@ $days = array("01","02","03","04","05","06","07","08","09","10","11","12","13","
   "15","16","17","18","19","20","21","22","23","24","25","26","27","28","29","30","31");
 $thisyear = date("Y");
 $years = array($thisyear-1, $thisyear, $thisyear+1, $thisyear+2);
-
-if ($viewmode) {
-    $id = (isset($_REQUEST['id'])) ? $_REQUEST['id'] : '';
-
-    // get the encounter id from the forms table
-    $forms = sqlQuery("SELECT * FROM forms WHERE form_id = ?", array($id));
-    $encounter = $forms['encounter'];
-
-    // using the encounter id get the associated data from the forms_encounter table
-    $result = sqlQuery("SELECT * FROM form_encounter WHERE encounter = ?", array($encounter));
-
-    if ($result['sensitivity'] && !acl_check('sensitivities', $result['sensitivity'])) {
-        echo "<body>\n<html>\n";
-        echo "<p>" . xlt('You are not authorized to see this encounter.') . "</p>\n";
-        echo "</body>\n</html>\n";
-        exit();
-    }
-
-    // TODO FIXME: if there are more than 1 visit in a day this may be an issue
-    $result2 = sqlQuery('select * from form_sji_visit where encounter = ? order by date desc limit 0,1', array($encounter));
-    foreach ($visit_columns as $column) {
-	$result[$column] = $result2[$column];
-    }
-
-    foreach ($visit_time_columns as $column) {
-        // TODO: make sure we are not loosing anything between military and 12hr time here
-        if (
-           preg_match('/ (\d\d:\d\d)/', $result2[$column], $matches) &&
-           $matches[1] != '00:00'
-        ) { 
-	   $result[$column] = $matches[1];
-        }
-    }
-
-    // Add on medical_services list
-    $query = "select medical_service from form_sji_visit_medical_services where pid=?";
-    $res = sqlStatement($query, array($result2['id']));
-    $medical_services = array();
-    while ($row = sqlFetchArray($res)) {
-       $medical_services[] = $row['medical_service'];
-    }
-    if (sizeof($medical_services)) {
-       $result['medical_services'] = $medical_services;
-    }
-
-    // Add on initial_test_for_sti list
-    $query = "select initial_test_for_sti from form_sji_visit_initial_test_for_sti where pid=?";
-    $res = sqlStatement($query, array($result2['id']));
-    $test_results = array();
-    while ($row = sqlFetchArray($res)) {
-       $test_results[] = $row['initial_test_for_sti'];
-    }
-    if (sizeof($test_results)) {
-       $result['initial_test_for_sti'] = $test_results;
-    }
-
-    // Add on test_results_for_sti list
-    $query = "select test_results_for_sti from form_sji_visit_test_results_for_sti where pid=?";
-    $res = sqlStatement($query, array($result2['id']));
-    $test_results = array();
-    while ($row = sqlFetchArray($res)) {
-       $test_results[] = $row['test_results_for_sti'];
-    }
-    if (sizeof($test_results)) {
-       $result['test_results_for_sti'] = $test_results;
-    }
-
-    // Add on counseling_services list
-    $query = "select counseling_services from form_sji_visit_counseling_services where pid=?";
-    $res = sqlStatement($query, array($result2['id']));
-    $test_results = array();
-    while ($row = sqlFetchArray($res)) {
-       $test_results[] = $row['counseling_services'];
-    }
-    if (sizeof($test_results)) {
-       $result['counseling_services'] = $test_results;
-    }
-}
 
 function set_medical_services () {
    $services = array(
@@ -239,80 +237,18 @@ function getListOptions($list_id, $fieldnames = array('option_id', 'title', 'seq
     return $output;
 }
 
-// get issues
-$ires = sqlStatement("SELECT id, type, title, begdate FROM lists WHERE " .
-  "pid = ? AND enddate IS NULL " .
-  "ORDER BY type, begdate", array($pid));
 ?>
 <!DOCTYPE html>
 <html>
 <head>
 <?php Header::setupHeader(['datetime-picker', 'common', 'jquery-ui', 'jquery-ui-darkness']);?>
-<title><?php echo xlt('Patient Encounter'); ?></title>
+<title><?php echo xlt('SJI Visit Intake Form'); ?></title>
 
 
-<!-- validation library -->
-<?php
-//Not lbf forms use the new validation, please make sure you have the corresponding values in the list Page validation
-$use_validate_js = 1;
-require_once($GLOBALS['srcdir'] . "/validation/validation_script.js.php"); ?>
-
-<?php include_once("{$GLOBALS['srcdir']}/ajax/facility_ajax_jav.inc.php"); ?>
 <script language="JavaScript">
 
 
-    var mypcc = <?php echo js_escape($GLOBALS['phone_country_code']); ?>;
-
-    // Process click on issue title.
-    function newissue() {
-        dlgopen('../../patient_file/summary/add_edit_issue.php', '_blank', 700, 535, '', '', {
-            buttons: [
-            {text: <?php echo xlj('Close'); ?>, close: true, style: 'default btn-sm'}
-            ]
-        });
-        return false;
-    }
-
-     // callback from add_edit_issue.php:
-     function refreshIssue(issue, title) {
-      var s = document.forms[0]['issues[]'];
-      s.options[s.options.length] = new Option(title, issue, true, true);
-     }
-
-    <?php
-    //Gets validation rules from Page Validation list.
-    //Note that for technical reasons, we are bypassing the standard validateUsingPageRules() call.
-    $collectthis = collectValidationPageRules("/interface/forms/newpatient/common.php");
-    if (empty($collectthis)) {
-         $collectthis = "undefined";
-    } else {
-         $collectthis = json_sanitize($collectthis["new_encounter"]["rules"]);
-    }
-    ?>
-    var collectvalidation = <?php echo $collectthis; ?>;
     $(function(){
-        window.saveClicked = function(event) {
-            var submit = submitme(1, event, 'new-encounter-form', collectvalidation);
-            if (submit) {
-            top.restoreSession();
-            $('#new-encounter-form').submit();
-            }
-        }
-
-        $(".enc_issue").on('click', function(e) {
-           e.preventDefault();e.stopPropagation();
-           dlgopen('', '', 700, 650, '', '', {
-
-               buttons: [{text: <?php echo xlj('Close'); ?>, close: true, style: 'default btn-sm'}],
-
-               allowResize: true,
-               allowDrag: true,
-               dialogId: '',
-               type: 'iframe',
-               url: $(this).attr('href')
-           });
-        });
-
         $('.datepicker').datetimepicker({
             <?php $datetimepicker_timepicker = false; ?>
             <?php $datetimepicker_showseconds = false; ?>
@@ -321,52 +257,6 @@ require_once($GLOBALS['srcdir'] . "/validation/validation_script.js.php"); ?>
             <?php // can add any additional javascript settings to datetimepicker here; need to prepend first setting with a comma ?>
         });
     });
-
-    const isPosEnabled = "" + <?php echo js_escape($GLOBALS['set_pos_code_encounter']); ?>;
-
-    function getPOS() {
-        if (!isPosEnabled) {
-            return false;
-        }
-        let facility = document.forms[0].facility_id.value;
-        $.ajax({
-            url: "./../../../library/ajax/facility_ajax_code.php",
-            method: "GET",
-            data: {
-                mode: "get_pos",
-                facility_id: facility,
-                csrf_token_form: <?php echo js_escape(CsrfUtils::collectCsrfToken()); ?>
-            }
-        }).done(function (fid) {
-            document.forms[0].pos_code.value = JSON.parse(fid);
-        }).fail(function (xhr) {
-            console.log('error', xhr);
-        });
-    }
-
-    function newUserSelected() {
-        let provider = document.getElementById('provider_id').value;
-        $.ajax({
-            url: "./../../../library/ajax/facility_ajax_code.php",
-            method: "GET",
-            data: {
-                mode: "get_user_data",
-                provider_id: provider,
-                csrf_token_form: <?php echo js_escape(CsrfUtils::collectCsrfToken()); ?>
-            }
-        }).done(function (data) {
-            let rtn = JSON.parse(data);
-            document.forms[0].facility_id.value = rtn[0];
-            if (isPosEnabled) {
-                document.forms[0].pos_code.value = rtn[1];
-            }
-            if (Number(rtn[2]) === 1) {
-                document.forms[0]['billing_facility'].value = rtn[0];
-            }
-        }).fail(function (xhr) {
-            console.log('error', xhr);
-        });
-    }
 
     // Handler for Cancel clicked when creating a new encounter.
     // Show demographics or encounters list depending on what frame we're in.
@@ -405,84 +295,36 @@ require_once($GLOBALS['srcdir'] . "/validation/validation_script.js.php"); ?>
 }
 </style>
 <?php
-if ($viewmode) {
+if (isset($viewmode)) {
     $body_javascript = '';
-    $heading_caption = xl('Participant Encounter Form');
+    $heading_caption = xl('Participant Visit Form');
 } else {
-    $body_javascript = 'onload="javascript:document.new_encounter.reason.focus();"';
-    $heading_caption = xl('New Encounter Form');
+    $body_javascript = 'onload="javascript:document.visit-form.symptoms.focus();"';
+    $heading_caption = xl('New Participant Visit Form');
 }
 
 
-if ($GLOBALS['enable_help'] == 1) {
-    $help_icon = '<a class="pull-right oe-help-redirect" data-target="#myModal" data-toggle="modal" href="#" id="help-href" name="help-href" style="color:#676666" title="' . xla("Click to view Help") . '"><i class="fa fa-question-circle" aria-hidden="true"></i></a>';
-} elseif ($GLOBALS['enable_help'] == 2) {
-    $help_icon = '<a class="pull-right oe-help-redirect" data-target="#myModal" data-toggle="modal" href="#" id="help-href" name="help-href" style="color:#DCD6D0 !Important" title="' . xla("To enable help - Go to  Administration > Globals > Features > Enable Help Modal") . '"><i class="fa fa-question-circle" aria-hidden="true"></i></a>';
-} elseif ($GLOBALS['enable_help'] == 0) {
-     $help_icon = '';
-}
-?>
-<?php
-$arrOeUiSettings = array(
-    'heading_title' => $heading_caption,
-    'include_patient_name' => true,// use only in appropriate pages
-    'expandable' => false,
-    'expandable_files' => array(""),//all file names need suffix _xpd
-    'action' => "",//conceal, reveal, search, reset, link or back
-    'action_title' => "",
-    'action_href' => "",//only for actions - reset, link or back
-    'show_help_icon' => true,
-    'help_file_name' => "common_help.php"
-);
-$oemr_ui = new OemrUI($arrOeUiSettings);
-
-$provider_id = $userauthorized ? $_SESSION['authUserID'] : 0;
-if (!$viewmode) {
-    $now = date('Y-m-d');
-    $encnow = date('Y-m-d 00:00:00');
-    $time = date("H:i:00");
-    $q = "SELECT pc_aid, pc_facility, pc_billing_location, pc_catid, pc_startTime" .
-        " FROM openemr_postcalendar_events WHERE pc_pid=? AND pc_eventDate=?" .
-        " ORDER BY pc_startTime ASC";
-    $q_events = sqlStatement($q, array($pid, $now));
-    while ($override = sqlFetchArray($q_events)) {
-        $q = "SELECT encounter FROM form_encounter" .
-            " WHERE pid=? AND date=? AND provider_id=?";
-        $q_enc = sqlQuery($q, array($pid, $encnow, $override['pc_aid']));
-        if (is_array($override) && !$q_enc['encounter']) {
-            $provider_id = $override['pc_aid'];
-            $default_bill_fac_override = $override['pc_billing_location'];
-            $default_fac_override = $override['pc_facility'];
-            $default_catid_override = $override['pc_catid'];
-        }
-    }
-}
+$help_icon = '';
 ?>
 </head>
 <body class="body_top" <?php echo $body_javascript;?>>
-    <div id="container_div" class="<?php echo attr($oemr_ui->oeContainer()); ?>">
+    <div id="container_div" class="container">
+
+	<div class="row bg-primary">
+		<div class="col-sm-12">
+		<h2 class="text-center"><?php echo xlt('St. James Infirmary Visit Intake'); ?></h2>
+		</div>
+	</div>
+
         <div class="row">
             <div class="col-sm-12">
-                <!-- Required for the popup date selectors -->
-                <div id="overDiv" style="position:absolute; visibility:hidden; z-index:1000;"></div>
-                <div class="page-header clearfix">
-                    <?php echo  $oemr_ui->pageHeading() . "\r\n"; ?>
-                </div>
-            </div>
-        </div>
-        <div class="row">
-            <div class="col-sm-12">
-                <form id="new-encounter-form" method='post' action="<?php echo $rootdir ?>/forms/newpatient/save.php" name='new_encounter'>
-                    <?php if ($viewmode) { ?>
+                <form id="visit-form" method='post' action="<?php echo $rootdir ?>/forms/sji_visit/save.php" name='new_visit'>
+                    <?php if (isset($viewmode)) { ?>
                         <input type=hidden name='mode' value='update'>
-                        <input type=hidden name='id' value='<?php echo (isset($_GET["id"])) ? attr($_GET["id"]) : '' ?>'>
+                        <input type=hidden name='id' value='<?php echo (isset($_REQUEST["id"])) ? attr($_REQUEST["id"]) : '' ?>'>
                     <?php } else { ?>
                         <input type='hidden' name='mode' value='new'>
                     <?php } ?>
-                    <input type="hidden" name="csrf_token_form" value="<?php echo attr(CsrfUtils::collectCsrfToken()); ?>" />
-                    <?php //can change position of buttons by creating a class 'position-override' and adding rule text-align:center or right as the case may be in individual stylesheets ?>
-
-		    <!-- This is where the SJI new visit form additions get added -->
 
 <fieldset>
 <legend><?php echo xlt('Medical Care'); ?></legend>
@@ -1033,12 +875,21 @@ if (
 
                     <div class="form-group clearfix">
                         <div class="col-sm-12 text-left position-override">
-                            <button type="button" class="btn btn-default btn-save" onclick="top.restoreSession(); saveClicked(undefined);"><?php echo xlt('Save');?></button>
-                            <?php if ($viewmode || empty($_GET["autoloaded"])) { // not creating new encounter ?>
-                                <button type="button" class="btn btn-link btn-cancel btn-separate-left" onClick="return cancelClickedOld()"><?php echo xlt('Cancel');?></button>
+			    <input 
+				type="button" 
+				class="btn btn-default btn-save" 
+				value="<?php echo xlt('Save');?>">
+                            <?php if (isset($viewmode) || empty($_REQUEST["autoloaded"])) { // not creating new encounter ?>
+				<input type="button" 
+				class="btn btn-link btn-cancel btn-separate-left" 
+				onClick="return cancelClickedOld()"
+				value="<?php echo xlt('Cancel');?>">
                             <?php } else { // not $viewmode ?>
-                            <button class="btn btn-link btn-cancel btn-separate-left link_submit" onClick="return cancelClickedNew()">
-                                    <?php echo xlt('Cancel'); ?></button>
+			    <input 
+				type="button"
+				class="btn btn-link btn-cancel btn-separate-left link_submit" 
+				onClick="return cancelClickedNew()"
+				value="<?php echo xlt('Cancel'); ?>">
                             <?php } // end not $viewmode ?>
                         </div>
                     </div>
@@ -1047,53 +898,14 @@ if (
             </div>
         </div>
     </div><!--End of container div-->
-    <?php $oemr_ui->oeBelowContainerDiv();?>
 </body>
 <script language="javascript">
-<?php
-if ($GLOBALS['enable_group_therapy']) { ?>
-/* hide / show group name input */
-    var groupCategories = <?php echo json_encode($therapyGroupCategories); ?>;
-    $('#pc_catid').on('change', function () {
-        if(groupCategories.indexOf($(this).val()) > -1){
-            $('#therapy_group_name').show();
-        } else {
-            $('#therapy_group_name').hide();
-        }
-    })
 
-    function sel_group() {
-      top.restoreSession();
-      var url = '<?php echo $GLOBALS['webroot']?>/interface/main/calendar/find_group_popup.php';
-      dlgopen(url, '_blank', 500, 400, '', '', {
-          buttons: [
-              {text: <?php echo xlj('Close'); ?>, close: true, style: 'default btn-sm'}
-          ]
-      });
-    }
-    // This is for callback by the find-group popup.
-    function setgroup(gid, name) {
-        var f = document.forms[0];
-        f.form_group.value = name;
-        f.form_gid.value = gid;
-    }
+// jQuery stuff to make the page a little easier to use
 
-    <?php
-    if ($viewmode && in_array($result['pc_catid'], $therapyGroupCategories)) {?>
-        $('#therapy_group_name').show();
-        <?php
-    } ?>
-    <?php
-} ?>
-
-$(function (){
-    $('#billing_facility').addClass('col-sm-9');
-    //for jquery tooltip to function if jquery 1.12.1.js is called via jquery-ui in the Header::setupHeader
-    // the relevant css file needs to be called i.e. jquery-ui-darkness - to get a black tooltip
-    $('#sensitivity-tooltip').attr( "title", <?php echo xlj('If set as high will restrict visibility of encounter to users belonging to certain groups (AROs). By default - Physicians and Administrators'); ?> );
-    $('#sensitivity-tooltip').tooltip();
-    $('#onset-tooltip').attr( "title", <?php echo xlj('Hospital date needed for successful billing of hospital encounters'); ?> );
-    $('#onset-tooltip').tooltip();
+$(document).ready(function(){
+    $(".btn-save").click(function() { top.restoreSession(); $('#visit-form').submit(); });
+    $(".btn-cancel").click(function() { parent.closeTab(window.name, false); });
 });
 </script>
 </html>

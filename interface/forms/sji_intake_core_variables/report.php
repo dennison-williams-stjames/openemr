@@ -125,7 +125,7 @@ function sji_intake_core_variables_report_string($pid) {
 // TODO: should we ad the join tables to this?
 function sji_intake_core_variables_report($pid, $encounter, $cols, $id) {
 
-	$data = buildData($pid, $id);
+	$data = sji_intake_core_variables_build_data($pid, $id);
         print "<table>";
         foreach ($data as $key => $value) {
             if ($key == "id" ||

@@ -40,11 +40,18 @@ if (!isset($pid)) {
 }
 
 // get the record from the database
+$id = '';
 if (isset($_REQUEST['id']) && $_REQUEST['id'] != "") {
-   $result = $obj = array_merge(
-      formFetch("form_".$form_name, $_REQUEST["id"]),
-      sji_visit_formFetch($_REQUEST["id"]));
+	$id = $_REQUEST['id'];
 
+} else if (isset($_SESSION['encounter']) && $_SESSION['encounter'] != "") {
+	$id = $_SESSION['encounter'];
+}
+
+if ($id != '') {
+	$visit = formFetch("form_".$form_name, $id);
+	$evisit = sji_visit_formFetch($id);
+	$result = $obj = array_merge( $visit, $evisit );
 }
 
 function sji_visit_formFetch($formid) {
@@ -77,11 +84,11 @@ function sji_visit_formFetch($formid) {
 	}
 
 	// Add on the existing form_sji_visit_medical_services rows
-	$query = "select medical_services from form_sji_visit_medical_services where pid=?";
+	$query = "select medical_service from form_sji_visit_medical_services where pid=?";
 	$res = sqlStatement($query, array($formid));
 	$ms = array();
 	while ($row = sqlFetchArray($res)) {
-	   $ms [] = $row['medical_services'];
+	   $ms[] = $row['medical_service'];
 	}
 	if (sizeof($ms)) {
 	   $return['medical_services'] = $ms;
@@ -318,13 +325,13 @@ $help_icon = '';
 
         <div class="row">
             <div class="col-sm-12">
-                <form id="visit-form" method='post' action="<?php echo $rootdir ?>/forms/sji_visit/save.php" name='new_visit'>
-                    <?php if (isset($viewmode)) { ?>
-                        <input type=hidden name='mode' value='update'>
-                        <input type=hidden name='id' value='<?php echo (isset($_REQUEST["id"])) ? attr($_REQUEST["id"]) : '' ?>'>
-                    <?php } else { ?>
-                        <input type='hidden' name='mode' value='new'>
-                    <?php } ?>
+	    <form id="visit-form" method='post' action="<?php 
+		if (isset($_REQUEST['id'])) {
+			echo $rootdir."/forms/".$form_name."/save.php?mode=update&id=".attr($_REQUEST["id"]);
+		} else {
+		         echo $rootdir."/forms/".$form_name."/save.php?mode=new";
+		}
+		?>" name='new_visit'>
 
 <fieldset>
 <legend><?php echo xlt('Medical Care'); ?></legend>

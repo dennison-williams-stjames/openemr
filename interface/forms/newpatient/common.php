@@ -12,7 +12,10 @@
  * @copyright Copyright (c) 2019 Ranganath Pathak <pathak@scrs1.org>
  * @license   https://github.com/openemr/openemr/blob/master/LICENSE GNU General Public License 3
  */
-
+require_once(dirname(__FILE__).'/../../globals.php');
+global $srcdir;
+global $pid;
+global $rootdir;
 require_once("$srcdir/options.inc.php");
 require_once("$srcdir/lists.inc");
 
@@ -41,6 +44,7 @@ $mode = (!empty($_GET['mode'])) ? $_GET['mode'] : null;
 // "followup" mode is relevant when enable follow up encounters global is enabled
 // it allows the user to duplicate past encounter and connect between the two
 // under this mode the facility and the visit category will be same as the origin and in readonly
+$viewmode = false;
 if ($mode === "followup") {
     $encounter = (!empty($_GET['enc'])) ? (int)$_GET['enc'] : null;
     if (!is_null($encounter)) {
@@ -265,6 +269,7 @@ $ires = sqlStatement("SELECT id, type, title, begdate FROM lists WHERE " .
     );
     $oemr_ui = new OemrUI($arrOeUiSettings);
 
+    global $userauthorized;
     $provider_id = $userauthorized ? $_SESSION['authUserID'] : 0;
     if (!$viewmode) {
         $now = date('Y-m-d');
@@ -387,7 +392,6 @@ $ires = sqlStatement("SELECT id, type, title, begdate FROM lists WHERE " .
                         if ($sensitivities && count($sensitivities)) {
                             usort($sensitivities, "sensitivity_compare");
                             ?>
-<!--
                         <div class="col-sm-2">
                             <label for="pc_catid" class="text-right"><?php echo xlt('Sensitivity:'); ?> <i id='sensitivity-tooltip' class="fa fa-info-circle text-primary" aria-hidden="true"></i></label>
                         </div>
@@ -415,7 +419,6 @@ $ires = sqlStatement("SELECT id, type, title, begdate FROM lists WHERE " .
                             <?php } ?>
                         </div>
                     </div>
--->
                     <div class="form-row align-items-center mt-2">
                         <div class="col-sm-2">
                             <label for='form_date' class="text-right"><?php echo xlt('Date of Service:'); ?></label>
@@ -423,7 +426,6 @@ $ires = sqlStatement("SELECT id, type, title, begdate FROM lists WHERE " .
                         <div class="col-sm">
                             <input type='text' class='form-control datepicker' name='form_date' id='form_date' <?php echo ($disabled ?? '') ?> value='<?php echo $viewmode ? attr(oeFormatShortDate(substr($result['date'], 0, 10))) : attr(oeFormatShortDate(date('Y-m-d'))); ?>' title='<?php echo xla('Date of service'); ?>' />
                         </div>
-<!--
                         <div class="col-sm-2" <?php if ($GLOBALS['ippf_specific']) {
                             echo " style='visibility:hidden;'";
                                               } ?>>
@@ -432,7 +434,6 @@ $ires = sqlStatement("SELECT id, type, title, begdate FROM lists WHERE " .
                         <div class="col-sm">
                             <input type='text' class='form-control datepicker' name='form_onset_date' id='form_onset_date' value='<?php echo $viewmode && $result['onset_date'] !== '0000-00-00 00:00:00' ? attr(oeFormatShortDate(substr($result['onset_date'], 0, 10))) : ''; ?>' title='<?php echo xla('Date of onset or hospitalization'); ?>' />
                         </div>
--->
                     </div>
                     <div class="form-row align-items-center mt-2"
                         <?php
@@ -474,7 +475,7 @@ $ires = sqlStatement("SELECT id, type, title, begdate FROM lists WHERE " .
                                     // Check for the case where an encounter is created by non-auth user
                                     // but has permissions to create/edit encounter.
                                     $flag_it = "";
-                                    if ($activeUser['authorized'] != 1) {
+                                    if ($activeUser['authorized'] != 1 && isset($result['provider_id'])) {
                                         if ($p_id === (int)$result['provider_id']) {
                                             $flag_it = " (" . xlt("Non Provider") . ")";
                                         } else {
@@ -491,14 +492,12 @@ $ires = sqlStatement("SELECT id, type, title, begdate FROM lists WHERE " .
                                 ?>
                             </select>
                         </div>
-<!--
                         <div class="col-sm-2">
                             <label for='class' class="text-right"><?php echo xlt('Class'); ?>:</label>
                         </div>
                         <div class="col-sm">
                             <?php echo generate_select_list('class_code', '_ActEncounterCode', $viewmode ? $result['class_code'] : '', '', ''); ?>
                         </div>
--->
                     </div>
                     <div class="form-row align-items-center mt-2">
                         <div class="col-sm-2">
@@ -531,7 +530,6 @@ $ires = sqlStatement("SELECT id, type, title, begdate FROM lists WHERE " .
                         <?php if ($mode === "followup") { ?>
                             <input type="hidden" name="facility_id" value="<?php echo attr($result['facility_id']); ?>" />
                         <?php } ?>
-<!--
                         <div class="col-sm-2">
                             <label for='billing_facility' class="text-right"><?php echo xlt('Billing Facility'); ?>:</label>
                         </div>
@@ -551,7 +549,6 @@ $ires = sqlStatement("SELECT id, type, title, begdate FROM lists WHERE " .
                             ?>
                         </div>
                     </div>
--->
                     <?php if ($GLOBALS['set_pos_code_encounter']) { ?>
                     <div class="form-row mt-2">
                         <div class="col-sm-2">

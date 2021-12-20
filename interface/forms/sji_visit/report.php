@@ -12,7 +12,7 @@
 
 require_once(dirname(__file__)."/../../globals.php");
 
-function newpatient_report($pid, $encounter, $cols, $id)
+function sji_visit_report($pid, $encounter, $cols, $id)
 {
     $res = sqlStatement("select e.*, f.name as facility_name from form_encounter as e join facility as f on f.id = e.facility_id where e.pid=? and e.id=?", array($pid,$id));
     print "<table><tr><td>\n";
@@ -52,12 +52,13 @@ function newpatient_report($pid, $encounter, $cols, $id)
        'support_group' => xlt('Support group:')
     );
 
-    $res = sqlStatement("select id as visit_id,".
+    $sql = "select id as visit_id,".
           implode(',', array_keys($columns))
           ." from form_sji_visit ".
-          "where form_sji_visit.pid=? and form_sji_visit.encounter=? ".
+          "where form_sji_visit.pid=? and form_sji_visit.id=? ".
           "order by id desc ".
-          "limit 0,1", array($pid,$encounter));
+	  "limit 0,1";
+    $res = sqlStatement($sql, array($pid,$id));
 
     $result = sqlFetchArray($res);
     $visit_id = $result['visit_id'];

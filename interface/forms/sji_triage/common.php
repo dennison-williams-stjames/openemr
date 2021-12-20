@@ -1,5 +1,7 @@
 <?php
-require_once(dirname(__FILE__).'/../../globals.php');
+if (!isset($srcdir)) {
+	$srcdir = 'library';
+}
 include_once("$srcdir/api.inc");
 include_once("$srcdir/forms.inc");
 

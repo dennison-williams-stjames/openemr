@@ -58,7 +58,6 @@ function sji_visit_formFetch($formid) {
 	$return = array();
 
 	if (!isset($formid)) {
-		error_log(__FUNCTION__ .'($formid) : Did not receive $formid');
 	}
 
 	// Add on the existing form_sji_visit_counseling_services rows

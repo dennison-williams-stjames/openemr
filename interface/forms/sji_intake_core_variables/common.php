@@ -182,10 +182,8 @@ function sji_extendedIntakeCoreVariables($formid, $submission) {
 
     // TODO: delete all of the existing providers that were not re-submitted
     foreach ($insurances as $insurance => $type) {
-       error_log("Checking to see if $insurance($type) was deleted from: ". print_r($submission['insurance'], 1));
        if (!isset($submission['insurance']) || array_search($insurance, $submission['insurance']) === FALSE) {
           $sql = 'DELETE from insurance_data WHERE pid=? and provider=?';
-          error_log("deleting insurance_data for pid=$pid and provider=$insurance");
           sqlStatement($sql, array($pid, $insurance));
        }
     }
@@ -218,22 +216,18 @@ function sji_extendedIntakeCoreVariables($formid, $submission) {
           } else if (array_search('secondary', array_values($insurances)) === FALSE) {
              $type = 'secondary';
           }
-          error_log("inserting new insurance_data for pid=$pid and provider=$insurance");
           newInsuranceData($pid, $type, $insurance, '', '', $lname, '', $fname);
        } else {
           // update the insurance data
           if (isset($fname)) {
-             error_log("updating insurance_data for pid=$pid and fname=$fname");
 	     updateInsuranceData($insurance, array( 'subscriber_fname' => $fname));
           }
 
           if (isset($lname)) {
-             error_log("updating insurance_data for pid=$pid and lname=$lname");
              updateInsuranceData($insurance, array( 'subscriber_lname' => $lname));
           }
 
           if (isset($number)) {
-             error_log("updating insurance_data for pid=$pid and policy_number=$number");
              updateInsuranceData($insurance, array( 'policy_number' => $number));
           }
 

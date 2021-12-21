@@ -23,12 +23,7 @@ if (!$pid) {
     $pid = $_SESSION['pid'];
 }
 
-$submission = array();
-foreach ($visit_columns as $column) {
-   if (isset($_REQUEST[$column])) {
-      $submission[$column] = $_REQUEST[$column];
-   }
-}
+$submission = sji_get_visit_submission_from_data($_REQUEST);
 
 if ($_REQUEST["mode"] == "new") {
    $newid = formSubmit($table_name, $submission, '', $userauthorized);

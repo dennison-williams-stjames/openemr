@@ -61,8 +61,6 @@ if (!empty($_POST['inactive']) && $_POST['inactive'] == 'on') {
    $_POST['inactive'] = 0;
 } 
 
-error_log(__FILE__ .' inactive: '. print_r($_POST['inactive'], 1));
-
 foreach ($progress_note_columns as $column) {
    if (isset($_POST[$column])) {
       $submission[$column] = $_POST[$column];

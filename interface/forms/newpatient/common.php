@@ -48,7 +48,6 @@ $mode = (!empty($_GET['mode'])) ? $_GET['mode'] : null;
 // "followup" mode is relevant when enable follow up encounters global is enabled
 // it allows the user to duplicate past encounter and connect between the two
 // under this mode the facility and the visit category will be same as the origin and in readonly
-$viewmode = false;
 if ($mode === "followup") {
     $encounter = (!empty($_GET['enc'])) ? (int)$_GET['enc'] : null;
     if (!is_null($encounter)) {
@@ -660,13 +659,13 @@ $ires = sqlStatement("SELECT id, type, title, begdate FROM lists WHERE " .
     <?php
     if (!$viewmode) { ?>
     function duplicateVisit(enc, datestr) {
-        if (!confirm(<?php echo xlj("A visit already exists for this patient today. Click Cancel to open it, or OK to proceed with creating a new one.") ?>)) {
+        // if (!confirm(<?php echo xlj("A visit already exists for this patient today. Click Cancel to open it, or OK to proceed with creating a new one.") ?>)) {
             // User pressed the cancel button, so re-direct to today's encounter
             top.restoreSession();
             parent.left_nav.setEncounter(datestr, enc, window.name);
             parent.left_nav.loadFrame('enc2', window.name, 'patient_file/encounter/encounter_top.php?set_encounter=' + encodeURIComponent(enc));
             return;
-        }
+        // }
         // otherwise just continue normally
     }
         <?php

@@ -54,10 +54,15 @@ if ($id != '') {
 	$result = $obj = array_merge( $visit, $evisit );
 }
 
-function sji_visit_formFetch($formid) {
+function sji_visit_formFetch($encounter) {
+	$query = "select id from form_sji_visit where encounter = ? order by id desc limit 1";
+	$res = sqlStatement($query, array($encounter));
+	$row = sqlFetchArray($res);
+	$formid = $row['id'];
 	$return = array();
 
 	if (!isset($formid)) {
+	   return $return;
 	}
 
 	// Add on the existing form_sji_visit_counseling_services rows

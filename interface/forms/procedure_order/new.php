@@ -30,7 +30,7 @@ use OpenEMR\OeUI\OemrUI;
 
 // Defaults for new orders.
 $row = array(
-    'provider_id' => $_SESSION['authUserID'],
+    'provider_id' => 6, // Hard-coded default for SJI
     'date_ordered' => date('Y-m-d'),
     'date_collected' => date('Y-m-d H:i'),
 );

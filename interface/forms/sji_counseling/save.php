@@ -16,10 +16,10 @@
  */
 
 
-include_once("../../globals.php");
-include_once("$srcdir/api.inc");
-include_once("$srcdir/forms.inc");
-require_once("common.php");
+require_once(__DIR__.'/../../globals.php');
+include_once($GLOBALS['srcdir'] ."/api.inc");
+include_once($GLOBALS['srcdir'] ."/forms.inc");
+include_once("common.php");
 
 /* 
  * name of the database table associated with this form

@@ -1,8 +1,9 @@
 <?php
-require_once(dirname(__FILE__).'/../../globals.php');
-include_once("$srcdir/api.inc");
-include_once("$srcdir/forms.inc");
+require_once(__DIR__.'/../../globals.php');
+include_once($GLOBALS['srcdir'] ."/api.inc");
+include_once($GLOBALS['srcdir']."/forms.inc");
 
+global $counseling_columns;
 $counseling_columns = array(
    'counseling_type', 'counseling_time', 'progress_notes'
 );
@@ -25,7 +26,8 @@ function sji_counseling_formFetch($formid) {
 }
 
 function sji_extendedCounseling($formid, $submission) {
-    global $pid;
+	global $pid;
+	error_log(__FUNCTION__);
 
     sqlStatement("delete from form_sji_counseling_counseling where pid=?", array($formid));
     if (isset($submission['counseling'])) {

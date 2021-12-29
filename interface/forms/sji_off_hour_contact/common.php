@@ -19,12 +19,12 @@
 // FIXME: do not include an absolute path!
 include_once(dirname(__FILE__) .'/../../globals.php');
 
-function include_them() {
+function include_them2() {
         global $srcdir;
 	include_once("$srcdir/api.inc");
 	include_once("$srcdir/forms.inc");
 }
-include_them();
+include_them2();
 
 /* 
  * name of the database table associated with this form

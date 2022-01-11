@@ -64,8 +64,8 @@
         "lcobucci/jwt": "dev-342php8 as 3.4.9",
         "psr/log": "1.1.3",
         "monolog/monolog": "2.1.1",
-	"dennisonwilliams/sji_alert": "dev-main",
-	"dennisonwilliams/sji_demographics": "dev-main"
+        "dennison-williams-stjames/sji_demographics": "dev-main",
+        "dennison-williams-stjames/sji_alert": "dev-main"
     },
     "config": {
         "platform": {
@@ -92,6 +92,10 @@
         "3": {
             "type": "vcs",
             "url": "https://github.com/DennisonWilliams/sji_demographics"
+        },
+        "4": {
+            "type": "vcs",
+            "url": "https://github.com/dennison-williams-stjames/sji_demographics"
         }
     },
     "autoload": {

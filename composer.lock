@@ -4,120 +4,8 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "610c0ad69963efb3a771bff20c071b51",
+    "content-hash": "35f9b01ad0c3e95ee452605fed48abe6",
     "packages": [
-        {
-            "name": "DennisonWilliams/sji_alert",
-            "version": "dev-main",
-            "source": {
-                "type": "git",
-                "url": "https://github.com/DennisonWilliams/sji_alert.git",
-                "reference": "06a16335b97de6d16744b3fc4c2b62d28ad02a2a"
-            },
-            "dist": {
-                "type": "zip",
-                "url": "https://api.github.com/repos/DennisonWilliams/sji_alert/zipball/06a16335b97de6d16744b3fc4c2b62d28ad02a2a",
-                "reference": "06a16335b97de6d16744b3fc4c2b62d28ad02a2a",
-                "shasum": ""
-            },
-            "require": {
-                "nyholm/psr7": "^1.4",
-                "openemr/oe-module-installer-plugin": "^0.1.0",
-                "php": "^7.1",
-                "symfony/event-dispatcher": "^4.4.0"
-            },
-            "conflict": {
-                "openemr/openemr": "<6.0.0"
-            },
-            "default-branch": true,
-            "type": "openemr-module",
-            "autoload": {
-                "psr-4": {
-                    "OpenEMR\\Modules\\SJIAlert\\": "src/"
-                }
-            },
-            "license": [
-                "GPL-3.0"
-            ],
-            "authors": [
-                {
-                    "name": "Stephen Nielson",
-                    "email": "stephen@nielson.org",
-                    "role": "Developer"
-                },
-                {
-                    "name": "Dennison Williams",
-                    "email": "Dennison.Williams@DennisonWilliams.com",
-                    "role": "Developer"
-                }
-            ],
-            "description": "Custom Module for participant alerts at SJI",
-            "keywords": [
-                "openemr",
-                "openemr-module"
-            ],
-            "support": {
-                "source": "https://github.com/DennisonWilliams/sji_alert/tree/main",
-                "issues": "https://github.com/DennisonWilliams/sji_alert/issues"
-            },
-            "time": "2021-11-18T22:21:52+00:00"
-        },
-        {
-            "name": "DennisonWilliams/sji_demographics",
-            "version": "dev-main",
-            "source": {
-                "type": "git",
-                "url": "https://github.com/DennisonWilliams/sji_demographics.git",
-                "reference": "718a6f4a5b1f732ba9ceaf3dafdcc5b7153142c5"
-            },
-            "dist": {
-                "type": "zip",
-                "url": "https://api.github.com/repos/DennisonWilliams/sji_demographics/zipball/718a6f4a5b1f732ba9ceaf3dafdcc5b7153142c5",
-                "reference": "718a6f4a5b1f732ba9ceaf3dafdcc5b7153142c5",
-                "shasum": ""
-            },
-            "require": {
-                "nyholm/psr7": "^1.4",
-                "openemr/oe-module-installer-plugin": "^0.1.0",
-                "php": "^7.1",
-                "symfony/event-dispatcher": "^4.4.0"
-            },
-            "conflict": {
-                "openemr/openemr": "<6.0.0"
-            },
-            "default-branch": true,
-            "type": "openemr-module",
-            "autoload": {
-                "psr-4": {
-                    "OpenEMR\\Modules\\SJIDemographics\\": "src/"
-                }
-            },
-            "license": [
-                "GPL-3.0"
-            ],
-            "authors": [
-                {
-                    "name": "Stephen Nielson",
-                    "email": "stephen@nielson.org",
-                    "role": "Developer"
-                },
-                {
-                    "name": "Dennison Williams",
-                    "email": "Dennison.Williams@DennisonWilliams.com",
-                    "role": "Developer"
-                }
-            ],
-            "description": "OpenEMR Custom Demographics Module for SJI",
-            "keywords": [
-                "openemr",
-                "openemr-module"
-            ],
-            "support": {
-                "source": "https://github.com/DennisonWilliams/sji_demographics/tree/main",
-                "issues": "https://github.com/DennisonWilliams/sji_demographics/issues"
-            },
-            "time": "2021-11-23T20:58:13+00:00"
-        },
         {
             "name": "academe/authorizenet-objects",
             "version": "0.7.3",
@@ -617,6 +505,118 @@
                 "source": "https://github.com/defuse/php-encryption/tree/master"
             },
             "time": "2018-07-24T23:27:56+00:00"
+        },
+        {
+            "name": "dennison-williams-stjames/sji_alert",
+            "version": "dev-main",
+            "source": {
+                "type": "git",
+                "url": "https://github.com/dennison-williams-stjames/sji_alert.git",
+                "reference": "c8f180ab84c3aad90d2ff6ff5cd4d1c21c7f4de7"
+            },
+            "dist": {
+                "type": "zip",
+                "url": "https://api.github.com/repos/dennison-williams-stjames/sji_alert/zipball/c8f180ab84c3aad90d2ff6ff5cd4d1c21c7f4de7",
+                "reference": "c8f180ab84c3aad90d2ff6ff5cd4d1c21c7f4de7",
+                "shasum": ""
+            },
+            "require": {
+                "nyholm/psr7": "^1.4",
+                "openemr/oe-module-installer-plugin": "^0.1.0",
+                "php": "^7.1",
+                "symfony/event-dispatcher": "^4.4.0"
+            },
+            "conflict": {
+                "openemr/openemr": "<6.0.0"
+            },
+            "default-branch": true,
+            "type": "openemr-module",
+            "autoload": {
+                "psr-4": {
+                    "OpenEMR\\Modules\\SJIAlert\\": "src/"
+                }
+            },
+            "license": [
+                "GPL-3.0"
+            ],
+            "authors": [
+                {
+                    "name": "Stephen Nielson",
+                    "email": "stephen@nielson.org",
+                    "role": "Developer"
+                },
+                {
+                    "name": "Dennison Williams",
+                    "email": "Dennison.Williams@stjamesinfirmary.org",
+                    "role": "Developer"
+                }
+            ],
+            "description": "Custom Module for participant alerts at SJI",
+            "keywords": [
+                "openemr",
+                "openemr-module"
+            ],
+            "support": {
+                "source": "https://github.com/dennison-williams-stjames/sji_alert/tree/main",
+                "issues": "https://github.com/dennison-williams-stjames/sji_alert/issues"
+            },
+            "time": "2022-01-11T18:31:23+00:00"
+        },
+        {
+            "name": "dennison-williams-stjames/sji_demographics",
+            "version": "dev-main",
+            "source": {
+                "type": "git",
+                "url": "https://github.com/dennison-williams-stjames/sji_demographics.git",
+                "reference": "f07f0fb9b53d688199d598faac8dd276d024decf"
+            },
+            "dist": {
+                "type": "zip",
+                "url": "https://api.github.com/repos/dennison-williams-stjames/sji_demographics/zipball/f07f0fb9b53d688199d598faac8dd276d024decf",
+                "reference": "f07f0fb9b53d688199d598faac8dd276d024decf",
+                "shasum": ""
+            },
+            "require": {
+                "nyholm/psr7": "^1.4",
+                "openemr/oe-module-installer-plugin": "^0.1.0",
+                "php": "^7.1",
+                "symfony/event-dispatcher": "^4.4.0"
+            },
+            "conflict": {
+                "openemr/openemr": "<6.0.0"
+            },
+            "default-branch": true,
+            "type": "openemr-module",
+            "autoload": {
+                "psr-4": {
+                    "OpenEMR\\Modules\\SJIDemographics\\": "src/"
+                }
+            },
+            "license": [
+                "GPL-3.0"
+            ],
+            "authors": [
+                {
+                    "name": "Stephen Nielson",
+                    "email": "stephen@nielson.org",
+                    "role": "Developer"
+                },
+                {
+                    "name": "Dennison Williams",
+                    "email": "Dennison.Williams@stjamesinfirmary.org",
+                    "role": "Developer"
+                }
+            ],
+            "description": "OpenEMR Custom Demographics Module for SJI",
+            "keywords": [
+                "openemr",
+                "openemr-module"
+            ],
+            "support": {
+                "source": "https://github.com/dennison-williams-stjames/sji_demographics/tree/main",
+                "issues": "https://github.com/dennison-williams-stjames/sji_demographics/issues"
+            },
+            "time": "2022-01-11T18:28:10+00:00"
         },
         {
             "name": "dompdf/dompdf",
@@ -11251,8 +11251,8 @@
     "minimum-stability": "stable",
     "stability-flags": {
         "lcobucci/jwt": 20,
-        "dennisonwilliams/sji_alert": 20,
-        "dennisonwilliams/sji_demographics": 20
+        "dennison-williams-stjames/sji_demographics": 20,
+        "dennison-williams-stjames/sji_alert": 20
     },
     "prefer-stable": false,
     "prefer-lowest": false,

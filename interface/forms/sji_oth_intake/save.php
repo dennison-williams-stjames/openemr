@@ -21,7 +21,7 @@
 include_once("../../globals.php");
 include_once("$srcdir/api.inc");
 include_once("$srcdir/forms.inc");
-require_once('common.php');
+include_once(__DIR__.'/common.php');
 
 /* 
  * name of the database table associated with this form

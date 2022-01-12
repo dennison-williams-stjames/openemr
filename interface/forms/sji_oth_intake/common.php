@@ -281,6 +281,7 @@ function sji_extendedOTHIntake($formid, $submission) {
 
 }
 
+global $oth_intake_columns;
 $oth_intake_columns = array(
    'landlord_name', 'landlord_phone', 'landlord_address',
    'landlord_email', 'base_rent', 'split_rent', 'your_rent',
@@ -288,6 +289,7 @@ $oth_intake_columns = array(
    'veteran', 'interested_in_sji', 'rental_agreement_name'
 );
 
+global $oth_intake_binary_columns;
 $oth_intake_binary_columns = array(
    'is_trans', 'eviction_risk', 'veteran', 'interested_in_sji'
 );

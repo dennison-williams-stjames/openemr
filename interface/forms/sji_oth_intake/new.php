@@ -18,6 +18,7 @@ use OpenEMR\Core\Header;
 
 include_once("../../globals.php");
 include_once("$srcdir/api.inc");
+include_once("$srcdir/patient.inc");
 require_once('common.php');
 
 formHeader("Form: Our Trans Home Rental Subsidy Application");

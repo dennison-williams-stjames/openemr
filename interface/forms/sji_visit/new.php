@@ -13,6 +13,7 @@
 require_once("../../globals.php");
 require_once("$srcdir/acl.inc");
 require_once("$srcdir/lists.inc");
+require_once("$srcdir/patient.inc");
 
 // Check permission to create encounters.
 $tmp = getPatientData($pid, "squad");

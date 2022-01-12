@@ -1,5 +1,6 @@
 <?php
 require_once(dirname(__FILE__).'/../../globals.php');
+require_once(__DIR__.'/../sji_medical/common.php');
 include_once("$srcdir/api.inc");
 include_once("$srcdir/forms.inc");
 
@@ -222,71 +223,6 @@ function getICD9SecondaryOptions() {
    return $output;
 }
 
-function getICD10PrimaryOptions() {
-   global $obj;
-   $output = "";
-   $found = 0;
-   $sql = "SELECT id,code_text,code FROM codes WHERE code_type = 102";
-   $query = sqlStatement($sql);
-   $debug = array();
-   while ($icd9 = sqlFetchArray($query)) {
-      $output .= '<option value="'. $icd9['code_text'] .'" ';
-
-      if (
-          isset($obj['icd10_primary']) &&
-          array_search($icd9['code_text'], $obj['icd10_primary']) !== false
-      ) {
-         $output .= 'selected="selected" ';
-         $found = 1;
-      }
-      $output .= '>'. $icd9['code_text'] .'</option>';
-   }
-
-   return $output;
-}
-
-function getICD10SecondaryOptions() {
-   global $obj;
-   $output = "";
-   $found = 0;
-   $sql = "SELECT id,code_text,code FROM codes WHERE code_type = 102 limit 100";
-   $query = sqlStatement($sql);
-   while ($icd9 = sqlFetchArray($query)) {
-      $output .= '<option value="'. $icd9['code_text'] .'" ';
-
-      if (
-          isset($obj['icd10_secondary']) &&
-          array_search($icd9['code_text'], $obj['icd10_secondary']) !== false
-      ) {
-         $output .= 'selected="selected" ';
-         $found = 1;
-      }
-      $output .= '>'. $icd9['code_text'] .'</option>';
-   }
-   return $output;
-}
-
-function getCPTCodes2() {
-   global $obj;
-   $output = "";
-   $found = 0;
-   $sql = "SELECT id,code_text,code FROM codes WHERE code_type = 1";
-   $query = sqlStatement($sql);
-   while ($icd9 = sqlFetchArray($query)) {
-      $output .= '<option value="'. $icd9['code_text'] .'" ';
-
-      if (
-          isset($obj['cpt_codes']) &&
-          array_search($icd9['code_text'], $obj['cpt_codes']) !== false
-      ) {
-         $output .= 'selected="selected" ';
-         $found = 1;
-      } 
-      $output .= '>'. $icd9['code_text'] .'</option>';
-   }
-   return $output;
-}
-
 //TODO: make sure this works with multiple selected values
 function getMethodsCodes() {
    global $obj;
@@ -329,25 +265,3 @@ function getRangeCodes() {
    }
    return $output;
 }
-
-function getICD10Ajax($term) {
-   global $obj;
-   $output = "";
-   $found = 0;
-   $sql = "SELECT id,code_text,code ".
-      "FROM codes ".
-      "WHERE code_type = 102 ".
-      "AND ( code like CONCAT('%', ?, '%') ".
-      "OR code_text like CONCAT('%', ?, '%') ) ".
-      "LIMIT 100";
-   $query = sqlStatement($sql, array($term, $term));
-   $return = array();
-   while ($icd10 = sqlFetchArray($query)) {
-      $ret['id'] = $icd10['code'] .': '. $icd10['code_text'];;
-      $ret['text'] = $icd10['code'] .': '. $icd10['code_text'];
-      $return[] = $ret;
-   }
-
-   return json_encode($return);
-}
-

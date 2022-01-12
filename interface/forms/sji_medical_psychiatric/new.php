@@ -276,7 +276,7 @@ if (is_array($obj['icd10_secondary'])) {
 <select name="cpt_codes[]" id="cpt_codes" multiple=multiple class="select2 form-control" data-placeholder="Select CPT codes">
 <option></option>
 <?php 
-echo getCPTCodes2(); 
+echo getCPTCodes(); 
 ?>
 </select>
 </div> <!-- col-sm-6 -->

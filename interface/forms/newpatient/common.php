@@ -12,10 +12,14 @@
  * @copyright Copyright (c) 2019 Ranganath Pathak <pathak@scrs1.org>
  * @license   https://github.com/openemr/openemr/blob/master/LICENSE GNU General Public License 3
  */
-require_once(dirname(__FILE__).'/../../globals.php');
+
 global $srcdir;
 global $pid;
 global $rootdir;
+global $userauthorized;
+global $facilityService;
+global $viewmode;
+require_once(dirname(__FILE__).'/../../globals.php');
 require_once("$srcdir/options.inc.php");
 require_once("$srcdir/lists.inc");
 
@@ -34,7 +38,7 @@ if ($GLOBALS['enable_group_therapy']) {
 }
 
 if (!isset($pid) && isset($_SESSION['pid'])) {
-	$pid = $_SESSION['pid'];
+       $pid = $_SESSION['pid'];
 }
 
 $months = array("01", "02", "03", "04", "05", "06", "07", "08", "09", "10", "11", "12");
@@ -272,7 +276,6 @@ $ires = sqlStatement("SELECT id, type, title, begdate FROM lists WHERE " .
     );
     $oemr_ui = new OemrUI($arrOeUiSettings);
 
-    global $userauthorized;
     $provider_id = $userauthorized ? $_SESSION['authUserID'] : 0;
     if (!$viewmode) {
         $now = date('Y-m-d');
@@ -429,12 +432,10 @@ $ires = sqlStatement("SELECT id, type, title, begdate FROM lists WHERE " .
                         <div class="col-sm">
                             <input type='text' class='form-control datepicker' name='form_date' id='form_date' <?php echo ($disabled ?? '') ?> value='<?php echo $viewmode ? attr(oeFormatShortDate(substr($result['date'], 0, 10))) : attr(oeFormatShortDate(date('Y-m-d'))); ?>' title='<?php echo xla('Date of service'); ?>' />
                         </div>
-                        <div class="col-sm-2" <?php if ($GLOBALS['ippf_specific']) {
-                            echo " style='visibility:hidden;'";
-                                              } ?>>
+                        <div class="col-sm-2" <?php echo empty($GLOBALS['gbl_visit_onset_date']) ? "style='visibility:hidden;'" : ""; ?>>
                             <label for='form_onset_date' class="text-right"><?php echo xlt('Onset/hosp. date:'); ?> &nbsp;<i id='onset-tooltip' class="fa fa-info-circle text-primary" aria-hidden="true"></i></label>
                         </div>
-                        <div class="col-sm">
+                        <div class="col-sm" <?php echo empty($GLOBALS['gbl_visit_onset_date']) ? "style='visibility:hidden;'" : ""; ?>>
                             <input type='text' class='form-control datepicker' name='form_onset_date' id='form_onset_date' value='<?php echo $viewmode && $result['onset_date'] !== '0000-00-00 00:00:00' ? attr(oeFormatShortDate(substr($result['onset_date'], 0, 10))) : ''; ?>' title='<?php echo xla('Date of onset or hospitalization'); ?>' />
                         </div>
                     </div>
@@ -659,13 +660,13 @@ $ires = sqlStatement("SELECT id, type, title, begdate FROM lists WHERE " .
     <?php
     if (!$viewmode) { ?>
     function duplicateVisit(enc, datestr) {
-        // if (!confirm(<?php echo xlj("A visit already exists for this patient today. Click Cancel to open it, or OK to proceed with creating a new one.") ?>)) {
+        //if (!confirm(<?php echo xlj("A visit already exists for this patient today. Click Cancel to open it, or OK to proceed with creating a new one.") ?>)) {
             // User pressed the cancel button, so re-direct to today's encounter
             top.restoreSession();
             parent.left_nav.setEncounter(datestr, enc, window.name);
             parent.left_nav.loadFrame('enc2', window.name, 'patient_file/encounter/encounter_top.php?set_encounter=' + encodeURIComponent(enc));
             return;
-        // }
+        //}
         // otherwise just continue normally
     }
         <?php

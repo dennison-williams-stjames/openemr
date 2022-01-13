@@ -19,14 +19,14 @@
 require_once(dirname(__FILE__) . "/../../globals.php");
 require_once($GLOBALS['srcdir'] . "/options.inc.php");
 
-use OpenEMR\Common\Csrf\CsrfUtils;
 use OpenEMR\Events\BoundFilter;
 use OpenEMR\Events\PatientFinder\PatientFinderFilterEvent;
 use OpenEMR\Events\PatientFinder\ColumnFilter;
 
-if (!CsrfUtils::verifyCsrfToken($_GET["csrf_token_form"])) {
-    CsrfUtils::csrfNotVerified();
-}
+// Not checking csrf for good reasons.
+//  1. Not needed since no state changes in this script
+//  2. It will cause potential session clash fails because it throws a popup which messes things up
+//     when opening a patient in a new window.
 
 $popup = empty($_REQUEST['popup']) ? 0 : 1;
 $searchAny = !empty($_GET['search_any']) && empty($_GET['sSearch']) ? $_GET['search_any'] : "";
@@ -185,7 +185,7 @@ $iTotal = $row['count'];
 if (empty($where)) {
     $where = $customWhere;
 } else {
-    $where = "$customWhere AND $where";
+    $where = "$customWhere AND ( $where )";
 }
 $row = sqlQuery("SELECT COUNT(id) AS count FROM patient_data WHERE $where", $srch_bind);
 $iFilteredTotal = $row['count'];
@@ -208,10 +208,10 @@ while ($row = sqlFetchArray($res)) {
 }
 
 $query = "SELECT patient_data.pid as pid, fname, mname, lname, DOB, max(form_sji_intake_core_variables.id) as mid FROM patient_data ".
-	"LEFT JOIN form_sji_intake_core_variables on ( form_sji_intake_core_variables.pid = patient_data.pid ) ".
-	"WHERE $where ".
-	"GROUP BY patient_data.pid ".
-	"$orderby $limit";
+	       "LEFT JOIN form_sji_intake_core_variables on ( form_sji_intake_core_variables.pid = patient_data.pid ) ".
+	       "WHERE $where ".
+	       "GROUP BY patient_data.pid ".
+	       "$orderby $limit";
 
 $res = sqlStatement($query, $srch_bind);
 while ($row = sqlFetchArray($res)) {
@@ -233,12 +233,12 @@ while ($row = sqlFetchArray($res)) {
 	    }
 
 	    if ($row['mid']) {
-                $query = "SELECT aliases from form_sji_intake_core_variables where id = ?";
-                $res2 = sqlStatement($query, array($row['mid']));
-                $row2 = sqlFetchArray($res2);
-                if (isset($row2['aliases']) && strlen($row2['aliases'])) {
-                   $name .= ' [aka: ' . $row2['aliases'] .']';
-                }
+		    $query = "SELECT aliases from form_sji_intake_core_variables where id = ?";
+		    $res2 = sqlStatement($query, array($row['mid']));
+		    $row2 = sqlFetchArray($res2);
+		    if (isset($row2['aliases']) && strlen($row2['aliases'])) {
+		       $name .= ' [aka: ' . $row2['aliases'] .']';
+		    }
 	    }
 
             $arow[] = attr($name);

@@ -73,9 +73,9 @@ if (!empty($_POST['formaction']) && ($_POST['formaction'] == 'save') && $list_id
         for ($lino = 1; isset($opt["$lino"]['ct_key']); ++$lino) {
             $iter = $opt["$lino"];
             $ct_key = trim($iter['ct_key']);
-            $ct_id = trim($iter['ct_id']) + 0;
-            $ct_seq = trim($iter['ct_seq']) + 0;
-            $ct_mod = trim($iter['ct_mod']) + 0;
+            $ct_id = (int)trim($iter['ct_id']);
+            $ct_seq = (int)trim($iter['ct_seq']);
+            $ct_mod = (int)trim($iter['ct_mod']);
             $ct_just = trim($iter['ct_just']);
             $ct_mask = trim($iter['ct_mask']);
             $ct_fee = empty($iter['ct_fee']) ? 0 : 1;
@@ -84,7 +84,7 @@ if (!empty($_POST['formaction']) && ($_POST['formaction'] == 'save') && $list_id
             $ct_diag = empty($iter['ct_diag']) ? 0 : 1;
             $ct_active = empty($iter['ct_active']) ? 0 : 1;
             $ct_label = trim($iter['ct_label']);
-            $ct_external = trim($iter['ct_external']) + 0;
+            $ct_external = (int)trim($iter['ct_external']);
             $ct_claim = empty($iter['ct_claim']) ? 0 : 1;
             $ct_proc = empty($iter['ct_proc']) ? 0 : 1;
             $ct_term = empty($iter['ct_term']) ? 0 : 1;
@@ -152,7 +152,7 @@ if (!empty($_POST['formaction']) && ($_POST['formaction'] == 'save') && $list_id
 
         for ($lino = 1; isset($opt["$lino"]['id']); ++$lino) {
             $iter = $opt["$lino"];
-            $value = empty($iter['value']) ? 0 : (trim($iter['value']) + 0);
+            $value = empty($iter['value']) ? 0 : (trim($iter['value']));
             $id = trim($iter['id']);
             $real_id = trim($iter['real_id']);
 
@@ -197,6 +197,18 @@ if (!empty($_POST['formaction']) && ($_POST['formaction'] == 'save') && $list_id
                     $notes = trim($iter['apptstat_color']) . '|' . trim($iter['apptstat_timealert']);
                 } else {
                     $notes = trim($iter['notes']);
+                }
+
+                if (preg_match("/Eye_QP_/", $list_id)) {
+                    if (preg_match("/^[BLR]/", $id)) {
+                        $stuff = explode("_", $id)[0];
+                        $iter['mapping'] = substr($stuff, 1);
+                        $iter['subtype'] = substr($stuff, 0, 1);
+                    } else {
+                        $stuff = explode("_", $id)[0];
+                        $iter['mapping'] = substr($stuff, 2);
+                        $iter['subtype'] = substr($stuff, 0, 2);
+                    }
                 }
 
                 // Delete the list item

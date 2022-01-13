@@ -73,11 +73,9 @@ while ($ctrow = sqlFetchArray($ctres)) {
     'problem' => $ctrow['ct_problem'],
     'drug' => $ctrow['ct_drug']
     );
-    if (array_key_exists($GLOBALS['default_search_code_type'], $code_types)) {
-        $default_search_type = $GLOBALS['default_search_code_type'];
-    } else {
+    if (!array_key_exists($GLOBALS['default_search_code_type'], $code_types)) {
         reset($code_types);
-        $default_search_type = key($code_types);
+        $GLOBALS['default_search_code_type'] = key($code_types);
     }
 }
 
@@ -218,7 +216,7 @@ function fees_are_used()
 }
 
 /**
- * Checks is modifiers are applicable to any of the code types.
+ * Checks if modifiers are applicable to any of the code types.
  * (If a code type is not set to show in the fee sheet, then is ignored)
  *
  * @param  boolean $fee_sheet Will ignore code types that are not shown in the fee sheet
@@ -697,7 +695,8 @@ function lookup_code_descriptions($codes, $desc_detail = "code_text")
                 continue;
             }
 
-            list($codetype, $code) = explode(':', $codestring);
+            // added $modifier for HCPCS and other internal codesets so can grab exact entry in codes table
+            list($codetype, $code, $modifier) = explode(':', $codestring);
             $table_id = $code_types[$codetype]['external'] ?? '';
             if (isset($code_external_tables[$table_id])) {
                 $table_info = $code_external_tables[$table_id];
@@ -742,6 +741,12 @@ function lookup_code_descriptions($codes, $desc_detail = "code_text")
                 // Specify the code in the query.
                 $sql .= $table_name . "." . $code_col . "=? ";
                 array_push($sqlArray, $code);
+
+                // Add the modifier if necessary for CPT and HCPCS which differentiates code
+                if ($modifier) {
+                    $sql .= " AND modifier = ? ";
+                    array_push($sqlArray, $modifier);
+                }
 
                 // We need to include the filter clauses
                 // For SNOMED and SNOMED-CT this ensures that we get the Preferred Term or the Fully Specified Term as appropriate

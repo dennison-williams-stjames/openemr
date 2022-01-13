@@ -131,7 +131,7 @@ function ImgProcedure() {literal}{{/literal}
                 <button class="btn btn-sm btn-primary active">{xlt t='Contents'}</button>
               </div>
             <span class="float-right">
-            <script>var file = {$file->get_url()|js_escape};</script>
+            <script>var file = {$file->get_url()|js_escape};var mime = {$file->get_mimetype()|js_escape};</script>
             {if !empty($GLOBALS.oefax_enable)}
             {dispatchPatientDocumentEvent event="actions_render_fax_anchor"}
             {/if}
@@ -249,7 +249,7 @@ function ImgProcedure() {literal}{{/literal}
                   {xlt t='Date:'} {$note->get_date()|text}
                   {$note->get_note()|text}
                   {if $note->get_owner()}
-                    &nbsp;-{user_info id=$note->get_owner()|text}
+                    &nbsp;-{$note->getOwnerName()|text}
                   {/if}
                 </div>
                 {/foreach}

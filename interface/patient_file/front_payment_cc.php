@@ -1,4 +1,5 @@
 <?php
+
 /**
  *  Front Payment CC and Terminal Readers support.
  *
@@ -8,8 +9,9 @@
  * @copyright Copyright (c) 2020 Jerry Padgett <sjpadgett@gmail.com>
  * @license   https://github.com/openemr/openemr/blob/master/LICENSE GNU General Public License 3
  */
+
 $ignoreAuth = false;
-require_once(dirname(__FILE__) . "/../globals.php");
+require_once(__DIR__ . "/../globals.php");
 
 use OpenEMR\Billing\PaymentGateway;
 use OpenEMR\Common\Crypto\CryptoGen;

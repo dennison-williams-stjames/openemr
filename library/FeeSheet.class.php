@@ -453,7 +453,6 @@ class FeeSheet
             if ($ndc_info) {
                 $li['codetype'] .= " ($ndc_info)";
             }
-
             $ndc_info = '';
         } else {
             $li['codetype'] = $codetype;
@@ -477,13 +476,14 @@ class FeeSheet
 
         // If NDC info exists or may be required, add stuff for it.
         if ($codetype == 'HCPCS' && !$billed) {
-            $ndcnum = '';
-            $ndcuom = '';
-            $ndcqty = '';
             if (preg_match('/^N4(\S+)\s+(\S\S)(.*)/', $ndc_info, $tmp)) {
                 $ndcnum = $tmp[1];
                 $ndcuom = $tmp[2];
                 $ndcqty = $tmp[3];
+            } else {
+                $ndcnum = $ndc_info;
+                $ndcuom = "UN";
+                $ndcqty = "1";
             }
 
             $li['ndcnum'  ] = $ndcnum;
@@ -974,8 +974,9 @@ class FeeSheet
                         }
                     }
                 } elseif (!$del) { // Otherwise it's a new item...
-                    $this->logFSMessage(xl('Service added'));
-                    $code_text = lookup_code_descriptions($code_type . ":" . $code);
+                    $logarr = array($code_type, $code, '', $pricelevel, $fee, $units, $provid, '');
+                    $this->logFSMessage(xl('Item added'), '', $logarr);
+                    $code_text = lookup_code_descriptions($code_type . ":" . $code . ":" . $modifier);
                     BillingUtilities::addBilling(
                         $this->encounter,
                         $code_type,

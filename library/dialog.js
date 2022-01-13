@@ -105,7 +105,9 @@ function cascwin(url, winname, width, height, options) {
         newx = 0;
         newy = 0;
     }
-    top.restoreSession();
+    if (typeof top.restoreSession === 'function') {
+        top.restoreSession();
+    }
 
     // MS IE version detection taken from
     // http://msdn2.microsoft.com/en-us/library/ms537509.aspx
@@ -290,7 +292,9 @@ if (typeof alertMsg !== "function") {
                 setting: value
             },
             beforeSend: function () {
-                top.restoreSession();
+                if (typeof top.restoreSession === 'function') {
+                    top.restoreSession();
+                }
             },
             error: function (jqxhr, status, errorThrown) {
                 console.log(errorThrown);
@@ -363,7 +367,10 @@ if (typeof dlgclose !== "function") {
 * */
 function dlgopen(url, winname, width, height, forceNewWindow, title, opts) {
     // First things first...
-    top.restoreSession();
+    if (typeof top.restoreSession === 'function') {
+        top.restoreSession();
+    }
+
     // A matter of Legacy
     if (forceNewWindow) {
         return dlgOpenWindow(url, winname, width, height);
@@ -421,7 +428,7 @@ function dlgopen(url, winname, width, height, forceNewWindow, title, opts) {
         async: true,
         frameContent: "", // for iframe embedded content
         html: "", // content for alerts, comfirm etc ajax
-        allowDrag: true,
+        allowDrag: false,
         allowResize: true,
         sizeHeight: 'auto', // 'full' will use as much height as allowed
         // use is onClosed: fnName ... args not supported however, onClosed: 'reload' is auto defined and requires no function to be created.
@@ -504,7 +511,7 @@ function dlgopen(url, winname, width, height, forceNewWindow, title, opts) {
 
     var waitHtml =
         '<div class="loadProgress text-center">' +
-        '<span class="fa fa-circle-o-notch fa-spin fa-3x text-primary"></span>' +
+        '<span class="fa fa-circle-notch fa-spin fa-3x text-primary"></span>' +
         '</div>';
 
     var headerhtml =
@@ -512,7 +519,7 @@ function dlgopen(url, winname, width, height, forceNewWindow, title, opts) {
             '&times;</button></div>').replace('%title%', mTitle);
 
     var frameHtml =
-        ('<iframe id="modalframe" class="w-100 h-100 modalIframe" name="%winname%" %url% frameborder=0></iframe>').replace('%winname%', winname).replace('%url%', fullURL ? 'src=' + fullURL : '');
+        ('<iframe id="modalframe" class="modalIframe w-100 h-100 border-0" name="%winname%" %url%></iframe>').replace('%winname%', winname).replace('%url%', fullURL ? 'src=' + fullURL : '');
 
     var contentStyles = ('style="height:%initHeight%; max-height: 94vh"').replace('%initHeight%', opts.sizeHeight !== 'full' ? mHeight : '85vh');
 
@@ -523,7 +530,7 @@ function dlgopen(url, winname, width, height, forceNewWindow, title, opts) {
             '<style>.drag-resize {touch-action:none;user-select:none;}</style>' +
             '<div %dialogId% class="modal-dialog %drag-action% %sizeClass%" role="dialog">' +
             '<div class="modal-content %resize-action%" %contentStyles%>' + '%head%' + '%altclose%' + '%wait%' +
-            '<div class="modal-body px-1">' + '%body%' + '</div></div></div></div>').replace('%id%', winname).replace('%sizeStyle%', msSize ? msSize : '').replace('%dialogId%', opts.dialogId ? ('id=' + opts.dialogId + '"') : '').replace('%sizeClass%', mSize ? mSize : '').replace('%head%', mTitle !== '' ? headerhtml : '').replace('%altclose%', mTitle === '' ? altClose : '').replace('%drag-action%', (opts.allowDrag) ? 'drag-action' : '').replace('%resize-action%', (opts.allowResize) ? 'resize-action' : '').replace('%wait%', '').replace('%contentStyles%', contentStyles).replace('%body%', opts.type === 'iframe' ? frameHtml : '');
+            '<div class="modal-body px-1 h-100">' + '%body%' + '</div></div></div></div>').replace('%id%', winname).replace('%sizeStyle%', msSize ? msSize : '').replace('%dialogId%', opts.dialogId ? ('id=' + opts.dialogId + '"') : '').replace('%sizeClass%', mSize ? mSize : '').replace('%head%', mTitle !== '' ? headerhtml : '').replace('%altclose%', mTitle === '' ? altClose : '').replace('%drag-action%', (opts.allowDrag) ? 'drag-action' : '').replace('%resize-action%', (opts.allowResize) ? 'resize-action' : '').replace('%wait%', '').replace('%contentStyles%', contentStyles).replace('%body%', opts.type === 'iframe' ? frameHtml : '');
 
     // Write modal template.
     dlgContainer = where.jQuery(mhtml);
@@ -792,15 +799,20 @@ function dlgopen(url, winname, width, height, forceNewWindow, title, opts) {
 
     // sizing for modals with iframes
     function SizeModaliFrame(e, minSize) {
-        let viewPortHt;
-        let idoc = e.currentTarget.contentDocument ? e.currentTarget.contentDocument : e.currentTarget.contentWindow.document;
-        jQuery(e.currentTarget).parents('div.modal-content').css({'height': 0});
-        viewPortHt = where.window.innerHeight || document.documentElement.clientHeight || document.body.clientHeight;
-        let frameContentHt = Math.max(jQuery(idoc).height(), idoc.body.offsetHeight) + 40;
-        frameContentHt = frameContentHt < minSize ? minSize : frameContentHt;
+        let viewPortHt = where.window.innerHeight || document.documentElement.clientHeight || document.body.clientHeight;
+        let frameContentHt = 0;
+        let idoc = null;
+        try {
+            idoc = e.currentTarget.contentDocument ? e.currentTarget.contentDocument : e.currentTarget.contentWindow.document;
+            jQuery(e.currentTarget).parents('div.modal-content').css({'height': 0});
+            frameContentHt = Math.max(jQuery(idoc).height(), idoc.body.offsetHeight) + 40;
+        } catch(err){
+            frameContentHt = minSize + 40;
+        }
+        frameContentHt = frameContentHt <= minSize ? minSize : frameContentHt;
         frameContentHt = frameContentHt >= viewPortHt ? viewPortHt : frameContentHt;
         size = (frameContentHt / viewPortHt * 100).toFixed(1);
-        size = size + 'vh'; // will start the dialog as responsive. Any resize by user turns dialog to absolute positioning.
+        size = size + 'vh';
         jQuery(e.currentTarget).parents('div.modal-content').css({'height': size});
 
         return size;

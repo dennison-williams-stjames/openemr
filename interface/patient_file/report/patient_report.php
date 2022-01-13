@@ -329,7 +329,7 @@ $oemr_ui = new OemrUI($arrOeUiSettings);
                                                 echo attr($ierow['encounter']) . "/";
                                             }
 
-                                            echo "' />$disptitle</td>\n";
+                                            echo "' />" . text($disptitle) . "</td>\n";
                                             echo "     <td>" . text($prow['begdate']);
 
                                             if ($prow['enddate']) {
@@ -762,7 +762,7 @@ var SelectForms = function (selectedEncounter) {
 // When an issue is checked, auto-check all the related encounters and forms
 function issueClick(issue) {
     // do nothing when unchecked
-    if (! $(issue).attr("checked")) return;
+    if (! $(issue).prop("checked")) return;
 
     $("#report_form :checkbox").each(function(i, obj) {
         if ($(issue).val().indexOf('/' + $(this).val() + '/') >= 0) {

@@ -335,6 +335,7 @@ $loading = "<div class='spinner-border' role='status'><span class='sr-only'>" . 
         e.preventDefault();
         let target = uspfx + "patient_finder_exact_search";
         let val = el.checked ? ' checked' : ' ';
+        top.restoreSession();
         $.post("../../../library/ajax/user_settings.php",
             {
                 target: target,
@@ -439,9 +440,9 @@ $loading = "<div class='spinner-border' role='status'><span class='sr-only'>" . 
         /* Custom St. James Infirmary modifications */
         $(function() {
             $('tr#advanced_search').hide();
-	    $('div#pt_table_filter.dataTables_filter label').hide();
-	    $('label#form_new_window_label').hide();
-	    $('label#setting_search_type_label').hide();
+           $('div#pt_table_filter.dataTables_filter label').hide();
+           $('label#form_new_window_label').hide();
+           $('label#setting_search_type_label').hide();
         });
     </script>
 

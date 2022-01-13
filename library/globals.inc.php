@@ -139,7 +139,8 @@ $USER_SPECIFIC_GLOBALS = array('default_top_pane',
     'checkout_roll_off',
     'patient_birthday_alert',
     'patient_birthday_alert_manual_off',
-    'erx_import_status_message');
+    'erx_import_status_message',
+    'weno_provider_password');
 
 // Gets array of time zones supported by PHP.
 //
@@ -853,6 +854,13 @@ $GLOBALS_METADATA = array(
             xl('A referral source may be specified for each visit.')
         ),
 
+        'gbl_visit_onset_date' => array(
+            xl('Onset/Hosp Date for Encounters'),
+            'bool',                           // data type
+            '1',                              // default = true
+            xl('An onset/hospitalization date may be specified for each visit.')
+        ),
+
         'gbl_mask_patient_id' => array(
             xl('Mask for Patient IDs'),
             'text',                           // data type
@@ -1349,13 +1357,6 @@ $GLOBALS_METADATA = array(
             'bool',                           // data type
             '1',                              // default
             xl('Save codes history')
-        ),
-
-        'update_mbi' => array(
-            xl('Update policy number from ERA'),
-            'bool',                           // data type
-            '0',                              // default
-            xl('Update policy number from ERA')
         ),
 
         'enable_percent_pricing' => array(
@@ -1857,9 +1858,10 @@ $GLOBALS_METADATA = array(
                 '3' => xl('Address and State'),
                 '4' => xl('Address, State and Postal Code'),
                 '5' => xl('Address, City, State and Postal Code'),
-                '6' => xl('Postal Code and Box Number')
+                '6' => xl('Address, City, State, Postal Code, Payer ID'),
+                '7' => xl('Postal Code and Box Number')
             ),
-            '5',                              // default
+            '6',                              // default
             xl('Show Insurance Address Information in the Insurance Panel of Demographics.')
         ),
 
@@ -1929,6 +1931,16 @@ $GLOBALS_METADATA = array(
             ),
             '9',                              // default
             xl('Minimum length of password.')
+        ),
+
+        'gbl_maximum_password_length' => array(
+            xl('Maximum Password Length'),
+            array(
+                '0' => xl('No Maximum'),
+                '72' => '72',
+            ),
+            '72',                             // default
+            xl('Maximum length of password (Recommend using the default value of 72 unless you know what you are doing).')
         ),
 
         'password_history' => array(
@@ -2963,6 +2975,13 @@ $GLOBALS_METADATA = array(
             xl('Enable OAuth2 Password Grant. Recommend turning this setting off for production server. Recommend only using for testing.')
         ),
 
+        'cc_front_payments' => array(
+            xl('Accept Credit Card transactions from Front Payments'),
+            'bool',
+            '0',
+            xl('Allow manual entry and authorise credit card payments. Ensure a gateway is enabled.')
+        ),
+
         'payment_gateway' => array(
             xl('Select Credit Card Payment Gateway'),
             array(
@@ -3129,28 +3148,28 @@ $GLOBALS_METADATA = array(
             xl('Enable Weno eRx Service'),
             'bool',
             '0',
-            xl('Enable Weno eRx Service') . ' ' . xl('Contact Open Med Practice, www.openmedpractice.com for subscribing to the Weno Free eRx service.')
+            xl('Enable Weno eRx Service') . ' ' . xl('Contact https://online.wenoexchange.com to sign up for Weno Free eRx service.')
         ),
 
-        'weno_account_id' => array(
-            xl('Weno eRx Account Id'),
-            'text',
-            '137',
-            xl('Account Id issued for Weno eRx service.')
+        'weno_rx_enable_test' => array(
+            xl('Enable Weno eRx Service Test mode'),
+            'bool',
+            '1',
+            xl('Enable Weno eRx Service Test mode')
         ),
 
-        'weno_account_pass' => array(
-            xl('Weno eRx Account Pass'),
+        'weno_encryption_key' => array(
+            xl('Weno Encryption Key'),
             'encrypted',                      // data type
-            '7C84773D5063B20BC9E41636A091C6F17E9C1E34',
-            xl('Account Id issued for Weno eRx service.')
+            '',
+            xl('Encryption key issued by Weno eRx service.')
         ),
 
-        'weno_provider_id' => array(
-            xl('Weno eRx Clinic ID'),
-            'text',
-            'C36275',
-            xl('Account Id issued for Your clinics eRx service.')
+        'weno_provider_password' => array(
+            xl('Weno Provider Account Password'),
+            'encrypted',                      // data type
+            '',
+            xl('Each provider needs to set this under user settings. This should be blank')
         ),
 
         'ccda_alt_service_enable' => array(

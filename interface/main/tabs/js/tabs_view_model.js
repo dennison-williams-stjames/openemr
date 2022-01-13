@@ -183,6 +183,7 @@ function setEncounter(id)
 
 function chooseEncounterEvent(data,evt)
 {
+    top.restoreSession();
     setEncounter(data.id());
     goToEncounter(data.id());
 }
@@ -199,6 +200,7 @@ function goToEncounter(encId)
 
 function reviewEncounter(encId)
 {
+    top.restoreSession();
     var url=webroot_url+'/interface/patient_file/encounter/forms.php?review_id=' + encId;
     navigateTab(url,"rev",function () {
         activateTabByName("rev",true);
@@ -342,11 +344,11 @@ function menuActionClick(data,evt)
     }
     else
     {
-        if(data.requirement===1)
+        if(data.requirement === 1)
         {
-            alert((jsGlobals['globals']['enable_group_therapy'] == 1) ? xl('You must first select or add a patient or therapy group.') : xl('You must first select or add a patient.'));
+            alert((top.jsGlobals.enable_group_therapy == 1) ? xl('You must first select or add a patient or therapy group.') : xl('You must first select or add a patient.'));
         }
-        else if((data.requirement===2)||data.requirement===3)
+        else if((data.requirement === 2)||data.requirement === 3)
         {
             alert(xl('You must first select or create an encounter.'));
         }

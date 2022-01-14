@@ -176,6 +176,20 @@ class TransmitProperties
                 echo $msg;
                 die;
             }
+	
+	if ($patient['sex'] == 'CF') {
+		$patient['sex'] = 'F';
+	} else if ($patient['sex'] == 'CM') {
+		$patient['sex'] = 'M';
+	} else if ($patient['sex'] == 'NB AFAB') {
+		$patient['sex'] = 'F';
+	} else if ($patient['sex'] == 'NB AMAB') {
+		$patient['sex'] = 'M';
+	} else if ($patient['sex'] == 'TF') {
+		$patient['sex'] = 'F';
+	} else if ($patient['sex'] == 'TM') {
+		$patient['sex'] = 'M';
+	}
         return $patient;
     }
 
@@ -219,6 +233,15 @@ class TransmitProperties
     private function getVitals()
     {
         $vitals = sqlQuery("select date, height, weight from form_vitals where pid = ? ORDER BY id DESC", [$_SESSION["pid"]]);
+	if (empty($vitals['height'])) {
+		$vitals['height'] = 0;
+	}
+	if (empty($vitals['weight'])) {
+		$vitals['weight'] = 0;
+	}
+	if (empty($vitals['date'])) {
+		$vitals['date'] = 0;
+	}
         return $vitals;
     }
 

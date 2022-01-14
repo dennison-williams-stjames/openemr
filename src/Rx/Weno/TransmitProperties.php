@@ -168,8 +168,7 @@ class TransmitProperties
                 $c++;
             }
             if (empty($patient['email'])) {
-                $msg .= xlt(" Email Address Missing") . "<br>";
-                $c++;
+		$patient['email'] = 'admin@stjamesinfirmary.org';
             }
             if ($c > 0) {
                 echo "<title>" . xlt("Missing Data") . "</title>";
@@ -195,6 +194,7 @@ class TransmitProperties
 	if (!$patient['phone_cell']) {
 		$patient['phone_cell'] = '4156367377';
 	}
+
         return $patient;
     }
 
@@ -245,7 +245,7 @@ class TransmitProperties
 		$vitals['weight'] = 0;
 	}
 	if (empty($vitals['date'])) {
-		$vitals['date'] = 0;
+		$vitals['date'] = date('Y-m-d');;
 	}
         return $vitals;
     }

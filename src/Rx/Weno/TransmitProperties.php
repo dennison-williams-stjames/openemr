@@ -190,6 +190,11 @@ class TransmitProperties
 	} else if ($patient['sex'] == 'TM') {
 		$patient['sex'] = 'M';
 	}
+
+	// If there is no cell phone then use the medical line
+	if (!$patient['phone_cell']) {
+		$patient['phone_cell'] = '4156367377';
+	}
         return $patient;
     }
 

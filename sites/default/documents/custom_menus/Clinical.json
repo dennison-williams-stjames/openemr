@@ -293,5 +293,37 @@
       }
     ],
     "requirement": 0
+  },
+  {
+    "label": "Reports",
+    "menu_id": "repimg",
+    "children": [
+
+	{
+		"label": "Utilization Report",
+		"menu_id": "rep0",
+		"target": "rep",
+		"url": "/interface/reports/utilization_review.php",
+		"children": [],
+		"requirement": 0,
+		"acl_req": [
+			"patients",
+			"demo"
+		]
+	},
+	{
+		"label": "WENO Prescription Report",
+		"menu_id": "rep0",
+		"target": "rep",
+		"url": "/interface/weno/rxlogmanager.php",
+		"children": [],
+		"requirement": 0,
+		"acl_req": [
+			"patients",
+			"demo"
+		]
+	}
+    ],
+    "requirement": 0
   }
 ]

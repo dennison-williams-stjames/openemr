@@ -176,17 +176,17 @@ class TransmitProperties
                 die;
             }
 	
-	if ($patient['sex'] == 'CF') {
+	if ($patient['sex'] == 'CF' or $patient['sex'] == 'Female') {
 		$patient['sex'] = 'F';
-	} else if ($patient['sex'] == 'CM') {
+	} else if ($patient['sex'] == 'CM' or $patient['sex'] == 'Male') {
 		$patient['sex'] = 'M';
 	} else if ($patient['sex'] == 'NB AFAB') {
 		$patient['sex'] = 'U';
 	} else if ($patient['sex'] == 'NB AMAB') {
 		$patient['sex'] = 'U';
-	} else if ($patient['sex'] == 'TF') {
+	} else if ($patient['sex'] == 'TF' or $patient['sex'] == 'Trans Female') {
 		$patient['sex'] = 'F';
-	} else if ($patient['sex'] == 'TM') {
+	} else if ($patient['sex'] == 'TM' or $patient['sex'] == 'Trans Male') {
 		$patient['sex'] = 'M';
 	}
 

@@ -181,9 +181,9 @@ class TransmitProperties
 	} else if ($patient['sex'] == 'CM') {
 		$patient['sex'] = 'M';
 	} else if ($patient['sex'] == 'NB AFAB') {
-		$patient['sex'] = 'F';
+		$patient['sex'] = 'U';
 	} else if ($patient['sex'] == 'NB AMAB') {
-		$patient['sex'] = 'M';
+		$patient['sex'] = 'U';
 	} else if ($patient['sex'] == 'TF') {
 		$patient['sex'] = 'F';
 	} else if ($patient['sex'] == 'TM') {

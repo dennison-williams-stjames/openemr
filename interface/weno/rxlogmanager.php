@@ -21,9 +21,13 @@ if (!AclMain::aclCheckCore('admin', 'super')) {
 
 $container = new Container();
 $log_review = $container->getLogproperties();
-$wenoProperties = $container->getTransmitproperties();
 $logurlparam = $log_review->logReview();
-$provider_info = $wenoProperties->getProviderEmail();
+$creds = $log_review->credentialInformation;
+$provider_info = sqlQuery("select email from users where username=? ", [$_SESSION["authUser"]]);
+if (empty($provider_info['email'])) {
+    echo xlt('Provider email address is missing');
+    exit;
+} 
 
 if ($logurlparam == 'error') {
     echo xlt("Cipher failure check encryption key");
@@ -33,5 +37,5 @@ if ($logurlparam == 'error') {
 $url = "https://online.wenoexchange.com/en/EPCS/RxLog?useremail=";
 
 //**warning** do not add urlencode to  $provider_info['email']
-$urlOut = $url . $provider_info['email'] . "&data=" . urlencode($logurlparam);
+$urlOut = $url . $creds['email'] . "&data=" . urlencode($logurlparam);
 header("Location: " . $urlOut);

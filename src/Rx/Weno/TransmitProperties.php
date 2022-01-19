@@ -161,11 +161,11 @@ class TransmitProperties
             }
             if (empty($patient['postal_code'])) {
                 $msg .= xlt("Zip Code Missing")  . "<br>";
-                $c++;
+		$patient['postal_code'] = '94109';
             }
             if (empty($patient['street'])) {
                 $msg .= xlt("Street Address Missing")  . "<br>";
-                $c++;
+		$patient['street'] = '730 Polk St';
             }
             if (empty($patient['email'])) {
 		$patient['email'] = 'admin@stjamesinfirmary.org';

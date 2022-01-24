@@ -31,6 +31,18 @@
           "demo"
         ]
       },
+            {
+                "label":"STRIDE",
+                "menu_id":"rep0",
+                "target":"rep",
+                "url":"/interface/forms/sji_stride_intake/list_participants.php",
+                "children":[],
+                "requirement":0,
+                "acl_req": [
+                    "patients",
+                    "demo"
+                ]
+            },
       {
         "label": "New/Search",
         "menu_id": "new0",
@@ -322,7 +334,19 @@
 			"patients",
 			"demo"
 		]
-	}
+	},
+            {
+                "label":"STRIDE",
+                "menu_id":"rep0",
+                "target":"rep",
+                "url":"/interface/forms/sji_stride_intake/list_participants.php",
+                "children":[],
+                "requirement":0,
+                "acl_req": [
+                    "patients",
+                    "demo"
+                ]
+            }
     ],
     "requirement": 0
   }

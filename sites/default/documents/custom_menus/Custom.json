@@ -1336,6 +1336,18 @@
                     "weno_rx_enable"
                 ]
             },
+            {
+                "label":"STRIDE",
+                "menu_id":"rep0",
+                "target":"rep",
+                "url":"/interface/forms/sji_stride_intake/list_participants.php",
+                "children":[],
+                "requirement":0,
+                "acl_req": [
+                    "patients",
+                    "demo"
+                ]
+            },
           {
             "label": "Patient List Creation",
             "menu_id": "rep0",

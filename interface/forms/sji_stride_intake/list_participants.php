@@ -38,6 +38,27 @@ function get_stride_participants() {
 		$participants[$row['pid']]['name'] = $row['fname'] .' '. $row['lname'];
 		$participants[$row['pid']]['sex'] = $row['sex'];
 		$participants[$row['pid']]['sex'] = $row['id'];
+	}
+
+	$query = "
+		select pd.id,pd.pid,fname,lname,sex
+		from patient_data as pd
+		inner join documents as d on (d.foreign_id = pd.pid)
+		left join categories_to_documents as cd on (cd.document_id = d.id)
+		left join categories as c on (c.id = cd.category_id)
+		where c.name like '%STRIDE%'
+		and d.deleted = 0
+	";
+
+	$res = sqlStatement($query);
+
+	while ($row = sqlFetchArray($res)) {
+		$participants[$row['pid']]['name'] = $row['fname'] .' '. $row['lname'];
+		$participants[$row['pid']]['sex'] = $row['sex'];
+		$participants[$row['pid']]['sex'] = $row['id'];
+	}
+
+	foreach (array_keys($participants) as $pid) {
 
 		// Add on a few core variable columns
 		$query = "
@@ -48,14 +69,14 @@ function get_stride_participants() {
 			order by id desc 
 			limit 1
 		";
-		$res2 = sqlStatement($query, array($row['pid']));
+		$res2 = sqlStatement($query, array($pid));
 		$pronouns = sqlFetchArray($res2);
 		if ($pronouns['pronouns']) {
-			$participants[$row['pid']]['pronouns'] = $pronouns['pronouns'];
+			$participants[$pid]['pronouns'] = $pronouns['pronouns'];
 		}
 
 		if ($pronouns['aliases']) {
-			$participants[$row['pid']]['name'] .= " aka: ". $pronouns['aliases'];
+			$participants[$pid]['name'] .= " aka: ". $pronouns['aliases'];
 		}
 
 		// Add on the last encounter date
@@ -67,10 +88,10 @@ function get_stride_participants() {
 			order by id desc 
 			limit 1
 		";
-		$res3 = sqlStatement($query, array($row['pid']));
+		$res3 = sqlStatement($query, array($pid));
 		$visit = sqlFetchArray($res3);
 		if ($visit['date']) {
-			$participants[$row['pid']]['last_visit'] = $visit['date'];
+			$participants[$pid]['last_visit'] = $visit['date'];
 			
 		}
 	}

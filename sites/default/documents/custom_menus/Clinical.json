@@ -335,19 +335,7 @@
 			"demo"
 		]
 	},
-	{
-		"label": "WENO Prescription Report",
-		"menu_id": "rep0",
-		"target": "rep",
-		"url": "/interface/weno/rxlogmanager.php",
-		"children": [],
-		"requirement": 0,
-		"acl_req": [
-			"patients",
-			"demo"
-		]
-	},
-            {
+        {
                 "label":"STRIDE",
                 "menu_id":"rep0",
                 "target":"rep",
@@ -358,7 +346,7 @@
                     "patients",
                     "demo"
                 ]
-            }
+        }
     ],
     "requirement": 0
   }

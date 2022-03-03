@@ -55,7 +55,7 @@ function sji_extendedOTH_formFetch($id = 0) {
    $obj = formFetch($table_name, $id);
 
    // Add on columns from patient_data
-   $query = "select sex,race,ethnicity,DOB,street,".
+   $query = "select sex,gender,race,ethnicity,DOB,street,".
       "city,state,postal_code,email,phone_cell, concat(fname, ' ', lname) as Name,".
       "monthly_income ".
       "FROM patient_data WHERE pid = ? ".
@@ -66,7 +66,7 @@ function sji_extendedOTH_formFetch($id = 0) {
    }
 
    // Add on columns from core_variables
-   $query = "select pronouns,aliases,housing_situation,gender,sexual_identity ".
+   $query = "select pronouns,aliases,housing_situation,sexual_identity ".
       "FROM form_sji_intake_core_variables WHERE pid = ? ".
       "ORDER BY date DESC LIMIT 1";
    $res = sqlStatement($query, array($pid));
@@ -88,7 +88,7 @@ function sji_extendedOTH_formFetch($id = 0) {
       $obj['income_verification'][] = $row['income_verification'];
    }
 
-   // Add on income verification
+   // Add on non cash assistance
    $query = "select noncash_assistance from form_sji_oth_intake_noncash_assistance where pid=?";
    $res = sqlStatement($query, array($id));
    while ($row = sqlFetchArray($res)) {
@@ -189,6 +189,11 @@ function sji_extendedOTHIntake($formid, $submission) {
         sqlQuery($sql, array($submission['sex'], $pid));
     }
 
+    if (isset($submission['gender'])) {
+        $sql = 'update patient_data set gender = ? where pid = ?';
+        sqlQuery($sql, array($submission['gender'], $pid));
+    }
+
     if (isset($submission['ethnicity'])) {
         $sql = 'update patient_data set ethnicity = ? where pid = ?';
         sqlQuery($sql, array($submission['ethnicity'], $pid));
@@ -266,6 +271,11 @@ function sji_extendedOTHIntake($formid, $submission) {
        if (isset($submission['housing_situation'])) {
           $sql = 'UPDATE form_sji_intake_core_variables SET housing_situation = ? where id = ?';
           $res = sqlStatement($sql, array($submission['housing_situation'], $cv_id));
+       }
+
+       if (isset($submission['sex'])) {
+          $sql = 'UPDATE form_sji_intake_core_variables SET sex = ? where id = ?';
+          $res = sqlStatement($sql, array($submission['sex'], $cv_id));
        }
 
        if (isset($submission['gender'])) {

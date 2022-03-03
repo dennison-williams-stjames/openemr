@@ -56,7 +56,7 @@ function get_cv_form_obj($pid, $id = 0) {
    $obj = formFetch($table_name, $id);
 
    // Add on columns from patient_data
-   $query = "select sex,race,ethnicity,DOB as dob,street,".
+   $query = "select sex,gender,race,ethnicity,DOB as dob,street,".
       "city,state,postal_code as zip,email,phone_cell,".
       "phone_home,contact_relationship,phone_contact,".
       "hipaa_message,monthly_income,emergency_relationsh ".
@@ -90,6 +90,11 @@ function sji_extendedIntakeCoreVariables($formid, $submission) {
     if (isset($submission['sex'])) {
         $sql = 'update patient_data set sex = ? where pid = ?';
         sqlQuery($sql, array($submission['sex'], $pid));
+    }
+
+    if (isset($submission['gender'])) {
+        $sql = 'update patient_data set gender = ? where pid = ?';
+        sqlQuery($sql, array($submission['gender'], $pid));
     }
 
     if (isset($submission['dob'])) {

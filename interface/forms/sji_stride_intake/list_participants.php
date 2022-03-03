@@ -26,7 +26,7 @@ use OpenEMR\OeUI\OemrUI;
 
 function get_stride_participants() {
 	$query = "
-		select pd.id,pd.pid,fname,lname,sex
+		select pd.id,pd.pid,fname,lname,sex,gender
 		from patient_data as pd
 		inner join form_sji_stride_intake as s on (s.pid = pd.pid)
 	";
@@ -37,11 +37,12 @@ function get_stride_participants() {
 	while ($row = sqlFetchArray($res)) {
 		$participants[$row['pid']]['name'] = $row['fname'] .' '. $row['lname'];
 		$participants[$row['pid']]['sex'] = $row['sex'];
-		$participants[$row['pid']]['sex'] = $row['id'];
+		$participants[$row['pid']]['gender'] = $row['gender'];
+		$participants[$row['pid']]['id'] = $row['id'];
 	}
 
 	$query = "
-		select pd.id,pd.pid,fname,lname,sex
+		select pd.id,pd.pid,fname,lname,sex,gender
 		from patient_data as pd
 		inner join documents as d on (d.foreign_id = pd.pid)
 		left join categories_to_documents as cd on (cd.document_id = d.id)
@@ -55,7 +56,8 @@ function get_stride_participants() {
 	while ($row = sqlFetchArray($res)) {
 		$participants[$row['pid']]['name'] = $row['fname'] .' '. $row['lname'];
 		$participants[$row['pid']]['sex'] = $row['sex'];
-		$participants[$row['pid']]['sex'] = $row['id'];
+		$participants[$row['pid']]['gender'] = $row['gender'];
+		$participants[$row['pid']]['id'] = $row['id'];
 	}
 
 	foreach (array_keys($participants) as $pid) {

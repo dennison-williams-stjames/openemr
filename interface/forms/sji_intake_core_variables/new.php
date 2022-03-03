@@ -223,13 +223,25 @@ if (isset($obj['aliases'])) {
 </div>
 <!-- race -->
 
-<!-- gender -->
+<!-- sex assigned at birth -->
 <div class="form-group row">
-<label class="col-sm-6 control-label" for="gender"><?php echo xlt('How do you define your gender?'); ?></label>
+<label class="col-sm-6 control-label" for="sex"><?php echo xlt('What sex were you assigned at birth?'); ?></label>
 <div class="col-sm-6">
 <select id="sex" type=text name="sex" class="form-control select2">
 <option></option>
 <?php echo getListOptions('sex'); ?>
+</select>
+</div>
+</div>
+<!-- gender -->
+
+<!-- gender -->
+<div class="form-group row">
+<label class="col-sm-6 control-label" for="gender"><?php echo xlt('How do you define your gender?'); ?></label>
+<div class="col-sm-6">
+<select id="gender" type=text name="gender" class="form-control select2">
+<option></option>
+<?php echo getListOptions('gender'); ?>
 </select>
 </div>
 </div>

@@ -1,0 +1,22 @@
+CREATE TABLE IF NOT EXISTS `procedure_result` (
+  `procedure_result_id` bigint(20) NOT NULL AUTO_INCREMENT,
+  `uuid` binary(16) DEFAULT NULL,
+  `procedure_report_id` bigint(20) NOT NULL COMMENT 'references procedure_report.procedure_report_id',
+  `result_data_type` varchar(31) DEFAULT NULL,
+  `result_code` varchar(31) DEFAULT '' COMMENT 'LOINC code, might match a procedure_type.procedure_code',
+  `result_text` varchar(255) DEFAULT '' COMMENT 'Description of result_code',
+  `date` datetime DEFAULT NULL COMMENT 'lab-provided date specific to this result',
+  `facility` varchar(255) DEFAULT '' COMMENT 'lab-provided testing facility ID',
+  `units` varchar(31) DEFAULT '',
+  `result` text,
+  `range` varchar(255) DEFAULT '',
+  `abnormal` varchar(31) DEFAULT '' COMMENT 'no,yes,high,low',
+  `comments` text,
+  `document_id` bigint(20) DEFAULT '0' COMMENT 'references documents.id if this result is a document',
+  `result_status` varchar(31) DEFAULT '' COMMENT 'preliminary, cannot be done, final, corrected, incompete...etc.',
+  `result_set` varchar(31) DEFAULT NULL,
+  PRIMARY KEY (`procedure_result_id`),
+  KEY `procedure_report_id` (`procedure_report_id`),
+  KEY `result_code_idx` (`result_code`),
+  KEY `result_idx` (`result`(10))
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;

@@ -11,7 +11,6 @@
  * @copyright Copyright (c) 2019 Brady Miller <brady.g.miller@gmail.com>
  * @license   https://github.com/openemr/openemr/blob/master/LICENSE GNU General Public License 3
  */
-
 require_once("../globals.php");
 
 $id = (isset($_GET['id']) ? $_GET['id'] : '') + 0;
@@ -25,7 +24,7 @@ for ($level = 0, $parentid = $id; $parentid; ++$level) {
     $parentid = $row['parent'] + 0;
 }
 
-$res = sqlStatement("SELECT * FROM procedure_type WHERE parent = ? AND lab_id != 4 " .
+$res = sqlStatement("SELECT * FROM procedure_type WHERE parent = ? AND lab_id = 4 " .
   "ORDER BY seq, name, procedure_type_id", [$id]);
 
 $encount = 0;
@@ -61,14 +60,14 @@ while ($row = sqlFetchArray($res)) {
     echo "<td id=\"td" . attr($chid) . "\"";
     echo " onclick=\"toggle(" . attr_js($chid) . ")\"";
     echo " class=\"" . attr($classes) . "\">";
-    echo "<span style=\"margin: 0 4 0 " . round(($level * 9) * 1.3333) . "px\" class=\"plusminus\">";
+    echo "<span style=\"margin: 0 4px 0 " . round(($level * 9) * 1.3333) . "px\" class=\"plusminus\">";
     echo "<span class=\"plusminus\">";
     echo $iscontainer ? "+ " : '| ';
     echo "</span>";
     if ($isOrder == 'ord') {
-        echo "<mark class=\"oe-patient-background\">" . text($row['name']) . "</mark></td>";
+        echo htmlspecialchars($row['name'],ENT_QUOTES) . "</td>";
     } elseif ($isOrder == 'for') {
-        echo "<mark class=\"oe-pink-background\">" . text($row['name']) . "</mark></td>";
+        echo "<mark class=\"oe-pink-background\">" . htmlspecialchars($row['name'],ENT_QUOTES) . "</mark></td>";
     } else {
         echo text($row['name']) . "</td>";
     }
@@ -84,7 +83,7 @@ while ($row = sqlFetchArray($res)) {
             echo " />";
         } else {
             if ($isOrder == 'ord') {
-                echo "<mark class=\"oe-patient-background\">" . xlt('Order') . "</mark>";
+                echo xlt('Order');
             } elseif ($isOrder == 'for') {
                 echo "<mark class=\"oe-pink-background\">" . xlt('Custom Order') . "</mark>";
             }
@@ -122,13 +121,13 @@ while ($row = sqlFetchArray($res)) {
         $typeIs = 2;
     }
     echo "<td class=\"col6\">" . text($level + 1) . "</td>";
-    echo "<td class=\"col4\">" . text($row['description']) . "</td>";
+    echo "<td class=\"col4\">" . htmlspecialchars($row['description'],ENT_QUOTES) . "</td>";
     echo "<td class=\"col5\">";
     echo "<span onclick=\"handleNode(" . attr_js($chid) . "," . attr_js($typeIs) . ",false," . attr_js($thislab) . ")\" class=\"text-body haskids fa fa-pencil-alt fa-lg\" title=" . xla("Edit") . "></span>";
     echo "</td>";
     echo "<td class=\"col5\">";
     //if ($isOrder != 'for') {//RP_MODIFIED 2018-08-03 to allow for manual lab entry
-        echo "<span style=\"margin-left: 30px\" onclick=\"handleNode(" . attr_js($chid) . "," . attr_js($typeIs) . ",true," . attr_js($thislab) . ")\" class=\"haskids text-body fa fa-plus fa-lg\" title=" . xla("Add") . " ></span>";
+        echo "<span onclick=\"handleNode(" . attr_js($chid) . "," . attr_js($typeIs) . ",true," . attr_js($thislab) . ")\" class=\"haskids text-body fa fa-plus fa-lg\" title=" . xla("Add") . " ></span>";
     //}//RP_MODIFIED 2018-08-03
     echo "</td>";
     echo "</tr>";

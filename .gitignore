@@ -29,6 +29,7 @@ ccdaservice/node_modules
 
 # site specific documents
 sites/default/documents/*
+!sites/default/documents/custom_menus
 sites/default/labs/*
 sites/default/procedure_results/*
 gacl/admin/templates_c/*

@@ -64,7 +64,8 @@
         "lcobucci/jwt": "dev-342php8 as 3.4.9",
         "psr/log": "1.1.3",
         "monolog/monolog": "2.1.1",
-        "dennison-williams-stjames/sji_demographics": "dev-main"
+        "dennison-williams-stjames/sji_demographics": "dev-main",
+        "tecnickcom/tcpdf": "~6.4"
     },
     "config": {
         "platform": {

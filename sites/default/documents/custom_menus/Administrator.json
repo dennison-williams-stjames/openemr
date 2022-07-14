@@ -223,6 +223,61 @@
   ]
   },
   {
+    "label": "Laboratory",
+    "menu_id": "proimg",
+    "children": [
+      {
+        "label": "Providers",
+        "menu_id": "orl0",
+        "target": "pat",
+        "url": "/interface/laboratory/laboratory_provider_list.php",
+        "children": [],
+        "requirement": 0,
+        "acl_req": [
+          "admin",
+          "super"
+        ]
+      },
+      {
+        "label": "Compendium",
+        "menu_id": "ort0",
+        "target": "pat",
+        "url": "/interface/laboratory/types.php",
+        "children": [],
+        "requirement": 0,
+        "acl_req": [
+          "admin",
+          "super"
+        ]
+      },
+      {
+        "label": "Load Compendium",
+        "menu_id": "orc0",
+        "target": "pat",
+        "url": "/interface/laboratory/load_compendium.php",
+        "children": [],
+        "requirement": 0,
+        "acl_req": [
+          "admin",
+          "super"
+        ]
+      },
+      {
+        "label": "Run Batch Process",
+        "menu_id": "ore0",
+        "target": "pat",
+        "url": "/interface/laboratory/run_batch.php",
+        "children": [],
+        "requirement": 0,
+        "acl_req": [
+          "admin",
+          "super"
+        ]
+      }
+    ],
+    "requirement": 0
+  },
+  {
     "label": "Procedures",
     "menu_id": "proimg",
     "children": [
@@ -753,7 +808,6 @@
     "label": "Reports",
     "menu_id": "repimg",
     "children": [
-
 	{
 		"label": "Utilization Report",
 		"menu_id": "rep0",
@@ -766,19 +820,69 @@
 			"demo"
 		]
 	},
-            {
-                "label":"STRIDE",
-                "menu_id":"rep0",
-                "target":"rep",
-                "url":"/interface/forms/sji_stride_intake/list_participants.php",
-                "children":[],
-                "requirement":0,
-                "acl_req": [
-                    "patients",
-                    "demo"
-                ]
-            }
+	{
+		"label":"STRIDE",
+		"menu_id":"rep0",
+		"target":"rep",
+		"url":"/interface/forms/sji_stride_intake/list_participants.php",
+		"children":[],
+		"requirement":0,
+		"acl_req": [
+			"patients",
+			"demo"
+		]
+	},
+	{
+		"label": "Laboratory",
+		"icon": "fa-caret-right",
+		"children": [
+		{
+			"label": "Orders Report",
+			"url": "/interface/reports/laboratory/lab_orders.php",
+			"target": "rep",
+			"children": [],
+			"requirement": 0,
+			"acl_req": [
+				"patients",
+				"lab"
+			]
+		},
+		{
+			"label": "Results Report",
+			"url": "/interface/reports/laboratory/lab_results.php",
+			"target": "rep",
+			"children": [],
+			"requirement": 0,
+			"acl_req": [
+				"patients",
+				"lab"
+			]
+		},
+		{
+			"label": "Orphan Report",
+			"url": "/interface/reports/laboratory/lab_orphans.php",
+			"target": "rep",
+			"children": [],
+			"requirement": 0,
+			"acl_req": [
+				"patients",
+				"lab"
+			]
+		},
+		{
+			"label": "Results Analysis",
+			"url": "/interface/reports/laboratory/lab_analysis.php",
+			"target": "rep",
+			"children": [],
+			"requirement": 1,
+			"acl_req": [
+				"patients",
+				"lab"
+			]
+		}
+		]
+	}
     ],
-    "requirement": 0
+	"requirement": 0
   }
 ]

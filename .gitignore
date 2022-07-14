@@ -26,3 +26,10 @@ ccdaservice/node_modules
 
 # testing
 .phpunit.result.cache
+
+# site specific documents
+sites/default/documents/*
+sites/default/labs/*
+sites/default/procedure_results/*
+gacl/admin/templates_c/*
+interface/main/calendar/modules/PostCalendar/pntemplates/compiled/*

@@ -24,7 +24,9 @@ if (!is_int($num) || $num>100 || $num<1) {
     exit;
 }
 
-$host = '192.168.20.246';
+// 10.64.10.49 - This is the gateway for the label printer to be hosted on the 
+// 1089 mission network
+$host = '1089.stjamesinfirmary.org';
 $port = 9100;
 $errMsg='';
 

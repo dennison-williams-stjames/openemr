@@ -24,7 +24,7 @@ if (!is_int($num) || $num>100 || $num<1) {
     exit;
 }
 
-$host = '192.168.20.246';
+$host = '10.64.10.49';
 $port = 9100;
 $errMsg='';
 

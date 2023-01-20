@@ -1,0 +1,7 @@
+@import url('style_red.css');
+
+#DocContents > td > iframe,
+#documents_actions > fieldset > div > table > tbody > tr:nth-child(1) > td > div > h4 > span > a:nth-child(2) {
+	display: none;
+}
+

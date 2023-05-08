@@ -109,7 +109,7 @@ class Bootstrap
 	}
 
 	private function getPatientData($pid) {
-		$sql = 'SELECT title,fname,mname,lname,sex from patient_data'.
+		$sql = 'SELECT title,fname,mname,lname,sex,gender from patient_data'.
 		       ' where pid=? ORDER BY id DESC limit 1';
 		$res = sqlStatement($sql, array($pid));
 		return sqlFetchArray($res);
@@ -215,7 +215,7 @@ class Bootstrap
 
 			// Get name, gender
 			$patient_data = $this->getPatientData($pid);
-			$gender = $this->getGender($patient_data['sex']);
+			$gender = $this->getGender($patient_data['gender']);
 			$patient_cv = $this->getCoreVariables($pid);
 
 			echo '<tr><td class="label_custom" colspan=1 id="label_title">'.

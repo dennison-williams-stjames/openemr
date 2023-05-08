@@ -43,9 +43,9 @@ function sji_intake_core_variables_build_data($pid, $id = 0) {
               $gender = sqlFetchArray($res);
  
               if (isset($gender['title'])) {
-                 $data['Gender'] = $gender['title'];
+                 $data['Sex assigned at birth'] = $gender['title'];
               } else {
-                 $data['Gender'] = $data[$column];
+                 $data['Sex assigned at birth'] = $data[$column];
               }
            } else if ($column == 'postal_code' && isset($data[$column])) {
               $data['Zip'] = $data[$column];

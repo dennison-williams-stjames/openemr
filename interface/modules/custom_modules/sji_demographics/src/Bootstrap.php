@@ -262,10 +262,15 @@ class Bootstrap
 				  '<td class="text data" colspan=1 id="text_gender">';
 				echo $gender['title'] ."\n</td>\n</tr>\n";
 
-			} else if (isset($patient_data['sex'])) {
+			} else if (isset($patient_data['gender'])) {
 				echo "<tr>\n<td class='label_custom' colspan=1 id='label_sex'>\n";
 				echo "<span id='label_sex' class='bold'>". xl('Gender') .":</span></td>\n".
 				  '<td class="text data" colspan=1 id="text_gender">';
+				echo $patient_data['gender'] ."\n</td>\n</tr>\n";
+			} else if (isset($patient_data['sex'])) {
+				echo "<tr>\n<td class='label_custom' colspan=1 id='label_sex'>\n";
+				echo "<span id='label_sex' class='bold'>". xl('Sex assigned at birth') .":</span></td>\n".
+				  '<td class="text data" colspan=1 id="text_saab">';
 				echo $patient_data['sex'] ."\n</td>\n</tr>\n";
 			}
 

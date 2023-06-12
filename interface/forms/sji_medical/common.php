@@ -31,25 +31,25 @@ function sji_extendedMedical_formFetch($formid = 0) {
 
     // get participant information
     $res = sqlStatement(
-       "select pid, fname, lname ".
+       "select pid, fname, lname, gender ".
        "from patient_data ".
        "where pid=?", array($pid));
 
     while ($row = sqlFetchArray($res)) {
        $return['name'] = $row['fname'] ." ". $row['lname'];
        $return['pid'] = $row['pid'];
+       $return['gender'] = $row['gender'];
     }
 
     // get a few items from our core variables
     $sql =
-       "select gender, pronouns, aliases ".
+       "select pronouns, aliases ".
        "from form_sji_intake_core_variables ".
        "where pid=? order by id desc limit 1";
 
     $res = sqlStatement($sql, array($pid));
 
     while ($row = sqlFetchArray($res)) {
-       $return['gender'] = $row['gender'];
        $return['pronouns'] = $row['pronouns'];
        $return['aliases'] = $row['aliases'];
     }

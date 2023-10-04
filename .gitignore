@@ -8,6 +8,7 @@
 node_modules
 /vendor/*
 /public/assets/*
+/public/themes/*
 !/public/assets/modified
 /.docs/.out/*
 
@@ -25,11 +26,4 @@ ccdaservice/node_modules
 
 # testing
 .phpunit.result.cache
-
-# site specific documents
 sites/default/documents/*
-!sites/default/documents/custom_menus
-sites/default/labs/*
-sites/default/procedure_results/*
-gacl/admin/templates_c/*
-interface/main/calendar/modules/PostCalendar/pntemplates/compiled/*

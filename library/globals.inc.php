@@ -1406,11 +1406,25 @@ $GLOBALS_METADATA = array(
             xl('This will give the user the option to lock (separate locking and signing)')
         ),
 
+        'esign_report_show_only_signed' => array(
+            xl('Only Include E-Signed Forms On Report'),
+            'bool',                           // data type
+            '0',                              // default = false
+            xl('This will hide any encounter forms not E-Signed on the patient report')
+        ),
+
         'esign_report_hide_empty_sig' => array(
             xl('Hide Empty E-Sign Logs On Report'),
             'bool',                           // data type
             '1',                              // default = false
             xl('This will hide empty e-sign logs on the patient report')
+        ),
+
+        'esign_report_hide_all_sig' => array(
+            xl('Exclude All E-Sign Logs On Report'),
+            'bool',                           // data type
+            '0',                              // default = false
+            xl('This will hide any e-sign logs on the patient report')
         ),
 
     ),
@@ -2874,6 +2888,20 @@ $GLOBALS_METADATA = array(
             xl('Patient is required to enter their contact e-mail if present in Demographics Contact.')
         ),
 
+        'google_recaptcha_site_key' => array(
+            xl('Google reCAPTCHA V2 site key'),
+            'text',
+            '',
+            xl('Google reCAPTCHA V2 site key')
+        ),
+
+        'google_recaptcha_secret_key' => array(
+            xl('Google reCAPTCHA V2 secret key'),
+            'encrypted',
+            '',
+            xl('Google reCAPTCHA V2 secret key')
+        ),
+
         'portal_onsite_two_register' => array(
             xl('Allow New Patient Registration Widget'),
             'bool',                           // data type
@@ -2985,9 +3013,10 @@ $GLOBALS_METADATA = array(
         'payment_gateway' => array(
             xl('Select Credit Card Payment Gateway'),
             array(
-                'InHouse' => xl('In House'),
-                'AuthorizeNet' => xl('Authorize.Net'),
-                'Stripe' => xl('Stripe')
+                'InHouse' => xl('In House Authorize Payments'),
+                'AuthorizeNet' => xl('Gateway for AuthorizeNet Manual Payments'),
+                'Sphere' => xl('Gateway for Sphere Payments'),
+                'Stripe' => xl('Gateway for Stripe Manual Payments')
             ),
             'InHouse',
             xl('Enable a Payment Gateway Service for processing credit card transactions')
@@ -3019,6 +3048,76 @@ $GLOBALS_METADATA = array(
             'encrypted',
             '',
             xl('Mainly Authorize.Net uses two keys')
+        ),
+
+        'sphere_clinicfront_trxcustid' => array(
+            xl('Sphere Clinicfront over phone (MOTO) Transaction CustID'),
+            'encrypted',
+            '',
+            xl('Sphere Clinicfront over phone (MOTO) Transaction CustID')
+        ),
+
+        'sphere_clinicfront_trxcustid_licensekey' => array(
+            xl('Sphere Clinicfront over phone (MOTO) Transaction CustID License Key'),
+            'encrypted',
+            '',
+            xl('Sphere Clinicfront over phone (MOTO) Transaction CustID License Key')
+        ),
+
+        'sphere_moto_tc_link_pass' => array(
+            xl('Sphere MOTO TC Link Password'),
+            'encrypted',
+            '',
+            xl('Sphere MOTO TC Link Password')
+        ),
+
+        'sphere_clinicfront_retail_trxcustid' => array(
+            xl('Sphere Clinicfront in person (RETAIL) Transaction CustID'),
+            'encrypted',
+            '',
+            xl('Sphere Clinicfront in person (RETAIL) Transaction CustID')
+        ),
+
+        'sphere_clinicfront_retail_trxcustid_licensekey' => array(
+            xl('Sphere Clinicfront in person (RETAIL) Transaction CustID License Key'),
+            'encrypted',
+            '',
+            xl('Sphere Clinicfront in person (RETAIL) Transaction CustID License Key')
+        ),
+
+        'sphere_retail_tc_link_pass' => array(
+            xl('Sphere RETAIL TC Link Password'),
+            'encrypted',
+            '',
+            xl('Sphere RETAIL TC Link Password')
+        ),
+
+        'sphere_patientfront_trxcustid' => array(
+            xl('Sphere Patientfront (Ecomm) Transaction CustID'),
+            'encrypted',
+            '',
+            xl('Sphere Patientfront (Ecomm) Transaction CustID')
+        ),
+
+        'sphere_patientfront_trxcustid_licensekey' => array(
+            xl('Sphere Patientfront (Ecomm) Transaction CustID License Key'),
+            'encrypted',
+            '',
+            xl('Sphere Patientfront (Ecomm) Transaction CustID License Key')
+        ),
+
+        'sphere_ecomm_tc_link_pass' => array(
+            xl('Sphere Ecomm TC Link Password'),
+            'encrypted',
+            '',
+            xl('Sphere Ecomm TC Link Password')
+        ),
+
+        'sphere_credit_void_confirm_pin' => array(
+            xl('Sphere Void/Credit Confirmation PIN'),
+            'encrypted_hash',
+            '',
+            xl('Sphere Void/Credit Confirmation Password. OpenEMR confirms pin/password before proceeding with void/credit.')
         ),
 
         'medex_enable' => array(

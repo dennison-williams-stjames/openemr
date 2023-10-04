@@ -644,12 +644,8 @@ function receive_hl7_results(&$hl7, &$matchreq, $lab_id = 0, $direction = 'B', $
             }
 
             $context = $a[0];
-            // Apollo LIMS returns 'ORU'
-            if (strstr($a[8], "ORU")) {
-                $msgtype = 'ORU';
-	    } 
             // Ensoftek: Could come is as 'ORU^R01^ORU_R01'. Handle all cases when 'ORU^R01' is seen.
-	    elseif (strstr($a[8], "ORU^R01")) {
+            if (strstr($a[8], "ORU^R01")) {
                 $msgtype = 'ORU';
             } elseif ($a[8] == 'MDM^T02' || $a[8] == 'MDM^T04' || $a[8] == 'MDM^T08') {
                 $msgtype = 'MDM';

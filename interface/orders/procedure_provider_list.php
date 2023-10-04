@@ -30,7 +30,7 @@ $form_inactive = empty($_POST['form_inactive']) ? false : true;
 $query = "SELECT pp.* FROM procedure_providers AS pp";
 
 if (!$form_inactive) {
-    $query .= " WHERE active = '1' AND type IS NULL ";
+    $query .= " WHERE active = '1'";
 }
 
 $query .= " ORDER BY pp.name";

@@ -435,16 +435,5 @@ $loading = "<div class='spinner-border' role='status'><span class='sr-only'>" . 
             $('div.dataTables_filter input').focus();
         });
     </script>
-
-    <script>
-        /* Custom St. James Infirmary modifications */
-        $(function() {
-            $('tr#advanced_search').hide();
-           $('div#pt_table_filter.dataTables_filter label').hide();
-           $('label#form_new_window_label').hide();
-           $('label#setting_search_type_label').hide();
-        });
-    </script>
-
 </body>
 </html>

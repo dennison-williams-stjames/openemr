@@ -28,7 +28,7 @@ class LogImportBuild
         return $rec;
     }
 
-    public function drugForm($title) : int
+    public function drugForm($title)
     {
         $sql = "SELECT option_id FROM list_options WHERE list_id = 'drug_form' AND title = ?";
         $drugformid = sqlQuery($sql, [$title]);
@@ -46,11 +46,9 @@ class LogImportBuild
     {
         $l = 0;
         if (file_exists($this->rxsynclog)) {
-            //die("it is what it is!");
             $records = fopen($this->rxsynclog, "r");
 
             while (!feof($records)) {
-
                 $line = fgetcsv($records);
 
                 if ($l <= 2) {
@@ -100,7 +98,7 @@ class LogImportBuild
                     $sub = ($line[14] = 'Allowed' ? 1 : 0);
                     $insertdata['substitute'] = $sub ?? null;
                     $insertdata['note'] = $line[21] ?? null;
-                    $insertdata['rxnorm_drugcode'] =$line[12] ?? null;
+                    $insertdata['rxnorm_drugcode'] = $line[12] ?? null;
                     $insertdata['provider_id'] = $provider[0];
                     $insertdata['prescriptionguid'] = $line[4] ?? null;
                     $insertdata['txDate'] = $ida;

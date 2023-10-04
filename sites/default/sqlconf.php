@@ -9,7 +9,7 @@ $host   = 'localhost';
 $port   = '3306';
 $login  = 'openemr';
 $pass   = 'openemr';
-$dbase  = 'openemr';
+$dbase  = 'devopenemr';
 $db_encoding = 'utf8mb4';
 
 $sqlconf = array();

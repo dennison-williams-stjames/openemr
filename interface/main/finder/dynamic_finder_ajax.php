@@ -207,12 +207,7 @@ while ($row = sqlFetchArray($res)) {
     $fieldsInfo[$row['field_id']] = $row;
 }
 
-$query = "SELECT patient_data.pid as pid, fname, mname, lname, DOB, max(form_sji_intake_core_variables.id) as mid FROM patient_data ".
-	       "LEFT JOIN form_sji_intake_core_variables on ( form_sji_intake_core_variables.pid = patient_data.pid ) ".
-	       "WHERE $where ".
-	       "GROUP BY patient_data.pid ".
-	       "$orderby $limit";
-
+$query = "SELECT $sellist FROM patient_data WHERE $where $orderby $limit";
 $res = sqlStatement($query, $srch_bind);
 while ($row = sqlFetchArray($res)) {
     // Each <tr> will have an ID identifying the patient.
@@ -230,16 +225,7 @@ while ($row = sqlFetchArray($res)) {
 
             if ($row['mname']) {
                 $name .= ' ' . $row['mname'];
-	    }
-
-	    if ($row['mid']) {
-		    $query = "SELECT aliases from form_sji_intake_core_variables where id = ?";
-		    $res2 = sqlStatement($query, array($row['mid']));
-		    $row2 = sqlFetchArray($res2);
-		    if (isset($row2['aliases']) && strlen($row2['aliases'])) {
-		       $name .= ' [aka: ' . $row2['aliases'] .']';
-		    }
-	    }
+            }
 
             $arow[] = attr($name);
         } else {

@@ -379,8 +379,8 @@ function gen_hl7_order($orderid, &$out)
         $d1 . hl7Priority($porow['order_priority']) . // S=Stat, R=Routine
         $d1 .
         $d1 . hl7Time($porow['date_collected']) .     // Observation Date/Time
-        str_repeat($d1, 7) .                          // OBR 8-15 not used
-        $d1 . hl7Text($pcrow['specimen']) .           // Specimen source aka OBR-15
+        str_repeat($d1, 8) .                          // OBR 8-15 not used
+        $dl . hl7Text($pcrow['specimen']) .           // Specimen source aka OBR-15
         $d1 . hl7Text($porow['docnpi']) .             // Physician ID
         $d2 . hl7Text($porow['doclname']) .         // Last Name
         $d2 . hl7Text($porow['docfname']) .         // First Name

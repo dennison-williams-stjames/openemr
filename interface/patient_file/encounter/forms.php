@@ -327,15 +327,6 @@ function refreshVisitDisplay() {
   location.href = <?php echo js_escape($rootdir); ?> + '/patient_file/encounter/forms.php';
 }
 
-function print_label(id) {
-  dlgopen('../print_label.php?encounterid=<?php echo $encounter; ?>', '_blank', 400, 300, '', '', {
-      buttons: [ ],
-      allowResize: false,
-      allowDrag: true,
-  });
-  return false;
-}
-
 </script>
 
 <style>
@@ -787,7 +778,6 @@ if ($esign->isButtonViewable()) {
 <?php } ?>
 <button type="button" onClick="$('.collapse').collapse('hide');" class="btn btn-primary btn-sm"><?php echo xlt('Collapse All'); ?></button>
 <button type="button" onClick="$('.collapse').collapse('show');" class="btn btn-primary btn-sm"><?php echo xlt('Expand All'); ?></button>
-<button type="button" onClick="print_label();" class="btn btn-primary btn-sm"><?php echo xlt('Print Label'); ?></button>
 </div>
 </div>
 </div>

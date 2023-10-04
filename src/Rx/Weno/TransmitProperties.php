@@ -23,7 +23,6 @@ class TransmitProperties
     private $locid;
     private $vitals;
     private $subscriber;
-    private $pid;
     private $ncpdp;
     private $cryptoGen;
 
@@ -57,46 +56,33 @@ class TransmitProperties
         }
         $gender = $this->patient['sex'];
         $heighDate = explode(" ", $this->vitals['date']);
-        if ($this->subscriber == 'self') {
-            $relationship = 'Y';
-        } else {
-            $relationship = 'N';
-        }
+        $phoneprimary = preg_replace('/\D+/', '', $this->patient['phone_cell']);
         //create json array
         $wenObj = [];
         $wenObj['UserEmail'] = $this->provider_email['email'];
         $wenObj['MD5Password'] = md5($this->provider_pass);
-        $wenObj["LocationID"] = $this->locid['weno_id'];
-        $wenObj["TestPatient"] = $mode;
+        $wenObj['LocationID'] = $this->locid['weno_id'];
+        $wenObj['TestPatient'] = $mode;
         $wenObj['PatientType'] = 'Human';
         $wenObj['OrgPatientID'] = $this->patient['pid'];
         $wenObj['LastName'] = $this->patient['lname'];
+
         $wenObj['FirstName'] = $this->patient['fname'];
-        if ($this->patient['mname']) {
-            $wenObj['MiddleName'] = $this->patient['mname'];
-        }
-        $wenObj['Prefix'] = 'NA';
-        $wenObj['Suffix'] = 'NA';
-        $wenObj["Gender"] =$gender[0];
-        $wenObj["DateOfBirth"] =$this->patient['dob'];
-        $wenObj["AddressLine1"] =$this->patient['street'];
-        $wenObj["AddressLine2"] ="NA";
-        $wenObj["City"] =$this->patient['city'];
-        $wenObj["State"] =$this->patient['state'];
-        $wenObj["PostalCode"] =$this->patient['postal_code'];
-        $wenObj["CountryCode"] ="US";
-        $wenObj["PrimaryPhone"] =preg_replace('/\D+/', '', $this->patient['phone_cell']);
-        $wenObj["SupportsSMS"] ="Y";
-        $wenObj["PatientEmail"] =$this->patient['email'];
-        $wenObj["PatientHeight"] =$this->vitals['height'];
-        $wenObj["PatientWeight"] =$this->vitals['weight'];
-        $wenObj["HeightWeightObservationDate"] =$heighDate[0];
-        $wenObj["ResponsiblePartySameAsPatient"] ='Y';
-        $wenObj["PatientLocation"] ="Home";
-        if ($this->ncpdp) {
-            $wenObj["PrimaryPharmacyNCPCP"] = $this->ncpdp;
-            $wenObj["AlternativePharmacyNCPCP"] = $this->ncpdp;
-        }
+        $wenObj['Gender'] = $gender[0];
+        $wenObj['DateOfBirth'] = $this->patient['dob'];
+        $wenObj['AddressLine1'] = $this->patient['street'];
+        $wenObj['City'] = $this->patient['city'];
+        $wenObj['State'] = $this->patient['state'];
+        $wenObj['PostalCode'] = $this->patient['postal_code'];
+        $wenObj['CountryCode'] = "US";
+        $wenObj['PrimaryPhone'] = $phoneprimary;
+        $wenObj['SupportsSMS'] = 'Y';
+
+        $wenObj['PatientHeight'] = substr($this->vitals['height'], 0, -3);
+        $wenObj['PatientWeight'] = substr($this->vitals['weight'], 0, -3);
+        $wenObj['HeightWeightObservationDate'] = $heighDate[0];
+        $wenObj["ResponsiblePartySameAsPatient"] = 'Y';
+        $wenObj['PatientLocation'] = "Home";
         return json_encode($wenObj);
     }
 
@@ -107,7 +93,7 @@ class TransmitProperties
     {
         $provider_info = sqlQuery("select email from users where username=? ", [$_SESSION["authUser"]]);
         if (empty($provider_info['email'])) {
-            echo xlt('Provider email address is missing');
+            echo xlt('Provider email address is missing. Go to address book to add providers email address');
             exit;
         } else {
             return $provider_info;
@@ -119,18 +105,18 @@ class TransmitProperties
      */
     public function getFacilityInfo()
     {
-        $locid = sqlQuery("select name, street, city, state, postal_code, phone, fax, weno_id from facility where weno_id != ''");
+        $locid = sqlQuery("select name, street, city, state, postal_code, phone, fax, weno_id from facility where id = ?", [$_SESSION['facilityId']]);
 
         if (empty($locid['weno_id'])) {
             //if not in an encounter then get the first facility location id as default
-            //$default_facility = sqlQuery("select name, street, city, state, postal_code, phone, fax, weno_id from facility order by id asc limit 1");
+            $default_facility = sqlQuery("select name, street, city, state, postal_code, phone, fax, weno_id from facility order by id asc limit 1");
 
-            //if (empty($default_facility)) {
+            if (empty($default_facility)) {
                 echo xlt('Facility ID is missing');
                 exit;
-            //} else {
-                //return $default_facility;
-            //}
+            } else {
+                return $default_facility;
+            }
         }
         return $locid;
     }
@@ -140,61 +126,41 @@ class TransmitProperties
      */
     private function getPatientInfo()
     {
-        //get patient data
-        $patient = sqlQuery("select title, fname, lname, mname, street, state, city, email, phone_cell, postal_code, dob, sex, pid from patient_data where pid = ?", [$_SESSION['pid']]);
-        $c = 0;
-        if (empty($patient['fname'])) {
-            $msg = xlt("First Name Missing")  . "<br>";
-            $c++;
+        //get patient data if in an encounter
+        //Since the transmitproperties is called in the logproperties
+        //need to check to see if in an encounter or not. Patient data is not required to view the Weno log
+        if (empty($_SESSION['encounter'])) {
+            die("please select an encounter");
         }
-            if (empty($patient['lname'])) {
-                $msg .= xlt("Last Name Missing")  . "<br>";
-                $c++;
-            }
-            if (empty($patient['dob'])) {
-                $msg .= xlt("Date of Birth Missing")  . "<br>";
-                $c++;
-            }
-            if (empty($patient['sex'])) {
-                $msg .= xlt("Gender Missing")  . "<br>";
-                $c++;
-            }
-            if (empty($patient['postal_code'])) {
-                $msg .= xlt("Zip Code Missing")  . "<br>";
-		$patient['postal_code'] = '94109';
-            }
-            if (empty($patient['street'])) {
-                $msg .= xlt("Street Address Missing")  . "<br>";
-		$patient['street'] = '730 Polk St';
-            }
-            if (empty($patient['email'])) {
-		$patient['email'] = 'admin@stjamesinfirmary.org';
-            }
-            if ($c > 0) {
-                echo "<title>" . xlt("Missing Data") . "</title>";
-                echo $msg;
-                die;
-            }
-	
-	if ($patient['sex'] == 'CF' or $patient['sex'] == 'Female') {
-		$patient['sex'] = 'F';
-	} else if ($patient['sex'] == 'CM' or $patient['sex'] == 'Male') {
-		$patient['sex'] = 'M';
-	} else if ($patient['sex'] == 'NB AFAB') {
-		$patient['sex'] = 'U';
-	} else if ($patient['sex'] == 'NB AMAB') {
-		$patient['sex'] = 'U';
-	} else if ($patient['sex'] == 'TF' or $patient['sex'] == 'Trans Female') {
-		$patient['sex'] = 'F';
-	} else if ($patient['sex'] == 'TM' or $patient['sex'] == 'Trans Male') {
-		$patient['sex'] = 'M';
-	}
-
-	// If there is no cell phone then use the medical line
-	if (!$patient['phone_cell']) {
-		$patient['phone_cell'] = '4156367377';
-	}
-
+        $missing = 0;
+        $patient = sqlQuery("select title, fname, lname, mname, street, state, city, email, phone_cell, postal_code, dob, sex, pid from patient_data where pid=?", [$_SESSION['pid']]);
+        if (empty($patient['fname'])) {
+            echo xlt("First Name Missing") . "<br>";
+            ++$missing;
+        }
+        if (empty($patient['lname'])) {
+            echo xlt("Last Name Missing")  . "<br>";
+            ++$missing;
+        }
+        if (empty($patient['dob'])) {
+            echo xlt("Date of Birth Missing") . "<br>";
+            ++$missing;
+        }
+        if (empty($patient['sex'])) {
+            echo xlt("Gender Missing") . "<br>";
+            ++$missing;
+        }
+        if (empty($patient['postal_code'])) {
+            echo xlt("Zip Code Missing") . "<br>";
+            ++$missing;
+        }
+        if (empty($patient['street'])) {
+            echo xlt("Street Address incomplete Missing") . "<br>";
+            ++$missing;
+        }
+        if ($missing > 0) {
+            die('Pleasae add the missing data and try again');
+        }
         return $patient;
     }
 
@@ -227,7 +193,7 @@ class TransmitProperties
         if (!empty($prov_pass['setting_value'])) {
             return $this->cryptoGen->decryptStandard($prov_pass['setting_value']);
         } else {
-            echo xlt('Password is missing');
+            echo xlt('Provider Password is missing');
             die;
         }
     }
@@ -238,15 +204,6 @@ class TransmitProperties
     private function getVitals()
     {
         $vitals = sqlQuery("select date, height, weight from form_vitals where pid = ? ORDER BY id DESC", [$_SESSION["pid"]]);
-	if (empty($vitals['height'])) {
-		$vitals['height'] = 0;
-	}
-	if (empty($vitals['weight'])) {
-		$vitals['weight'] = 0;
-	}
-	if (empty($vitals['date'])) {
-		$vitals['date'] = date('Y-m-d');;
-	}
         return $vitals;
     }
 

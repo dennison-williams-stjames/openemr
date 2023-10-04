@@ -13,13 +13,6 @@
  * @license   https://github.com/openemr/openemr/blob/master/LICENSE GNU General Public License 3
  */
 
-global $srcdir;
-global $pid;
-global $rootdir;
-global $userauthorized;
-global $facilityService;
-global $viewmode;
-require_once(dirname(__FILE__).'/../../globals.php');
 require_once("$srcdir/options.inc.php");
 require_once("$srcdir/lists.inc");
 
@@ -35,10 +28,6 @@ $facilityService = new FacilityService();
 
 if ($GLOBALS['enable_group_therapy']) {
     require_once("$srcdir/group.inc");
-}
-
-if (!isset($pid) && isset($_SESSION['pid'])) {
-       $pid = $_SESSION['pid'];
 }
 
 $months = array("01", "02", "03", "04", "05", "06", "07", "08", "09", "10", "11", "12");
@@ -479,7 +468,7 @@ $ires = sqlStatement("SELECT id, type, title, begdate FROM lists WHERE " .
                                     // Check for the case where an encounter is created by non-auth user
                                     // but has permissions to create/edit encounter.
                                     $flag_it = "";
-                                    if ($activeUser['authorized'] != 1 && isset($result['provider_id'])) {
+                                    if ($activeUser['authorized'] != 1) {
                                         if ($p_id === (int)$result['provider_id']) {
                                             $flag_it = " (" . xlt("Non Provider") . ")";
                                         } else {
@@ -660,13 +649,13 @@ $ires = sqlStatement("SELECT id, type, title, begdate FROM lists WHERE " .
     <?php
     if (!$viewmode) { ?>
     function duplicateVisit(enc, datestr) {
-        //if (!confirm(<?php echo xlj("A visit already exists for this patient today. Click Cancel to open it, or OK to proceed with creating a new one.") ?>)) {
+        if (!confirm(<?php echo xlj("A visit already exists for this patient today. Click Cancel to open it, or OK to proceed with creating a new one.") ?>)) {
             // User pressed the cancel button, so re-direct to today's encounter
             top.restoreSession();
             parent.left_nav.setEncounter(datestr, enc, window.name);
             parent.left_nav.loadFrame('enc2', window.name, 'patient_file/encounter/encounter_top.php?set_encounter=' + encodeURIComponent(enc));
             return;
-        //}
+        }
         // otherwise just continue normally
     }
         <?php
